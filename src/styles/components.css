@@ -1,0 +1,207 @@
+/* Import variables */
+@import './variables.css';
+
+/* Global Component Styles */
+
+/* Button Customizations */
+.btn-primary {
+  background-color: var(--primary-purple);
+  border-color: var(--primary-purple);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background-color: var(--purple-dark);
+  border-color: var(--purple-dark);
+}
+
+.btn-secondary {
+  background-color: var(--primary-yellow);
+  border-color: var(--primary-yellow);
+  color: var(--purple-darker);
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-secondary:hover {
+  background-color: var(--yellow-dark);
+  border-color: var(--yellow-dark);
+  color: var(--purple-darker);
+}
+
+.btn-outline-primary {
+  color: var(--primary-purple);
+  border-color: var(--primary-purple);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-purple);
+  border-color: var(--primary-purple);
+  color: var(--white);
+}
+
+/* Card Customizations */
+.card {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  background-color: var(--bg-light);
+  border-bottom: 1px solid var(--border-light);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.card-primary {
+  border-color: var(--primary-purple);
+}
+
+.card-primary .card-header {
+  background-color: var(--primary-purple);
+  color: var(--white);
+  border-bottom-color: var(--primary-purple);
+}
+
+/* Form Customizations */
+.form-control:focus {
+  border-color: var(--primary-purple);
+  box-shadow: 0 0 0 0.2rem rgba(86, 43, 121, 0.25);
+}
+
+.form-select:focus {
+  border-color: var(--primary-purple);
+  box-shadow: 0 0 0 0.2rem rgba(86, 43, 121, 0.25);
+}
+
+/* Navigation Customizations */
+.navbar-brand {
+  color: var(--primary-purple) !important;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+}
+
+/* Sidebar Styles */
+.sidebar {
+  background: linear-gradient(180deg, var(--primary-purple) 0%, var(--purple-dark) 100%);
+  min-height: 100vh;
+  color: var(--white);
+}
+
+.sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.8);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-xs) 0;
+  border-radius: var(--radius);
+  transition: all 0.2s ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+  color: var(--white);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+  color: var(--purple-darker);
+  background-color: var(--primary-yellow);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Header Styles */
+.app-header {
+  background-color: var(--white);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Dashboard Styles */
+.dashboard-card {
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--purple-light) 100%);
+  color: var(--white);
+  border: none;
+}
+
+.dashboard-card.secondary {
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--yellow-light) 100%);
+  color: var(--purple-darker);
+}
+
+.dashboard-card .card-body {
+  padding: var(--spacing-lg);
+}
+
+.stats-number {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-xs);
+}
+
+.stats-label {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+}
+
+/* Table Customizations */
+.table th {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  border-top: none;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(86, 43, 121, 0.05);
+}
+
+/* Badge Customizations */
+.badge-primary {
+  background-color: var(--primary-purple);
+}
+
+.badge-secondary {
+  background-color: var(--primary-yellow);
+  color: var(--purple-darker);
+}
+
+.badge-success {
+  background-color: var(--success);
+}
+
+.badge-warning {
+  background-color: var(--warning);
+  color: var(--purple-darker);
+}
+
+/* Loading Spinner */
+.spinner-border-primary {
+  color: var(--primary-purple);
+}
+
+/* Utilities */
+.text-primary-custom {
+  color: var(--primary-purple) !important;
+}
+
+.text-secondary-custom {
+  color: var(--primary-yellow) !important;
+}
+
+.bg-primary-custom {
+  background-color: var(--primary-purple) !important;
+}
+
+.bg-secondary-custom {
+  background-color: var(--primary-yellow) !important;
+}
+
+.border-primary-custom {
+  border-color: var(--primary-purple) !important;
+}
+
+.border-secondary-custom {
+  border-color: var(--primary-yellow) !important;
+}
