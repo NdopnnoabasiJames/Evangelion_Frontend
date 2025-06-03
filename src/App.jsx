@@ -3,12 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
-// Import pages (we'll create these next)
+// Import pages
+import Landing from './pages/Landing';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 
 // Import styles
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import './index.css';
 
 function App() {
@@ -18,7 +21,9 @@ function App() {
         <div className="App">
           <Routes>
             {/* Public routes */}
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             
             {/* Protected routes */}
             <Route 
@@ -30,11 +35,8 @@ function App() {
               } 
             />
             
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            
             {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Nav } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { NAVIGATION_ITEMS, ROLES } from '../../utils/constants';
@@ -47,11 +46,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           style={{ top: 0, left: 0, zIndex: 1040 }}
           onClick={() => setCollapsed(true)}
         />
-      )}
-
-      {/* Sidebar */}
+      )}      {/* Sidebar */}
       <div 
-        className={`bg-light sidebar ${collapsed ? 'collapsed' : ''}`}
+        className={`sidebar ${collapsed ? 'collapsed' : ''}`}
         style={{
           position: 'fixed',
           top: '56px', // Height of navbar
@@ -61,51 +58,63 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           overflowY: 'auto',
           transition: 'left 0.3s ease',
           zIndex: 1050,
-          borderRight: '1px solid #dee2e6'
+          borderRight: '1px solid #dee2e6',
+          background: `linear-gradient(180deg, var(--primary-purple) 0%, var(--purple-dark) 100%)`,
+          color: 'var(--white)'
         }}
       >
         <div className="p-3">
           {/* User info section */}
-          <div className="mb-4 pb-3 border-bottom">
-            <div className="d-flex align-items-center">
-              <div className="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3"
-                   style={{ width: '40px', height: '40px' }}>
-                <i className="bi bi-person-fill text-white"></i>
+          <div className="mb-4 pb-3 border-bottom">            <div className="d-flex align-items-center">
+              <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                   style={{ 
+                     width: '40px', 
+                     height: '40px',
+                     backgroundColor: 'var(--primary-yellow)'
+                   }}>
+                <i className="bi bi-person-fill" style={{ color: 'var(--purple-darker)' }}></i>
               </div>
               <div>
-                <div className="fw-semibold small">{user?.name || 'User'}</div>
-                <div className="text-muted small">
+                <div className="fw-semibold small text-white">{user?.name || 'User'}</div>
+                <div className="small" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                   {user?.role?.replace('_', ' ') || 'Role'}
                 </div>
               </div>
-            </div>
-          </div>
+            </div></div>
 
           {/* Navigation items */}
-          <Nav className="flex-column">
+          <nav className="nav flex-column">
             {navItems.map((item, index) => (
-              <Nav.Link
+              <button
                 key={index}
-                onClick={() => handleNavClick(item.path)}
-                className={`d-flex align-items-center py-2 px-3 rounded mb-1 ${
+                onClick={() => handleNavClick(item.path)}                className={`nav-link d-flex align-items-center py-2 px-3 rounded mb-1 border-0 text-start w-100 ${
                   location.pathname === item.path 
-                    ? 'bg-primary text-white' 
-                    : 'text-dark hover-bg-light'
+                    ? 'text-dark' 
+                    : 'text-white bg-transparent'
                 }`}
                 style={{ 
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  backgroundColor: location.pathname === item.path ? 'var(--primary-yellow)' : 'transparent'
+                }}                onMouseEnter={(e) => {
+                  if (location.pathname !== item.path) {
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (location.pathname !== item.path) {
+                    e.target.style.backgroundColor = 'transparent';
+                  }
                 }}
               >
                 <i className={`bi ${getIcon(item.icon)} me-3`}></i>
                 {item.label}
-              </Nav.Link>
+              </button>
             ))}
-          </Nav>
+          </nav>
 
-          {/* Quick actions section */}
-          <div className="mt-4 pt-3 border-top">
-            <h6 className="text-muted small mb-3">Quick Actions</h6>
+          {/* Quick actions section */}          <div className="mt-4 pt-3" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}>
+            <h6 className="small mb-3" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Quick Actions</h6>
             <div className="d-grid gap-2">
               {(user?.role === ROLES.REGISTRAR || 
                 user?.role === ROLES.WORKER) && (

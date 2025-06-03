@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LoginForm from '../components/forms/LoginForm';
 
@@ -27,17 +27,30 @@ const Login = () => {
       setLoading(false);
     }
   };
-
   return (
-    <div className="min-vh-100 d-flex align-items-center bg-light">
+    <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-light)' }}>
       <div className="container">
         <div className="row justify-content-center">
-          <div className="col-md-6 col-lg-5">
-            <div className="card shadow">
-              <div className="card-body p-4">
+          <div className="col-md-6 col-lg-4">
+            <div className="card shadow-lg border-0">
+              <div className="card-body p-5">
+                {/* Logo/Brand */}
                 <div className="text-center mb-4">
-                  <h2 className="card-title mb-2">Welcome Back</h2>
-                  <p className="text-muted">Sign in to EVANGELION Event Management</p>
+                  <div 
+                    className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                    style={{ 
+                      width: '60px', 
+                      height: '60px',
+                      backgroundColor: 'var(--primary-purple)',
+                      color: 'var(--primary-yellow)'
+                    }}
+                  >
+                    <strong style={{ fontSize: '1.5rem' }}>E</strong>
+                  </div>
+                  <h3 className="fw-bold" style={{ color: 'var(--primary-purple)' }}>
+                    EVANGELION
+                  </h3>
+                  <p className="text-muted">Sign in to your account</p>
                 </div>
                 
                 <LoginForm 
@@ -46,10 +59,16 @@ const Login = () => {
                   error={error}
                 />
                 
-                <div className="text-center mt-3">
-                  <small className="text-muted">
-                    Contact your administrator for account access
-                  </small>
+                <div className="text-center mt-4">
+                  <p className="text-muted mb-2">
+                    Don't have an account?{' '}
+                    <Link to="/register" style={{ color: 'var(--primary-purple)' }}>
+                      Register here
+                    </Link>
+                  </p>
+                  <Link to="/" className="text-muted small">
+                    ← Back to Home
+                  </Link>
                 </div>
               </div>
             </div>

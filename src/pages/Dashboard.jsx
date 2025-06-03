@@ -1,120 +1,196 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
-import usePermissions from '../hooks/usePermissions';
+import Layout from '../components/Layout/Layout';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
-  const permissions = usePermissions();
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      logout();
+  // Role-specific dashboard content
+  const getDashboardContent = () => {
+    switch (user?.role) {
+      case 'SUPER_ADMIN':
+        return (          <div className="row g-4">
+            <div className="col-md-3">
+              <div className="card text-white" style={{ backgroundColor: 'var(--primary-purple)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Total States</h5>
+                  <h2 className="card-text">12</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card text-dark" style={{ backgroundColor: 'var(--primary-yellow)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Total Events</h5>
+                  <h2 className="card-text">45</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card text-white" style={{ backgroundColor: 'var(--purple-light)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Total Users</h5>
+                  <h2 className="card-text">1,234</h2>
+                </div>
+              </div>
+            </div>            <div className="col-md-3">
+              <div className="card text-dark" style={{ backgroundColor: 'var(--yellow-light)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Total Guests</h5>
+                  <h2 className="card-text">5,678</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'STATE_ADMIN':
+        return (          <div className="row g-4">
+            <div className="col-md-4">
+              <div className="card text-white" style={{ backgroundColor: 'var(--primary-purple)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Branches</h5>
+                  <h2 className="card-text">8</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="card text-dark" style={{ backgroundColor: 'var(--primary-yellow)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Active Events</h5>
+                  <h2 className="card-text">12</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="card text-white" style={{ backgroundColor: 'var(--purple-light)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Total Guests</h5>
+                  <h2 className="card-text">892</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'BRANCH_ADMIN':
+        return (          <div className="row g-4">
+            <div className="col-md-4">
+              <div className="card text-white" style={{ backgroundColor: 'var(--primary-purple)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Zones</h5>
+                  <h2 className="card-text">5</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="card text-dark" style={{ backgroundColor: 'var(--primary-yellow)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Workers</h5>
+                  <h2 className="card-text">25</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="card text-white" style={{ backgroundColor: 'var(--purple-light)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Registrars</h5>
+                  <h2 className="card-text">8</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'WORKER':
+        return (          <div className="row g-4">
+            <div className="col-md-6">
+              <div className="card text-dark" style={{ backgroundColor: 'var(--primary-yellow)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Guests Registered</h5>
+                  <h2 className="card-text">156</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="card text-white" style={{ backgroundColor: 'var(--purple-light)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">This Week</h5>
+                  <h2 className="card-text">23</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'REGISTRAR':
+        return (          <div className="row g-4">
+            <div className="col-md-6">
+              <div className="card text-white" style={{ backgroundColor: 'var(--primary-purple)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Check-ins Today</h5>
+                  <h2 className="card-text">42</h2>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="card text-dark" style={{ backgroundColor: 'var(--primary-yellow)' }}>
+                <div className="card-body">
+                  <h5 className="card-title">Total Check-ins</h5>
+                  <h2 className="card-text">312</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="alert alert-info">
+            <h5>Welcome to EVANGELION Event Management</h5>
+            <p>Your dashboard content will appear here based on your role.</p>
+          </div>
+        );
     }
   };
 
   return (
-    <div className="min-vh-100 bg-light">
-      {/* Simple Header */}
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div className="container-fluid">
-          <span className="navbar-brand">EVANGELION Event Management</span>
-          <div className="navbar-nav ms-auto">
-            <div className="nav-item dropdown">
-              <button
-                className="btn btn-outline-light dropdown-toggle"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                {user?.name || 'User'}
-              </button>
-              <ul className="dropdown-menu">
-                <li><span className="dropdown-item-text">Role: {user?.role}</span></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li>
-                  <button className="dropdown-item" onClick={handleLogout}>
-                    Logout
-                  </button>
-                </li>
-              </ul>
-            </div>
+    <Layout>
+      <div className="container-fluid">
+        <div className="row mb-4">
+          <div className="col-12">
+            <h2 className="text-primary">Dashboard</h2>
+            <p className="text-muted">Welcome back, {user?.firstName || user?.email}</p>
           </div>
         </div>
-      </nav>
-
-      {/* Main Content */}
-      <div className="container-fluid py-4">
-        <div className="row">
+        
+        {getDashboardContent()}
+        
+        <div className="row mt-4">
           <div className="col-12">
             <div className="card">
               <div className="card-header">
-                <h4 className="mb-0">Dashboard</h4>
+                <h5 className="mb-0">Quick Actions</h5>
               </div>
               <div className="card-body">
-                <div className="row">
-                  <div className="col-md-8">
-                    <h5>Welcome, {user?.name}!</h5>
-                    <p className="text-muted">Role: {user?.role}</p>
-                    <p>You are successfully logged into the EVANGELION Event Management System.</p>
-                    
-                    {/* Role-specific welcome message */}
-                    {permissions.isSuperAdmin() && (
-                      <div className="alert alert-info">
-                        <strong>Super Admin Access:</strong> You have full system access and can manage all events, users, and analytics.
-                      </div>
-                    )}
-                    
-                    {permissions.isStateAdmin() && (
-                      <div className="alert alert-info">
-                        <strong>State Admin Access:</strong> You can manage events and users within your state.
-                      </div>
-                    )}
-                    
-                    {permissions.isBranchAdmin() && (
-                      <div className="alert alert-info">
-                        <strong>Branch Admin Access:</strong> You can manage events and users within your branch, and approve workers and registrars.
-                      </div>
-                    )}
-                    
-                    {permissions.isZonalAdmin() && (
-                      <div className="alert alert-info">
-                        <strong>Zonal Admin Access:</strong> You can manage events within your zone.
-                      </div>
-                    )}
-                    
-                    {permissions.isWorker() && (
-                      <div className="alert alert-success">
-                        <strong>Worker Access:</strong> You can register guests for events and manage your guest list.
-                      </div>
-                    )}
-                    
-                    {permissions.isRegistrar() && (
-                      <div className="alert alert-warning">
-                        <strong>Registrar Access:</strong> You can check-in guests for events in your assigned zones.
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="col-md-4">
-                    <div className="card bg-light">
-                      <div className="card-body">
-                        <h6 className="card-title">Quick Stats</h6>
-                        <p className="card-text">
-                          <small className="text-muted">
-                            System Status: Online<br />
-                            Last Login: {new Date().toLocaleString()}
-                          </small>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {user?.role === 'WORKER' && (
+                  <button className="btn btn-primary me-2">Register New Guest</button>
+                )}
+                {user?.role === 'REGISTRAR' && (
+                  <button className="btn btn-success me-2">Check-in Guest</button>
+                )}
+                {['BRANCH_ADMIN', 'STATE_ADMIN', 'SUPER_ADMIN'].includes(user?.role) && (
+                  <>
+                    <button className="btn btn-primary me-2">Create Event</button>
+                    <button className="btn btn-outline-primary">View Reports</button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
