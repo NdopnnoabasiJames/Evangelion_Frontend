@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:check": "npm run check-backend && vite",
+    "check-backend": "curl -f http://localhost:3031/health || echo '⚠️ Backend not running on port 3031'",
+    "test-connection": "node test-connection.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

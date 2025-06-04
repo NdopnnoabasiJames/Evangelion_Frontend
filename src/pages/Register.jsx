@@ -1,7 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import PasswordInput from '../components/common/PasswordInput';
 
 const Register = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle registration logic here
+    console.log('Registration data:', formData);
+  };
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-light)' }}>
       <div className="container">
@@ -26,10 +48,8 @@ const Register = () => {
                     EVANGELION
                   </h3>
                   <p className="text-muted">Create your account</p>
-                </div>
-
-                {/* Registration Form */}
-                <form>
+                </div>                {/* Registration Form */}
+                <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <label htmlFor="firstName" className="form-label">First Name</label>
                     <input
@@ -37,6 +57,8 @@ const Register = () => {
                       className="form-control"
                       id="firstName"
                       placeholder="Enter your first name"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
@@ -48,6 +70,8 @@ const Register = () => {
                       className="form-control"
                       id="lastName"
                       placeholder="Enter your last name"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
@@ -59,31 +83,29 @@ const Register = () => {
                       className="form-control"
                       id="email"
                       placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="password"
-                      placeholder="Enter your password"
-                      required
-                    />
-                  </div>
+                  <PasswordInput
+                    id="password"
+                    label="Password"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    required
+                  />
 
-                  <div className="mb-3">
-                    <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="confirmPassword"
-                      placeholder="Confirm your password"
-                      required
-                    />
-                  </div>
+                  <PasswordInput
+                    id="confirmPassword"
+                    label="Confirm Password"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required
+                  />
 
                   <button type="submit" className="btn btn-primary w-100 mb-3">
                     Create Account

@@ -1,5 +1,8 @@
 // API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+// Use proxy in development - Vite will proxy /api to backend
+export const API_BASE_URL = import.meta.env.PROD 
+  ? import.meta.env.VITE_API_BASE_URL 
+  : '';
 
 // User Roles (matching backend)
 export const ROLES = {
@@ -47,12 +50,11 @@ export const NAVIGATION_ITEMS = Object.keys(ROLES).reduce((acc, role) => {
 }, {});
 
 // API Endpoints
-export const API_ENDPOINTS = {
-  AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    PROFILE: '/auth/profile'
-  },  EVENTS: {
+export const API_ENDPOINTS = {  AUTH: {
+    LOGIN: '/api/auth/login',
+    REGISTER: '/api/auth/register',
+    PROFILE: '/api/auth/profile'
+  },EVENTS: {
     BASE: '/api/events',
     HIERARCHICAL: '/api/events/hierarchical',
     ACCESSIBLE: '/api/events/accessible',

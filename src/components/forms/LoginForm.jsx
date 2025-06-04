@@ -1,5 +1,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import PasswordInput from '../common/PasswordInput';
 
 const LoginForm = ({ onSubmit, loading = false, error = null }) => {
   const {
@@ -38,31 +39,20 @@ const LoginForm = ({ onSubmit, loading = false, error = null }) => {
             {errors.email.message}
           </div>
         )}
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="password" className="form-label">
-          Password
-        </label>
-        <input
-          type="password"
-          className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-          id="password"
-          {...register('password', {
-            required: 'Password is required',
-            minLength: {
-              value: 6,
-              message: 'Password must be at least 6 characters'
-            }
-          })}
-          disabled={loading}
-        />
-        {errors.password && (
-          <div className="invalid-feedback">
-            {errors.password.message}
-          </div>
-        )}
-      </div>
+      </div>      <PasswordInput
+        id="password"
+        label="Password"
+        register={register}
+        validation={{
+          required: 'Password is required',
+          minLength: {
+            value: 6,
+            message: 'Password must be at least 6 characters'
+          }
+        }}
+        error={errors.password}
+        disabled={loading}
+      />
 
       <button
         type="submit"

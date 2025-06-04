@@ -1,12 +1,12 @@
 import api from './api';
 import { API_ENDPOINTS } from '../utils/constants';
 
-export const authService = {
-  // Login user
+export const authService = {  // Login user
   login: async (credentials) => {
     try {
       const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
-      const { access_token, user } = response.data;
+      // Backend returns data nested in response.data.data
+      const { access_token, user } = response.data.data;
       
       // Store token and user data
       localStorage.setItem('authToken', access_token);
