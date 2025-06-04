@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import Layout from '../components/Layout/Layout';
-import Loading from '../components/common/Loading';
-import { API_ENDPOINTS } from '../utils/constants';
+import { LoadingCard, ErrorDisplay, EmptyState } from '../components/common/Loading';
+import { TabbedInterface, TabPane, TabConfigurations } from '../components/common/TabNavigation';
+import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
+import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
+import { API_ENDPOINTS, STATUS } from '../utils/constants';
 
 const CheckIn = () => {
   const { user } = useAuth();
@@ -155,16 +158,10 @@ const CheckIn = () => {
 
   return (
     <Layout>
-      <div className="container-fluid py-4">
-        {/* Header */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h1 className="h3 mb-0" style={{ color: 'var(--primary-purple)' }}>
-              Guest Check-in System
-            </h1>
-            <p className="text-muted mb-0">Search for guests and manage event check-ins</p>
-          </div>
-        </div>
+      <div className="container-fluid py-4">        {/* Header */}
+        <PageHeader 
+          {...HeaderConfigurations.checkInSystem(fetchCheckInStats)}
+        />
 
         {/* Success/Error Messages */}
         {successMessage && (
@@ -216,274 +213,209 @@ const CheckIn = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Check-in Statistics */}
+        </div>        {/* Check-in Statistics */}
         {selectedEvent && Object.keys(checkInStats).length > 0 && (
-          <div className="row mb-4">
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, var(--primary-purple), #7b4397)' }}>
-                <div className="card-body text-white">
-                  <div className="d-flex justify-content-between">
-                    <div>
-                      <h6 className="text-white-50 mb-1">Total Guests</h6>
-                      <h3 className="mb-0">{checkInStats.totalGuests || 0}</h3>
+          <StatisticsGrid
+            cards={[
+              StatisticsCardTypes.totalGuests(checkInStats.totalGuests || 0),
+              StatisticsCardTypes.checkedInGuests(checkInStats.checkedInGuests || 0),
+              StatisticsCardTypes.checkInRate(checkInStats.checkInRate || 0),
+              StatisticsCardTypes.notCheckedIn(checkInStats.notCheckedIn || 0)
+            ]}
+            columns={4}
+          />
+        )}        {/* Tab Navigation */}
+        <TabbedInterface
+          tabs={TabConfigurations.checkInSystem()}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        >
+          <TabPane isActive={activeTab === 'search'}>
+            <div className="card shadow-sm border-0">
+              <div className="card-header bg-light">
+                <h5 className="mb-0">Search Guests</h5>
+              </div>
+              <div className="card-body">
+                {/* Search Form */}
+                <div className="row mb-4">
+                  <div className="col-md-8">
+                    <label className="form-label">Search by Name or Phone</label>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Enter guest name or phone number..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleGuestSearch()}
+                      />
+                      <button 
+                        className="btn btn-primary"
+                        onClick={handleGuestSearch}
+                        disabled={loading || !selectedEvent}
+                      >
+                        {loading ? (
+                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        ) : (
+                          <i className="bi bi-search me-2"></i>
+                        )}
+                        Search
+                      </button>
                     </div>
-                    <i className="bi bi-people fs-1 text-white-50"></i>
+                    {!selectedEvent && (
+                      <small className="text-muted">Please select an event first</small>
+                    )}
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #28a745, #20c997)' }}>
-                <div className="card-body text-white">
-                  <div className="d-flex justify-content-between">
-                    <div>
-                      <h6 className="text-white-50 mb-1">Checked In</h6>
-                      <h3 className="mb-0">{checkInStats.checkedInGuests || 0}</h3>
-                    </div>
-                    <i className="bi bi-check-circle fs-1 text-white-50"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, var(--accent-yellow), #ffa726)' }}>
-                <div className="card-body text-white">
-                  <div className="d-flex justify-content-between">
-                    <div>
-                      <h6 className="text-white-50 mb-1">Check-in Rate</h6>
-                      <h3 className="mb-0">{checkInStats.checkInRate || 0}%</h3>
-                    </div>
-                    <i className="bi bi-graph-up fs-1 text-white-50"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #dc3545, #e91e63)' }}>
-                <div className="card-body text-white">
-                  <div className="d-flex justify-content-between">
-                    <div>
-                      <h6 className="text-white-50 mb-1">Not Checked In</h6>
-                      <h3 className="mb-0">{checkInStats.notCheckedIn || 0}</h3>
-                    </div>
-                    <i className="bi bi-x-circle fs-1 text-white-50"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Tab Navigation */}
-        <ul className="nav nav-tabs nav-tabs-custom mb-4">
-          <li className="nav-item">
-            <button 
-              className={`nav-link ${activeTab === 'search' ? 'active' : ''}`}
-              onClick={() => setActiveTab('search')}
-            >
-              <i className="bi bi-search me-2"></i>
-              Guest Search & Check-in
-            </button>
-          </li>
-          <li className="nav-item">
-            <button 
-              className={`nav-link ${activeTab === 'stats' ? 'active' : ''}`}
-              onClick={() => setActiveTab('stats')}
-            >
-              <i className="bi bi-graph-up me-2"></i>
-              Statistics
-            </button>
-          </li>
-        </ul>
-
-        {/* Tab Content */}
-        {activeTab === 'search' && (
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-light">
-              <h5 className="mb-0">Search Guests</h5>
-            </div>
-            <div className="card-body">
-              {/* Search Form */}
-              <div className="row mb-4">
-                <div className="col-md-8">
-                  <label className="form-label">Search by Name or Phone</label>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter guest name or phone number..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleGuestSearch()}
-                    />
-                    <button 
-                      className="btn btn-primary"
-                      onClick={handleGuestSearch}
-                      disabled={loading || !selectedEvent}
-                    >
-                      {loading ? (
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      ) : (
-                        <i className="bi bi-search me-2"></i>
-                      )}
-                      Search
-                    </button>
-                  </div>
-                  {!selectedEvent && (
-                    <small className="text-muted">Please select an event first</small>
-                  )}
-                </div>
-              </div>
-
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <div>
-                  <h6 className="mb-3">Search Results ({searchResults.length} found)</h6>
-                  <div className="table-responsive">
-                    <table className="table table-hover">
-                      <thead className="table-light">
-                        <tr>
-                          <th>Name</th>
-                          <th>Phone</th>
-                          <th>Email</th>
-                          <th>Transport</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {searchResults.map(guest => (
-                          <tr key={guest.id}>
-                            <td>
-                              <div className="fw-medium">{guest.name}</div>
-                            </td>
-                            <td>{guest.phone}</td>
-                            <td className="text-muted">{guest.email || '-'}</td>
-                            <td>
-                              <span className={`badge ${guest.transportPreference === 'bus' ? 'bg-info' : 'bg-secondary'}`}>
-                                {guest.transportPreference}
-                              </span>
-                            </td>
-                            <td>{getStatusBadge(guest)}</td>
-                            <td>
-                              {!guest.checkedIn ? (
-                                <button
-                                  className="btn btn-success btn-sm"
-                                  onClick={() => handleCheckIn(guest.id)}
-                                  disabled={loading}
-                                >
-                                  <i className="bi bi-check-circle me-1"></i>
-                                  Check In
-                                </button>
-                              ) : (
-                                <span className="text-success">
-                                  <i className="bi bi-check-circle me-1"></i>
-                                  Checked in at {new Date(guest.checkedInTime).toLocaleTimeString()}
-                                </span>
-                              )}
-                            </td>
+                {/* Search Results */}
+                {searchResults.length > 0 && (
+                  <div>
+                    <h6 className="mb-3">Search Results ({searchResults.length} found)</h6>
+                    <div className="table-responsive">
+                      <table className="table table-hover">
+                        <thead className="table-light">
+                          <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Transport</th>
+                            <th>Status</th>
+                            <th>Action</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {searchResults.map(guest => (
+                            <tr key={guest.id}>
+                              <td>
+                                <div className="fw-medium">{guest.name}</div>
+                              </td>
+                              <td>{guest.phone}</td>
+                              <td className="text-muted">{guest.email || '-'}</td>
+                              <td>
+                                <span className={`badge ${guest.transportPreference === 'bus' ? 'bg-info' : 'bg-secondary'}`}>
+                                  {guest.transportPreference}
+                                </span>
+                              </td>
+                              <td>{getStatusBadge(guest)}</td>
+                              <td>
+                                {!guest.checkedIn ? (
+                                  <button
+                                    className="btn btn-success btn-sm"
+                                    onClick={() => handleCheckIn(guest.id)}
+                                    disabled={loading}
+                                  >
+                                    <i className="bi bi-check-circle me-1"></i>
+                                    Check In
+                                  </button>
+                                ) : (
+                                  <span className="text-success">
+                                    <i className="bi bi-check-circle me-1"></i>
+                                    Checked in at {new Date(guest.checkedInTime).toLocaleTimeString()}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {searchTerm && searchResults.length === 0 && !loading && (
-                <div className="text-center py-4">
-                  <i className="bi bi-search fs-1 text-muted mb-3"></i>
-                  <h5 className="text-muted">No guests found</h5>
-                  <p className="text-muted">
-                    No guests match your search criteria. Try a different name or phone number.
-                  </p>
-                </div>
-              )}
+                {searchTerm && searchResults.length === 0 && !loading && (
+                  <div className="text-center py-4">
+                    <i className="bi bi-search fs-1 text-muted mb-3"></i>
+                    <h5 className="text-muted">No guests found</h5>
+                    <p className="text-muted">
+                      No guests match your search criteria. Try a different name or phone number.
+                    </p>
+                  </div>
+                )}
 
-              {!searchTerm && searchResults.length === 0 && (
-                <div className="text-center py-4">
-                  <i className="bi bi-search fs-1 text-muted mb-3"></i>
-                  <h5 className="text-muted">Search for Guests</h5>
-                  <p className="text-muted">
-                    Enter a guest's name or phone number to search and check them in.
-                  </p>
-                </div>
-              )}
+                {!searchTerm && searchResults.length === 0 && (
+                  <div className="text-center py-4">
+                    <i className="bi bi-search fs-1 text-muted mb-3"></i>
+                    <h5 className="text-muted">Search for Guests</h5>
+                    <p className="text-muted">
+                      Enter a guest's name or phone number to search and check them in.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          </TabPane>
 
-        {activeTab === 'stats' && (
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-light">
-              <h5 className="mb-0">Check-in Statistics</h5>
-            </div>
-            <div className="card-body">
-              {selectedEvent ? (
-                <div>
-                  <h6 className="mb-3">Statistics for Selected Event</h6>
-                  {Object.keys(checkInStats).length > 0 ? (
-                    <div className="row">
-                      <div className="col-md-6">
-                        <div className="list-group">
-                          <div className="list-group-item d-flex justify-content-between align-items-center">
-                            Total Guests Registered
-                            <span className="badge bg-primary rounded-pill">{checkInStats.totalGuests || 0}</span>
+          <TabPane isActive={activeTab === 'stats'}>
+            <div className="card shadow-sm border-0">
+              <div className="card-header bg-light">
+                <h5 className="mb-0">Check-in Statistics</h5>
+              </div>
+              <div className="card-body">
+                {selectedEvent ? (
+                  <div>
+                    <h6 className="mb-3">Statistics for Selected Event</h6>
+                    {Object.keys(checkInStats).length > 0 ? (
+                      <div className="row">
+                        <div className="col-md-6">
+                          <div className="list-group">
+                            <div className="list-group-item d-flex justify-content-between align-items-center">
+                              Total Guests Registered
+                              <span className="badge bg-primary rounded-pill">{checkInStats.totalGuests || 0}</span>
+                            </div>
+                            <div className="list-group-item d-flex justify-content-between align-items-center">
+                              Guests Checked In
+                              <span className="badge bg-success rounded-pill">{checkInStats.checkedInGuests || 0}</span>
+                            </div>
+                            <div className="list-group-item d-flex justify-content-between align-items-center">
+                              Guests Not Checked In
+                              <span className="badge bg-warning rounded-pill">{checkInStats.notCheckedIn || 0}</span>
+                            </div>
+                            <div className="list-group-item d-flex justify-content-between align-items-center">
+                              Bus Passengers
+                              <span className="badge bg-info rounded-pill">{checkInStats.busGuests || 0}</span>
+                            </div>
                           </div>
-                          <div className="list-group-item d-flex justify-content-between align-items-center">
-                            Guests Checked In
-                            <span className="badge bg-success rounded-pill">{checkInStats.checkedInGuests || 0}</span>
-                          </div>
-                          <div className="list-group-item d-flex justify-content-between align-items-center">
-                            Guests Not Checked In
-                            <span className="badge bg-warning rounded-pill">{checkInStats.notCheckedIn || 0}</span>
-                          </div>
-                          <div className="list-group-item d-flex justify-content-between align-items-center">
-                            Bus Passengers
-                            <span className="badge bg-info rounded-pill">{checkInStats.busGuests || 0}</span>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="text-center">
+                            <div className="mb-3">
+                              <h2 style={{ color: 'var(--primary-purple)' }}>{checkInStats.checkInRate || 0}%</h2>
+                              <p className="text-muted">Check-in Rate</p>
+                            </div>
+                            <div className="progress" style={{ height: '20px' }}>
+                              <div 
+                                className="progress-bar" 
+                                style={{ 
+                                  width: `${checkInStats.checkInRate || 0}%`,
+                                  background: 'linear-gradient(135deg, var(--primary-purple), var(--accent-yellow))'
+                                }}
+                              ></div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="col-md-6">
-                        <div className="text-center">
-                          <div className="mb-3">
-                            <h2 style={{ color: 'var(--primary-purple)' }}>{checkInStats.checkInRate || 0}%</h2>
-                            <p className="text-muted">Check-in Rate</p>
-                          </div>
-                          <div className="progress" style={{ height: '20px' }}>
-                            <div 
-                              className="progress-bar" 
-                              style={{ 
-                                width: `${checkInStats.checkInRate || 0}%`,
-                                background: 'linear-gradient(135deg, var(--primary-purple), var(--accent-yellow))'
-                              }}
-                            ></div>
-                          </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading statistics...</span>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading statistics...</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <i className="bi bi-graph-up fs-1 text-muted mb-3"></i>
-                  <h5 className="text-muted">Select an Event</h5>
-                  <p className="text-muted">
-                    Please select an event to view check-in statistics.
-                  </p>
-                </div>
-              )}
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <i className="bi bi-graph-up fs-1 text-muted mb-3"></i>
+                    <h5 className="text-muted">Select an Event</h5>
+                    <p className="text-muted">
+                      Please select an event to view check-in statistics.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          </TabPane>
+        </TabbedInterface>
       </div>
     </Layout>
   );

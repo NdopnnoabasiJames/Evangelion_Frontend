@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 // User Roles (matching backend)
 export const ROLES = {
@@ -12,47 +12,39 @@ export const ROLES = {
   GUEST: 'GUEST'
 };
 
-// Navigation items based on roles
-export const NAVIGATION_ITEMS = {
-  [ROLES.SUPER_ADMIN]: [
-    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { path: '/events', label: 'Events', icon: 'event' },
-    { path: '/guests', label: 'Guests', icon: 'people' },
-    { path: '/workers', label: 'Workers', icon: 'work' },
-    { path: '/registrars', label: 'Registrars', icon: 'assignment' },
-    { path: '/analytics', label: 'Analytics', icon: 'analytics' }
-  ],
-  [ROLES.STATE_ADMIN]: [
-    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { path: '/events', label: 'Events', icon: 'event' },
-    { path: '/guests', label: 'Guests', icon: 'people' },
-    { path: '/workers', label: 'Workers', icon: 'work' },
-    { path: '/registrars', label: 'Registrars', icon: 'assignment' },
-    { path: '/analytics', label: 'Analytics', icon: 'analytics' }
-  ],
-  [ROLES.BRANCH_ADMIN]: [
-    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { path: '/events', label: 'Events', icon: 'event' },
-    { path: '/guests', label: 'Guests', icon: 'people' },
-    { path: '/workers', label: 'Workers', icon: 'work' },
-    { path: '/registrars', label: 'Registrars', icon: 'assignment' },
-    { path: '/analytics', label: 'Analytics', icon: 'analytics' }
-  ],
-  [ROLES.ZONAL_ADMIN]: [
-    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { path: '/events', label: 'Events', icon: 'event' },
-    { path: '/guests', label: 'Guests', icon: 'people' },
-    { path: '/registrars', label: 'Registrars', icon: 'assignment' }
-  ],
-  [ROLES.WORKER]: [
-    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { path: '/events', label: 'Events', icon: 'event' },
-    { path: '/guests', label: 'My Guests', icon: 'people' }
-  ],  [ROLES.REGISTRAR]: [
-    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { path: '/checkin', label: 'Check-in', icon: 'assignment' }
-  ]
+// Base navigation items
+export const BASE_NAVIGATION_ITEMS = {
+  dashboard: { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+  events: { path: '/events', label: 'Events', icon: 'event' },
+  guests: { path: '/guests', label: 'Guests', icon: 'people' },
+  myGuests: { path: '/guests', label: 'My Guests', icon: 'people' },
+  workers: { path: '/workers', label: 'Workers', icon: 'work' },
+  registrars: { path: '/registrars', label: 'Registrars', icon: 'assignment' },
+  analytics: { path: '/analytics', label: 'Analytics', icon: 'analytics' },
+  checkin: { path: '/checkin', label: 'Check-in', icon: 'assignment' }
 };
+
+// Role-based navigation permissions
+export const ROLE_NAVIGATION_PERMISSIONS = {
+  [ROLES.SUPER_ADMIN]: ['dashboard', 'events', 'guests', 'workers', 'registrars', 'analytics'],
+  [ROLES.STATE_ADMIN]: ['dashboard', 'events', 'guests', 'workers', 'registrars', 'analytics'],
+  [ROLES.BRANCH_ADMIN]: ['dashboard', 'events', 'guests', 'workers', 'registrars', 'analytics'],
+  [ROLES.ZONAL_ADMIN]: ['dashboard', 'events', 'guests', 'registrars'],
+  [ROLES.WORKER]: ['dashboard', 'events', 'myGuests'],
+  [ROLES.REGISTRAR]: ['dashboard', 'checkin']
+};
+
+// Helper function to get navigation items for a specific role
+export const getNavigationItems = (role) => {
+  const permissions = ROLE_NAVIGATION_PERMISSIONS[role] || [];
+  return permissions.map(permission => BASE_NAVIGATION_ITEMS[permission]).filter(Boolean);
+};
+
+// Legacy export for backward compatibility (will be deprecated)
+export const NAVIGATION_ITEMS = Object.keys(ROLES).reduce((acc, role) => {
+  acc[ROLES[role]] = getNavigationItems(ROLES[role]);
+  return acc;
+}, {});
 
 // API Endpoints
 export const API_ENDPOINTS = {

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import Layout from '../components/Layout/Layout';
-import Loading from '../components/common/Loading';
+import { DataListState, ErrorDisplay, EmptyState, LoadingCard } from '../components/common/Loading';
+import { TabbedInterface, TabPane } from '../components/common/TabNavigation';
+import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
+import { StatusBadge } from '../utils/statusUtils.jsx';
 import { API_ENDPOINTS } from '../utils/constants';
 
 const Events = () => {
@@ -33,132 +36,147 @@ const Events = () => {
   if (loading) {
     return (
       <Layout>
-        <Loading text="Loading events..." />
+        <div className="container-fluid py-4">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <div className="skeleton-item mb-2" style={{ width: '250px', height: '2rem' }}></div>
+              <div className="skeleton-item" style={{ width: '300px', height: '1rem' }}></div>
+            </div>
+            <div className="skeleton-item d-none d-md-block" style={{ width: '120px', height: '38px' }}></div>
+          </div>
+          
+          <div className="row g-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="col-12 col-sm-6 col-lg-4">
+                <LoadingCard loading className="h-100" minHeight="300px">
+                  <div className="card-body">
+                    <div className="skeleton-item mb-3" style={{ width: '70%', height: '1.5rem' }}></div>
+                    <div className="skeleton-item mb-2" style={{ width: '100%', height: '1rem' }}></div>
+                    <div className="skeleton-item mb-2" style={{ width: '60%', height: '1rem' }}></div>
+                    <div className="skeleton-item" style={{ width: '40%', height: '1rem' }}></div>
+                  </div>
+                </LoadingCard>
+              </div>
+            ))}
+          </div>
+        </div>
       </Layout>
     );
   }
 
+  if (error) {
+    return (
+      <Layout>
+        <div className="container-fluid py-4">
+          <ErrorDisplay 
+            error={error} 
+            onRetry={refetch}
+            title="Failed to load events"
+          />
+        </div>
+      </Layout>
+    );
+  }
   return (
     <Layout>
       <div className="container-fluid py-4">
         {/* Header */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h1 className="h3 mb-0" style={{ color: 'var(--primary-purple)' }}>
-              Events Management
-            </h1>
-            <p className="text-muted mb-0">Manage church events and activities</p>
-          </div>
-          
+        <PageHeader 
+          title="Events Management"
+          subtitle="Manage church events and activities"
+          actions={canCreateEvents ? [
+            {
+              label: 'Create Event',
+              icon: 'bi-plus-circle',
+              variant: 'primary',
+              onClick: () => setActiveTab('create')
+            }
+          ] : []}
+        />
+
+        {/* Tab Navigation */}
+        <TabbedInterface
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          tabs={[
+            {
+              key: 'list',
+              label: 'Events List',
+              icon: 'bi-list-ul'
+            },
+            ...(canCreateEvents ? [{
+              key: 'create',
+              label: 'Create Event',
+              icon: 'bi-plus-circle'
+            }] : [])
+          ]}
+          variant="tabs"
+        >
+          <TabPane tabId="list" title="Events List">
+            <EventsList 
+              events={events}
+              loading={loading}
+              error={error}
+              canEdit={canEditEvents}
+              onRefresh={refetch}
+            />
+          </TabPane>
+
           {canCreateEvents && (
-            <button
-              className="btn btn-primary"
-              onClick={() => setActiveTab('create')}
-              style={{ backgroundColor: 'var(--primary-purple)', borderColor: 'var(--primary-purple)' }}
-            >
-              <i className="bi bi-plus-circle me-2"></i>
-              Create Event
-            </button>
+            <TabPane tabId="create" title="Create Event">
+              <CreateEvent 
+                userRole={user?.role}
+                onEventCreated={() => {
+                  setActiveTab('list');
+                  refetch();
+                }}
+              />
+            </TabPane>
           )}
-        </div>
-
-        {/* Tabs Navigation */}
-        <ul className="nav nav-tabs mb-4">
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === 'list' ? 'active' : ''}`}
-              onClick={() => setActiveTab('list')}
-              style={activeTab === 'list' ? {
-                backgroundColor: 'var(--primary-purple)',
-                borderColor: 'var(--primary-purple)',
-                color: 'white'
-              } : {}}
-            >
-              <i className="bi bi-list-ul me-2"></i>
-              Events List
-            </button>
-          </li>
-          
-          {canCreateEvents && (
-            <li className="nav-item">
-              <button
-                className={`nav-link ${activeTab === 'create' ? 'active' : ''}`}
-                onClick={() => setActiveTab('create')}
-                style={activeTab === 'create' ? {
-                  backgroundColor: 'var(--primary-purple)',
-                  borderColor: 'var(--primary-purple)',
-                  color: 'white'
-                } : {}}
-              >
-                <i className="bi bi-plus-circle me-2"></i>
-                Create Event
-              </button>
-            </li>
-          )}
-        </ul>
-
-        {/* Tab Content */}
-        {activeTab === 'list' && (
-          <EventsList 
-            events={events}
-            loading={loading}
-            error={error}
-            canEdit={canEditEvents}
-            onRefresh={refetch}
-          />
-        )}
-
-        {activeTab === 'create' && canCreateEvents && (
-          <CreateEvent 
-            userRole={user?.role}
-            onEventCreated={() => {
-              setActiveTab('list');
-              refetch();
-            }}
-          />
-        )}
+        </TabbedInterface>
       </div>
     </Layout>
   );
 };
 
-// Events List Component
+// Events List Component with enhanced mobile responsiveness
 const EventsList = ({ events, loading, error, canEdit, onRefresh }) => {
   if (error) {
     return (
-      <div className="alert alert-danger">
-        <i className="bi bi-exclamation-triangle me-2"></i>
-        Error loading events: {error}
-        <button className="btn btn-outline-danger btn-sm ms-3" onClick={onRefresh}>
-          Try Again
-        </button>
-      </div>
+      <ErrorDisplay 
+        error={error} 
+        onRetry={onRefresh}
+        title="Failed to load events"
+      />
     );
   }
 
   if (!events || events.length === 0) {
     return (
-      <div className="text-center py-5">
-        <i className="bi bi-calendar-event" style={{ fontSize: '4rem', color: 'var(--primary-purple)', opacity: 0.5 }}></i>
-        <h4 className="mt-3" style={{ color: 'var(--primary-purple)' }}>No Events Found</h4>
-        <p className="text-muted">There are no events available at the moment.</p>
-      </div>
+      <EmptyState 
+        icon="bi-calendar-event"
+        title="No Events Found"
+        description="There are no events available at the moment. Create your first event to get started."
+        action={
+          <button className="btn btn-primary mt-3">
+            <i className="bi bi-plus-circle me-2"></i>
+            Create Your First Event
+          </button>
+        }
+      />
     );
   }
 
   return (
     <div className="row g-4">
       {events.map((event) => (
-        <div key={event._id} className="col-md-6 col-lg-4">
-          <div className="card h-100 shadow-sm border-0">
+        <div key={event._id} className="col-12 col-sm-6 col-lg-4">
+          <div className="card h-100 shadow-sm border-0 card-hover-lift">
             <div className="card-header bg-white border-0 pb-0">
               <div className="d-flex justify-content-between align-items-start">
-                <h5 className="card-title mb-1" style={{ color: 'var(--primary-purple)' }}>
+                <h5 className="card-title mb-1 text-truncate" style={{ color: 'var(--primary-purple)' }}>
                   {event.name}
-                </h5>
-                <span className={`badge ${getStatusBadgeClass(event.status)}`}>
-                  {event.status}
-                </span>
+                </h5>                <StatusBadge status={event.status} type="event" className="flex-shrink-0 ms-2" />
               </div>
             </div>
             
@@ -172,25 +190,36 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh }) => {
               
               <div className="mb-2">
                 <i className="bi bi-geo-alt me-2 text-muted"></i>
-                <small className="text-muted">{event.location || 'Location TBD'}</small>
+                <small className="text-muted text-truncate d-block">
+                  {event.location || 'Location TBD'}
+                </small>
               </div>
               
               {event.description && (
-                <p className="card-text text-muted small mb-3">
-                  {event.description.substring(0, 100)}
-                  {event.description.length > 100 && '...'}
+                <p className="card-text text-muted small mb-3" style={{ 
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical'
+                }}>
+                  {event.description}
                 </p>
               )}
               
-              <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex justify-content-between align-items-center mt-auto">
                 <small className="text-muted">
                   <i className="bi bi-people me-1"></i>
-                  {event.participantCount || 0} participants
+                  {event.participantCount || 0}
+                  <span className="d-none d-sm-inline"> participants</span>
                 </small>
                 
                 {canEdit && (
-                  <button className="btn btn-sm btn-outline-primary">
+                  <button 
+                    className="btn btn-sm btn-outline-primary"
+                    aria-label={`Edit ${event.name}`}
+                  >
                     <i className="bi bi-pencil"></i>
+                    <span className="d-none d-lg-inline ms-1">Edit</span>
                   </button>
                 )}
               </div>
@@ -341,22 +370,6 @@ const CreateEvent = ({ userRole, onEventCreated }) => {
       </div>
     </div>
   );
-};
-
-// Helper function for status badge styling
-const getStatusBadgeClass = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'active':
-      return 'bg-success';
-    case 'upcoming':
-      return 'bg-primary';
-    case 'completed':
-      return 'bg-secondary';
-    case 'cancelled':
-      return 'bg-danger';
-    default:
-      return 'bg-warning';
-  }
 };
 
 export default Events;

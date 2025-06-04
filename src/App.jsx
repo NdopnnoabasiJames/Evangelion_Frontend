@@ -13,6 +13,7 @@ import Guests from './pages/Guests';
 import CheckIn from './pages/CheckIn';
 import Workers from './pages/Workers';
 import Registrars from './pages/Registrars';
+import Analytics from './pages/Analytics';
 
 // Import styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -81,6 +82,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CheckIn />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/analytics" 
+              element={
+                <ProtectedRoute>
+                  <Analytics />
                 </ProtectedRoute>
               } 
             />
