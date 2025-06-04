@@ -11,6 +11,8 @@ import Dashboard from './pages/Dashboard';
 import Events from './pages/Events';
 import Guests from './pages/Guests';
 import CheckIn from './pages/CheckIn';
+import Workers from './pages/Workers';
+import Registrars from './pages/Registrars';
 
 // Import styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -57,7 +59,25 @@ function App() {
             />
             
             <Route 
+              path="/workers" 
+              element={
+                <ProtectedRoute>
+                  <Workers />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
               path="/registrars" 
+              element={
+                <ProtectedRoute>
+                  <Registrars />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/checkin" 
               element={
                 <ProtectedRoute>
                   <CheckIn />

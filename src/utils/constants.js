@@ -48,10 +48,9 @@ export const NAVIGATION_ITEMS = {
     { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
     { path: '/events', label: 'Events', icon: 'event' },
     { path: '/guests', label: 'My Guests', icon: 'people' }
-  ],
-  [ROLES.REGISTRAR]: [
+  ],  [ROLES.REGISTRAR]: [
     { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { path: '/registrars', label: 'Check-in', icon: 'assignment' }
+    { path: '/checkin', label: 'Check-in', icon: 'assignment' }
   ]
 };
 
