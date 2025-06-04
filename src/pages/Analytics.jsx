@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useApi } from '../hooks/useApi';
 import Layout from '../components/Layout/Layout';
 import { LoadingCard, ErrorDisplay } from '../components/common/Loading';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
 import { API_ENDPOINTS, ROLES } from '../utils/constants';
+import analyticsService from '../services/analyticsService';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -38,27 +38,64 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
-  // Fetch analytics data
-  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useApi(
-    '/api/analytics/dashboard', 
-    { immediate: true }
-  );
+  const [isExporting, setIsExporting] = useState(false);
 
-  useEffect(() => {
-    if (analytics) {
-      setAnalyticsData(analytics);
+  // Fetch all analytics data
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch all analytics data in parallel
+      const [basicAnalytics, trendsData, workerPerformance, eventSummary] = await Promise.all([
+        analyticsService.getDashboardAnalytics(),
+        analyticsService.getRegistrationTrends(30),
+        analyticsService.getWorkerPerformance(),
+        analyticsService.getEventSummary()
+      ]);
+
+      // Process data for charts
+      const processedData = {
+        summary: analyticsService.processChartData.basicAnalyticsToCards(basicAnalytics),
+        eventTrends: analyticsService.processChartData.trendsToLineChart(trendsData),
+        guestStats: analyticsService.processChartData.guestStatsToDoughnut(basicAnalytics),
+        workerPerformance: analyticsService.processChartData.workerPerformanceToBarChart(workerPerformance),
+        checkInAnalytics: analyticsService.processChartData.checkInAnalyticsToBar(basicAnalytics, trendsData),
+        rawData: {
+          basicAnalytics,
+          trendsData,
+          workerPerformance,
+          eventSummary
+        }
+      };
+
+      setAnalyticsData(processedData);
+    } catch (err) {
+      console.error('Analytics fetch error:', err);
+      setError(err.message || 'Failed to load analytics data');
+    } finally {
+      setLoading(false);
     }
-    setLoading(analyticsLoading);
-    setError(analyticsError);
-  }, [analytics, analyticsLoading, analyticsError]);
-
-  const refreshAnalytics = () => {
-    window.location.reload();
   };
 
-  const exportReport = () => {
-    // TODO: Implement export functionality
-    console.log('Exporting analytics report...');
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, []);
+
+  const refreshAnalytics = () => {
+    fetchAnalyticsData();
+  };
+
+  const exportReport = async () => {
+    try {
+      setIsExporting(true);
+      await analyticsService.exportAnalytics();
+    } catch (err) {
+      console.error('Export error:', err);
+      setError('Failed to export analytics report');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Role-based access control
@@ -76,13 +113,16 @@ const Analytics = () => {
         </div>
       </Layout>
     );  }
-
   if (loading) {
     return (
       <Layout>
         <div className="container-fluid py-4">
           <PageHeader 
-            {...HeaderConfigurations.analytics(refreshAnalytics, exportReport)}
+            {...HeaderConfigurations.analytics(
+              refreshAnalytics, 
+              isExporting ? () => {} : exportReport,
+              isExporting
+            )}
           />
           <div className="row g-4">
             {[...Array(4)].map((_, index) => (
@@ -107,12 +147,15 @@ const Analytics = () => {
         </div>
       </Layout>
     );
-  }
-  return (
+  }  return (
     <Layout>
       <div className="container-fluid py-4">
         <PageHeader 
-          {...HeaderConfigurations.analytics(refreshAnalytics, exportReport)}
+          {...HeaderConfigurations.analytics(
+            refreshAnalytics, 
+            isExporting ? () => {} : exportReport,
+            isExporting
+          )}
         />        {/* Key Metrics Summary */}
         <StatisticsGrid
           cards={[

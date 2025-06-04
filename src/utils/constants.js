@@ -72,7 +72,7 @@ export const API_ENDPOINTS = {
     PENDING: '/api/workers/pending',
     REGISTER_GUEST: '/api/workers/events',
     MY_GUESTS: '/api/workers/guests'
-  },REGISTRARS: {
+  },  REGISTRARS: {
     BASE: '/api/registrars',
     REGISTER: '/api/registrars/register',
     PENDING: '/api/registrars/pending',
@@ -81,6 +81,13 @@ export const API_ENDPOINTS = {
     CHECK_IN_GUEST: '/api/registrars/guests/check-in',
     DASHBOARD: '/api/registrars/dashboard',
     STATISTICS: '/api/registrars/events'
+  },
+  ANALYTICS: {
+    DASHBOARD: '/api/admin/guests/analytics/basic',
+    TRENDS: '/api/admin/guests/analytics/trends',
+    WORKER_PERFORMANCE: '/api/admin/guests/analytics/worker-performance',
+    EVENT_SUMMARY: '/api/admin/guests/analytics/events',
+    EXPORT: '/api/admin/guests/export'
   }
 };
 

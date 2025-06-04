@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import Layout from '../components/Layout/Layout';
-import { LoadingCard, ErrorDisplay, EmptyState } from '../components/common/Loading';
 import { TabbedInterface, TabPane, TabConfigurations } from '../components/common/TabNavigation';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
-import { API_ENDPOINTS, STATUS } from '../utils/constants';
+import { API_ENDPOINTS } from '../utils/constants';
 
 const CheckIn = () => {
   const { user } = useAuth();
