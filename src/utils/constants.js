@@ -61,27 +61,35 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     PROFILE: '/auth/profile'
-  },
-  EVENTS: {
-    BASE: '/events',
-    HIERARCHICAL: '/events/hierarchical',
-    ACCESSIBLE: '/events/accessible'
-  },
-  GUESTS: {
-    BASE: '/guests',
-    ADMIN: '/admin/guests',
-    ANALYTICS: '/admin/guests/analytics'
-  },
-  WORKERS: {
-    BASE: '/workers',
-    REGISTER: '/workers/register',
-    PENDING: '/workers/pending'
-  },
-  REGISTRARS: {
-    BASE: '/registrars',
-    REGISTER: '/registrars/register',
-    PENDING: '/registrars/pending',
-    CHECK_IN: '/check-in'
+  },  EVENTS: {
+    BASE: '/api/events',
+    HIERARCHICAL: '/api/events/hierarchical',
+    ACCESSIBLE: '/api/events/accessible',
+    ACTIVE: '/api/events/active',
+    UPCOMING: '/api/events/upcoming'
+  },  GUESTS: {
+    BASE: '/api/guests',
+    ADMIN: '/api/admin/guests',
+    ANALYTICS: '/api/admin/guests/analytics',
+    SEARCH: '/api/admin/guests/search',
+    QUICK_SEARCH: '/api/admin/guests/quick-search',
+    STATISTICS: '/api/admin/guests/statistics',
+    EXPORT: '/api/admin/guests/export'
+  },  WORKERS: {
+    BASE: '/api/workers',
+    REGISTER: '/api/workers/register',
+    PENDING: '/api/workers/pending',
+    REGISTER_GUEST: '/api/workers/events',
+    MY_GUESTS: '/api/workers/guests'
+  },REGISTRARS: {
+    BASE: '/api/registrars',
+    REGISTER: '/api/registrars/register',
+    PENDING: '/api/registrars/pending',
+    CHECK_IN: '/api/check-in',
+    SEARCH_GUESTS: '/api/registrars/guests/search',
+    CHECK_IN_GUEST: '/api/registrars/guests/check-in',
+    DASHBOARD: '/api/registrars/dashboard',
+    STATISTICS: '/api/registrars/events'
   }
 };
 
