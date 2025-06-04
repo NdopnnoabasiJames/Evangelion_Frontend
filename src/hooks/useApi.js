@@ -45,11 +45,12 @@ export const useApi = (endpoint, options = {}) => {
       }
 
       setData(response.data);
-      return response.data;
-    } catch (err) {
+      return response.data;    } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'An error occurred';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      console.warn('API call failed:', errorMessage, 'for endpoint:', endpoint || url);
+      // Don't throw error for failed API calls, just set error state
+      return null;
     } finally {
       setLoading(false);
     }

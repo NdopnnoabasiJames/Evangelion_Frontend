@@ -6,8 +6,19 @@ import LoginForm from '../components/forms/LoginForm';
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
   const location = useLocation();
+
+  // Show loading state while auth is being determined
+  if (authLoading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   // Redirect if already authenticated
   if (isAuthenticated) {

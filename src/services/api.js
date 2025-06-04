@@ -30,10 +30,20 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Only redirect to login if we're not on public pages
+      const currentPath = window.location.pathname;
+      const publicPaths = ['/', '/login', '/register', '/debug-auth'];
+      
+      if (!publicPaths.includes(currentPath)) {
+        // Unauthorized - redirect to login only for protected pages
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      } else {
+        // For public pages, just clear auth data but don't redirect
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+      }
     }
     return Promise.reject(error);
   }

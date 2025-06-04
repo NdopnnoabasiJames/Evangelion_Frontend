@@ -9,21 +9,33 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   useEffect(() => {
     const initAuth = () => {
       try {
+        console.log('=== Auth Initialization Starting ===');
         const currentUser = authService.getCurrentUser();
         const token = authService.getToken();
         
+        console.log('Auth init - token:', token);
+        console.log('Auth init - currentUser:', currentUser);
+        
         if (currentUser && token) {
+          console.log('Setting user as authenticated');
           setUser(currentUser);
           setIsAuthenticated(true);
-        }
-      } catch (error) {
+        } else {
+          console.log('No valid auth data found, user remains unauthenticated');
+          setUser(null);
+          setIsAuthenticated(false);
+        }      } catch (error) {
         console.error('Auth initialization error:', error);
-        authService.logout();
+        // Don't redirect during initialization, just clear data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
+        console.log('Auth initialization complete, setting loading to false');
         setLoading(false);
       }
     };
@@ -44,9 +56,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
   const logout = () => {
-    authService.logout();
+    authService.logout(true); // Pass true to allow redirect
     setUser(null);
     setIsAuthenticated(false);
   };

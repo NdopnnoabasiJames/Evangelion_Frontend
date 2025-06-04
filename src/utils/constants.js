@@ -6,13 +6,13 @@ export const API_BASE_URL = import.meta.env.PROD
 
 // User Roles (matching backend)
 export const ROLES = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  STATE_ADMIN: 'STATE_ADMIN',
-  BRANCH_ADMIN: 'BRANCH_ADMIN',
-  ZONAL_ADMIN: 'ZONAL_ADMIN',
-  WORKER: 'WORKER',
-  REGISTRAR: 'REGISTRAR',
-  GUEST: 'GUEST'
+  SUPER_ADMIN: 'super_admin',
+  STATE_ADMIN: 'state_admin',
+  BRANCH_ADMIN: 'branch_admin',
+  ZONAL_ADMIN: 'zonal_admin',
+  WORKER: 'worker',
+  REGISTRAR: 'registrar',
+  GUEST: 'guest'
 };
 
 // Base navigation items

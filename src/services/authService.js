@@ -37,12 +37,13 @@ export const authService = {  // Login user
       throw new Error(error.response?.data?.message || 'Failed to get profile');
     }
   },
-
   // Logout user
-  logout: () => {
+  logout: (redirect = true) => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    if (redirect && typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   },
 
   // Check if user is authenticated
@@ -51,11 +52,17 @@ export const authService = {  // Login user
     const user = localStorage.getItem('user');
     return !!(token && user);
   },
-
   // Get current user from localStorage
   getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    try {
+      const user = localStorage.getItem('user');
+      return user ? JSON.parse(user) : null;
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      // If there's malformed data, clear it
+      localStorage.removeItem('user');
+      return null;
+    }
   },
 
   // Get auth token

@@ -7,6 +7,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import DebugAuth from './pages/DebugAuth';
 import Dashboard from './pages/Dashboard';
 import Events from './pages/Events';
 import Guests from './pages/Guests';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/debug-auth" element={<DebugAuth />} />
             
             {/* Protected routes */}
             <Route 
