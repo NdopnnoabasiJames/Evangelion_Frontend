@@ -5,6 +5,7 @@ import { LoadingCard, ErrorDisplay } from '../components/common/Loading';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
 import { ROLES } from '../utils/constants';
+import analyticsService from '../services/analyticsService';
 
 const Dashboard = () => {  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -15,31 +16,39 @@ const Dashboard = () => {  const { user } = useAuth();
   console.log('Dashboard: Current user object:', user);
   console.log('Dashboard: User role:', user?.role);
   console.log('Dashboard: Available ROLES:', ROLES);
-
-  // Simulate loading dashboard data
+  // Load dashboard data from API
   useEffect(() => {
     const loadDashboardData = async () => {
+      if (!user) return;
+      
       try {
         setLoading(true);
         setError(null);
         
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Fetch real data based on user role
+        const realData = await analyticsService.getDashboardStatsByRole(user.role);
         
-        // Mock dashboard data based on user role
-        const mockData = getDashboardMockData(user?.role);
-        setDashboardData(mockData);
+        // Add metadata
+        const dashboardData = {
+          ...realData,
+          lastUpdated: new Date().toLocaleString(),
+          notifications: Math.floor(Math.random() * 5) + 1 // Keep notifications random for now
+        };
+        
+        setDashboardData(dashboardData);
       } catch (err) {
-        setError('Failed to load dashboard data');
         console.error('Dashboard error:', err);
+        setError(err.message || 'Failed to load dashboard data');
+        
+        // Fallback to mock data on error
+        const mockData = getDashboardMockData(user.role);
+        setDashboardData(mockData);
       } finally {
         setLoading(false);
       }
     };
 
-    if (user) {
-      loadDashboardData();
-    }
+    loadDashboardData();
   }, [user]);
   // Mock data generator
   const getDashboardMockData = (role) => {
@@ -90,9 +99,21 @@ const Dashboard = () => {  const { user } = useAuth();
         return baseData;
     }
   };
-
-  const refreshDashboard = () => {
-    if (user) {
+  const refreshDashboard = async () => {
+    if (!user) return;
+    
+    try {
+      setError(null);
+      const realData = await analyticsService.getDashboardStatsByRole(user.role);
+      const dashboardData = {
+        ...realData,
+        lastUpdated: new Date().toLocaleString(),
+        notifications: Math.floor(Math.random() * 5) + 1
+      };
+      setDashboardData(dashboardData);
+    } catch (err) {
+      console.error('Dashboard refresh error:', err);
+      // Fallback to mock data on error
       const mockData = getDashboardMockData(user.role);
       setDashboardData(mockData);
     }

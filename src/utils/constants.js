@@ -83,13 +83,20 @@ export const API_ENDPOINTS = {  AUTH: {
     CHECK_IN_GUEST: '/api/registrars/guests/check-in',
     DASHBOARD: '/api/registrars/dashboard',
     STATISTICS: '/api/registrars/events'
-  },
-  ANALYTICS: {
+  },  ANALYTICS: {
     DASHBOARD: '/api/admin/guests/analytics/basic',
     TRENDS: '/api/admin/guests/analytics/trends',
     WORKER_PERFORMANCE: '/api/admin/guests/analytics/worker-performance',
     EVENT_SUMMARY: '/api/admin/guests/analytics/events',
     EXPORT: '/api/admin/guests/export'
+  },
+  ADMIN: {
+    USERS: '/api/admin/users',
+    HIERARCHY: '/api/admin-hierarchy',
+    STATES: '/api/admin-hierarchy/states',
+    BRANCHES: '/api/admin-hierarchy/branches',
+    ZONES: '/api/admin-hierarchy/zones',
+    STATISTICS: '/api/admin/statistics'
   }
 };
 

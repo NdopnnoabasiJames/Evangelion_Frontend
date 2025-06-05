@@ -11,6 +11,206 @@ export const analyticsService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch dashboard analytics');
     }
+  },  // Get super admin dashboard statistics
+  getSuperAdminDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching super admin dashboard stats...');
+      
+      // Fetch multiple data sources for super admin using CORRECT endpoints
+      const [
+        basicAnalytics,
+        statesResponse,
+        eventsResponse
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD), // /api/admin/guests/analytics/basic
+        api.get('/api/states'), // Correct states endpoint
+        api.get('/api/events') // Use basic events endpoint instead of accessible
+      ]);      console.log('Analytics: Basic analytics response:', basicAnalytics.data);
+      console.log('Analytics: States response:', statesResponse.data);
+      console.log('Analytics: Events response:', eventsResponse.data);
+
+      // Extract data from API responses - they have { data: [...] } structure
+      const statesData = statesResponse.data?.data || statesResponse.data || [];
+      const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
+      const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+
+      // For user count, let's try to get it from basic analytics or set a default
+      const totalUsers = analyticsData?.totalUsers || 0;
+
+      const stats = {
+        totalStates: Array.isArray(statesData) ? statesData.length : 0,
+        totalEvents: Array.isArray(eventsData) ? eventsData.length : 0,
+        totalUsers: totalUsers,
+        totalGuests: analyticsData?.totalGuests || 0,
+        checkedInGuests: analyticsData?.checkedInGuests || 0,
+        checkInRate: analyticsData?.checkInRate || 0
+      };
+
+      console.log('Analytics: Final stats object:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching super admin stats:', error);
+      console.error('Analytics: Error details:', error.response?.data);
+      
+      // Return fallback data instead of throwing error
+      const fallbackStats = {
+        totalStates: 0,
+        totalEvents: 0,
+        totalUsers: 0,
+        totalGuests: 0,
+        checkedInGuests: 0,
+        checkInRate: 0
+      };
+      
+      console.log('Analytics: Returning fallback stats:', fallbackStats);
+      return fallbackStats;
+    }
+  },
+  // Get state admin dashboard statistics
+  getStateAdminDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching state admin dashboard stats...');
+      
+      const [
+        basicAnalytics,
+        eventsResponse
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
+        api.get('/api/events')
+      ]);      // Extract data from API responses
+      const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
+      const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+
+      const activeEvents = Array.isArray(eventsData) ? eventsData.filter(event => 
+        ['active', 'published', 'in_progress'].includes(event.status)
+      ) : [];
+
+      const stats = {
+        branches: 0, // We'll need to implement this endpoint later
+        activeEvents: activeEvents.length,
+        totalGuests: analyticsData?.totalGuests || 0,
+        checkInRate: analyticsData?.checkInRate || 0
+      };
+
+      console.log('Analytics: State admin stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching state admin stats:', error);
+      return {
+        branches: 0,
+        activeEvents: 0,
+        totalGuests: 0,
+        checkInRate: 0
+      };
+    }
+  },
+  // Get branch admin dashboard statistics
+  getBranchAdminDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching branch admin dashboard stats...');
+      
+      const [
+        basicAnalytics
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD)
+      ]);      // Extract data from API responses
+      const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+
+      const stats = {
+        zones: 0, // We'll need to implement this endpoint later
+        workers: 0, // We'll need to implement this endpoint later
+        registrars: 0, // We'll need to implement this endpoint later
+        totalGuests: analyticsData?.totalGuests || 0
+      };
+
+      console.log('Analytics: Branch admin stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching branch admin stats:', error);
+      return {
+        zones: 0,
+        workers: 0,
+        registrars: 0,
+        totalGuests: 0
+      };
+    }
+  },
+  // Get worker dashboard statistics
+  getWorkerDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching worker dashboard stats...');
+      
+      const [
+        trendsResponse
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.TRENDS, { params: { days: 7 } })
+      ]);
+
+      const thisWeekRegistrations = trendsResponse.data?.reduce((sum, day) => 
+        sum + (day.registrations || 0), 0
+      ) || 0;
+
+      const stats = {
+        guestsRegistered: 0, // We'll need to implement MY_GUESTS endpoint later
+        thisWeek: thisWeekRegistrations,
+        recentActivity: 'Guest registration activity'
+      };
+
+      console.log('Analytics: Worker stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching worker stats:', error);
+      return {
+        guestsRegistered: 0,
+        thisWeek: 0,
+        recentActivity: 'Guest registration activity'
+      };
+    }
+  },
+  // Get registrar dashboard statistics
+  getRegistrarDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching registrar dashboard stats...');
+      
+      // For now, return basic stats until we implement the registrar dashboard endpoint
+      const stats = {
+        checkinsToday: 0,
+        totalCheckins: 0,
+        pendingCheckins: 0,
+        recentActivity: 'Check-in session activity'
+      };
+
+      console.log('Analytics: Registrar stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching registrar stats:', error);
+      return {
+        checkinsToday: 0,
+        totalCheckins: 0,
+        pendingCheckins: 0,
+        recentActivity: 'Check-in session activity'
+      };
+    }
+  },// Get role-specific dashboard data
+  getDashboardStatsByRole: async (userRole) => {
+    console.log('Analytics: getDashboardStatsByRole called with role:', userRole);
+    
+    switch (userRole) {
+      case 'super_admin':
+        console.log('Analytics: Calling getSuperAdminDashboardStats');
+        return analyticsService.getSuperAdminDashboardStats();
+      case 'state_admin':
+        return analyticsService.getStateAdminDashboardStats();
+      case 'branch_admin':
+        return analyticsService.getBranchAdminDashboardStats();
+      case 'worker':
+        return analyticsService.getWorkerDashboardStats();
+      case 'registrar':
+        return analyticsService.getRegistrarDashboardStats();
+      default:
+        console.log('Analytics: Falling back to default getDashboardAnalytics');
+        return analyticsService.getDashboardAnalytics();
+    }
   },
 
   // Get registration trends
