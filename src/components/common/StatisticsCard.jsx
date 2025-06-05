@@ -175,12 +175,18 @@ export const StatisticsCardTypes = {
     icon: 'bi-check-circle',
     color: '#28a745'
   }),
-  
-  activeUsers: (value) => ({
+    activeUsers: (value) => ({
     title: 'Active Users',
     value,
     icon: 'bi-person-check',
     color: '#28a745'
+  }),
+
+  totalUsers: (value) => ({
+    title: 'Total Users',
+    value,
+    icon: 'bi-people',
+    color: 'var(--primary-purple)'
   }),
 
   checkedInGuests: (value) => ({

@@ -9,35 +9,9 @@ import authDebug from '../utils/authDebug';
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, loading, user } = useAuth();  // Debug logging
-  console.log('Register component debug:', {
-    isAuthenticated,
-    loading,
-    user,
-    token: localStorage.getItem('authToken'),
-    userInStorage: localStorage.getItem('user')
-  });
+  const { isAuthenticated, loading, user } = useAuth();
   
-  // Additional debug info
-  authDebug.checkState();
-  // Show loading state while auth is being determined
-  if (loading) {
-    console.log('Auth is loading, showing spinner...');
-    return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-  // Redirect if already authenticated
-  if (!loading && isAuthenticated) {
-    console.log('Redirecting authenticated user from register page');
-    const from = location.state?.from?.pathname || '/dashboard';
-    return <Navigate to={from} replace />;
-  }
-
+  // State hooks must be at the top
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -51,21 +25,12 @@ const Register = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // API calls for hierarchical data
+    // API calls for hierarchical data
   const { data: states, loading: statesLoading, error: statesError } = useApi('/api/states', { immediate: true });
   const { data: branches, loading: branchesLoading, execute: fetchBranches, error: branchesError } = useApi(null, { immediate: false });
   const { data: zones, loading: zonesLoading, execute: fetchZones, error: zonesError } = useApi(null, { immediate: false });
 
-  // Debug API states
-  console.log('API Debug:', {
-    states: states,
-    statesLoading,
-    statesError,
-    branches,
-    branchesLoading,
-    branchesError
-  });
-
+  // Effect hooks must be after all state hooks
   // Fetch branches when state changes
   useEffect(() => {
     if (formData.state) {
@@ -81,6 +46,47 @@ const Register = () => {
       setFormData(prev => ({ ...prev, zone: '' }));
     }
   }, [formData.branch]);
+
+  // Debug logging (after all hooks)
+  console.log('Register component debug:', {
+    isAuthenticated,
+    loading,
+    user,
+    token: localStorage.getItem('authToken'),
+    userInStorage: localStorage.getItem('user')
+  });
+  
+  // Additional debug info
+  authDebug.checkState();
+  
+  // Debug API states
+  console.log('API Debug:', {
+    states: states,
+    statesLoading,
+    statesError,
+    branches,
+    branchesLoading,
+    branchesError
+  });
+  
+  // Show loading state while auth is being determined
+  if (loading) {
+    console.log('Auth is loading, showing spinner...');
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+  
+  // Redirect if already authenticated
+  if (!loading && isAuthenticated) {
+    console.log('Redirecting authenticated user from register page');
+    const from = location.state?.from?.pathname || '/dashboard';
+    return <Navigate to={from} replace />;
+  }
 
   const roleOptions = [
     { value: 'state_admin', label: 'State Admin', requiresApproval: 'Super Admin' },
@@ -316,8 +322,7 @@ const Register = () => {
                           ? 'Error loading states - you can still register'
                           : 'Select your state'
                         }
-                      </option>
-                      {states?.map(state => (
+                      </option>                      {states?.data?.map(state => (
                         <option key={state._id} value={state._id}>
                           {state.name}
                         </option>
@@ -345,8 +350,7 @@ const Register = () => {
                             ? 'Loading branches...' 
                             : 'Select your branch'
                           }
-                        </option>
-                        {branches?.map(branch => (
+                        </option>                        {branches?.data?.map(branch => (
                           <option key={branch._id} value={branch._id}>
                             {branch.name}
                           </option>
@@ -375,8 +379,7 @@ const Register = () => {
                             ? 'Loading zones...' 
                             : 'Select your zone'
                           }
-                        </option>
-                        {zones?.map(zone => (
+                        </option>                        {zones?.data?.map(zone => (
                           <option key={zone._id} value={zone._id}>
                             {zone.name}
                           </option>

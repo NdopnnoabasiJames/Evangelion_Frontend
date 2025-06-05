@@ -4,12 +4,17 @@ import Layout from '../components/Layout/Layout';
 import { LoadingCard, ErrorDisplay } from '../components/common/Loading';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
+import { ROLES } from '../utils/constants';
 
-const Dashboard = () => {
-  const { user } = useAuth();
+const Dashboard = () => {  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
+
+  // Debug logging for user object
+  console.log('Dashboard: Current user object:', user);
+  console.log('Dashboard: User role:', user?.role);
+  console.log('Dashboard: Available ROLES:', ROLES);
 
   // Simulate loading dashboard data
   useEffect(() => {
@@ -41,10 +46,8 @@ const Dashboard = () => {
     const baseData = {
       lastUpdated: new Date().toLocaleString(),
       notifications: Math.floor(Math.random() * 5) + 1
-    };
-
-    switch (role) {
-      case 'SUPER_ADMIN':
+    };    switch (role) {
+      case ROLES.SUPER_ADMIN:
         return {
           ...baseData,
           totalStates: 12,
@@ -53,7 +56,7 @@ const Dashboard = () => {
           totalGuests: 5678,
           recentActivity: 'New state added: Lagos'
         };
-      case 'STATE_ADMIN':
+      case ROLES.STATE_ADMIN:
         return {
           ...baseData,
           branches: 8,
@@ -61,7 +64,7 @@ const Dashboard = () => {
           totalGuests: 892,
           recentActivity: 'Branch "Ikeja Zone" updated'
         };
-      case 'BRANCH_ADMIN':
+      case ROLES.BRANCH_ADMIN:
         return {
           ...baseData,
           zones: 5,
@@ -69,14 +72,14 @@ const Dashboard = () => {
           registrars: 8,
           recentActivity: 'New worker assigned'
         };
-      case 'WORKER':
+      case ROLES.WORKER:
         return {
           ...baseData,
           guestsRegistered: 156,
           thisWeek: 23,
           recentActivity: 'Guest registration completed'
         };
-      case 'REGISTRAR':
+      case ROLES.REGISTRAR:
         return {
           ...baseData,
           checkinsToday: 42,
@@ -96,10 +99,8 @@ const Dashboard = () => {
   };
   // Role-specific dashboard content
   const getDashboardContent = () => {
-    if (!dashboardData) return null;
-
-    switch (user?.role) {
-      case 'SUPER_ADMIN':
+    if (!dashboardData) return null;    switch (user?.role) {
+      case ROLES.SUPER_ADMIN:
         return (
           <StatisticsGrid
             cards={[
@@ -112,7 +113,7 @@ const Dashboard = () => {
           />
         );
       
-      case 'STATE_ADMIN':
+      case ROLES.STATE_ADMIN:
         return (
           <StatisticsGrid
             cards={[
@@ -124,7 +125,7 @@ const Dashboard = () => {
           />
         );
       
-      case 'BRANCH_ADMIN':
+      case ROLES.BRANCH_ADMIN:
         return (
           <StatisticsGrid
             cards={[
@@ -136,7 +137,7 @@ const Dashboard = () => {
           />
         );
       
-      case 'WORKER':
+      case ROLES.WORKER:
         return (
           <StatisticsGrid
             cards={[
@@ -147,7 +148,7 @@ const Dashboard = () => {
           />
         );
       
-      case 'REGISTRAR':
+      case ROLES.REGISTRAR:
         return (
           <StatisticsGrid
             cards={[
@@ -252,14 +253,13 @@ const Dashboard = () => {
                 )}
               </div>
               <div className="card-body">
-                <div className="d-flex flex-wrap gap-2">
-                  {user?.role === 'WORKER' && (
+                <div className="d-flex flex-wrap gap-2">                  {user?.role === ROLES.WORKER && (
                     <button className="btn btn-primary">Register New Guest</button>
                   )}
-                  {user?.role === 'REGISTRAR' && (
+                  {user?.role === ROLES.REGISTRAR && (
                     <button className="btn btn-success">Check-in Guest</button>
                   )}
-                  {['BRANCH_ADMIN', 'STATE_ADMIN', 'SUPER_ADMIN'].includes(user?.role) && (
+                  {[ROLES.BRANCH_ADMIN, ROLES.STATE_ADMIN, ROLES.SUPER_ADMIN].includes(user?.role) && (
                     <>
                       <button className="btn btn-primary">Create Event</button>
                       <button className="btn btn-outline-primary">View Reports</button>
