@@ -11,7 +11,58 @@ export const analyticsService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch dashboard analytics');
     }
-  },  // Get super admin dashboard statistics
+  },
+
+  // Admin Management Functions for Super Admin
+  // Get pending admin registrations
+  getPendingAdmins: async () => {
+    try {
+      console.log('Analytics: Fetching pending admin registrations...');
+      const response = await api.get('/api/users/pending-admins');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching pending admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch pending admin registrations');
+    }
+  },
+
+  // Approve admin registration
+  approveAdmin: async (adminId, adminData) => {
+    try {
+      console.log('Analytics: Approving admin:', adminId, adminData);
+      const response = await api.post(`/api/users/approve-admin/${adminId}`, adminData);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error approving admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to approve admin registration');
+    }
+  },
+
+  // Reject admin registration
+  rejectAdmin: async (adminId, reason) => {
+    try {
+      console.log('Analytics: Rejecting admin:', adminId, reason);
+      const response = await api.post(`/api/users/reject-admin/${adminId}`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error rejecting admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to reject admin registration');
+    }
+  },
+
+  // Get admin approval history
+  getAdminApprovalHistory: async () => {
+    try {
+      console.log('Analytics: Fetching admin approval history...');
+      const response = await api.get('/api/users/admin-approval-history');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching admin approval history:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch admin approval history');
+    }
+  },
+
+  // Get super admin dashboard statistics
   getSuperAdminDashboardStats: async () => {
     try {
       console.log('Analytics: Fetching super admin dashboard stats...');
@@ -191,14 +242,14 @@ export const analyticsService = {
         recentActivity: 'Check-in session activity'
       };
     }
-  },// Get role-specific dashboard data
+  },  // Get role-specific dashboard data
   getDashboardStatsByRole: async (userRole) => {
     console.log('Analytics: getDashboardStatsByRole called with role:', userRole);
     
     switch (userRole) {
       case 'super_admin':
-        console.log('Analytics: Calling getSuperAdminDashboardStats');
-        return analyticsService.getSuperAdminDashboardStats();
+        console.log('Analytics: Calling getEnhancedSuperAdminStats for Phase 2');
+        return analyticsService.getEnhancedSuperAdminStats();
       case 'state_admin':
         return analyticsService.getStateAdminDashboardStats();
       case 'branch_admin':
@@ -272,6 +323,146 @@ export const analyticsService = {
       return { success: true };
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to export analytics data');
+    }
+  },
+
+  // System Metrics Functions for Phase 2 Super Admin Dashboard
+
+  // Get comprehensive system metrics
+  getSystemMetrics: async () => {
+    try {
+      console.log('Analytics: Fetching comprehensive system metrics...');
+      const response = await api.get('/api/users/system-metrics');
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error fetching system metrics:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch system metrics');
+    }
+  },
+
+  // Get admin hierarchy statistics
+  getAdminHierarchyStats: async () => {
+    try {
+      console.log('Analytics: Fetching admin hierarchy statistics...');
+      const response = await api.get('/api/users/admin-hierarchy-stats');
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error fetching admin hierarchy stats:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch admin hierarchy statistics');
+    }
+  },
+
+  // Get user role breakdown
+  getUserRoleBreakdown: async () => {
+    try {
+      console.log('Analytics: Fetching user role breakdown...');
+      const response = await api.get('/api/users/user-role-breakdown');
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error fetching user role breakdown:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch user role breakdown');
+    }
+  },
+
+  // Get system health indicators
+  getSystemHealth: async () => {
+    try {
+      console.log('Analytics: Fetching system health indicators...');
+      const response = await api.get('/api/users/system-health');
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error fetching system health:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch system health indicators');
+    }
+  },
+
+  // Enhanced Super Admin Dashboard with Phase 2 metrics
+  getEnhancedSuperAdminStats: async () => {
+    try {
+      console.log('Analytics: Fetching enhanced super admin dashboard stats...');
+      
+      const [
+        systemMetrics,
+        hierarchyStats,
+        roleBreakdown,
+        systemHealth,
+        pendingAdmins
+      ] = await Promise.all([
+        analyticsService.getSystemMetrics(),
+        analyticsService.getAdminHierarchyStats(),
+        analyticsService.getUserRoleBreakdown(),
+        analyticsService.getSystemHealth(),
+        analyticsService.getPendingAdmins()
+      ]);
+
+      const enhancedStats = {
+        // Phase 1 data (existing)
+        pendingAdmins: Array.isArray(pendingAdmins) ? pendingAdmins.length : 0,
+        pendingAdminsList: pendingAdmins,
+        
+        // Phase 2 data (new comprehensive metrics)
+        systemMetrics,
+        hierarchyStats,
+        roleBreakdown,
+        systemHealth,
+        
+        // Derived metrics for dashboard cards
+        totalUsers: systemMetrics?.users?.total || 0,
+        totalStates: systemMetrics?.hierarchy?.states || 0,
+        totalBranches: systemMetrics?.hierarchy?.branches || 0,
+        totalZones: systemMetrics?.hierarchy?.zones || 0,
+        totalEvents: systemMetrics?.events?.total || 0,
+        totalGuests: systemMetrics?.guests?.total || 0,
+        
+        // Admin breakdown for visual charts
+        adminsByRole: {
+          superAdmins: hierarchyStats?.superAdmins?.total || 0,
+          stateAdmins: hierarchyStats?.stateAdmins?.total || 0,
+          branchAdmins: hierarchyStats?.branchAdmins?.total || 0,
+          zonalAdmins: hierarchyStats?.zonalAdmins?.total || 0
+        },
+        
+        // System health indicators
+        healthStatus: systemHealth?.status || 'unknown',
+        healthScore: systemHealth?.score || 0,
+        healthAlerts: systemHealth?.alerts || [],
+        
+        // Quick action metrics
+        recentRegistrations: systemHealth?.metrics?.recentRegistrations || 0,
+        systemUptime: systemHealth?.metrics?.uptime || 0
+      };
+
+      console.log('Analytics: Enhanced super admin stats:', enhancedStats);
+      return enhancedStats;
+    } catch (error) {
+      console.error('Analytics: Error fetching enhanced super admin stats:', error);
+      
+      // Return fallback data with both Phase 1 and Phase 2 structure
+      return {
+        pendingAdmins: 0,
+        pendingAdminsList: [],
+        systemMetrics: {},
+        hierarchyStats: {},
+        roleBreakdown: {},
+        systemHealth: { status: 'unknown', score: 0, alerts: [] },
+        totalUsers: 0,
+        totalStates: 0,
+        totalBranches: 0,
+        totalZones: 0,
+        totalEvents: 0,
+        totalGuests: 0,
+        adminsByRole: {
+          superAdmins: 0,
+          stateAdmins: 0,
+          branchAdmins: 0,
+          zonalAdmins: 0
+        },
+        healthStatus: 'unknown',
+        healthScore: 0,
+        healthAlerts: [],
+        recentRegistrations: 0,
+        systemUptime: 0
+      };
     }
   },
 

@@ -4,6 +4,7 @@ import Layout from '../components/Layout/Layout';
 import { LoadingCard, ErrorDisplay } from '../components/common/Loading';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
+import SuperAdminTabs from '../components/dashboard/SuperAdminTabs';
 import { ROLES } from '../utils/constants';
 import analyticsService from '../services/analyticsService';
 
@@ -117,22 +118,13 @@ const Dashboard = () => {  const { user } = useAuth();
       const mockData = getDashboardMockData(user.role);
       setDashboardData(mockData);
     }
-  };
-  // Role-specific dashboard content
+  };  // Role-specific dashboard content
   const getDashboardContent = () => {
-    if (!dashboardData) return null;    switch (user?.role) {
+    if (!dashboardData) return null;
+
+    switch (user?.role) {
       case ROLES.SUPER_ADMIN:
-        return (
-          <StatisticsGrid
-            cards={[
-              StatisticsCardTypes.totalStates(dashboardData.totalStates),
-              StatisticsCardTypes.totalEvents(dashboardData.totalEvents),
-              StatisticsCardTypes.totalUsers(dashboardData.totalUsers),
-              StatisticsCardTypes.totalGuests(dashboardData.totalGuests)
-            ]}
-            columns={4}
-          />
-        );
+        return <SuperAdminTabs dashboardData={dashboardData} />;
       
       case ROLES.STATE_ADMIN:
         return (
