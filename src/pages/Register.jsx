@@ -427,9 +427,7 @@ const Register = () => {
                       'Create Account'
                     )}
                   </button>
-                </form>
-
-                <div className="text-center">
+                </form>                <div className="text-center">
                   <p className="text-muted mb-0">
                     Already have an account?{' '}
                     <Link to="/login" style={{ color: 'var(--primary-purple)' }}>
@@ -444,6 +442,13 @@ const Register = () => {
             </div>
           </div>
         </div>
+        
+        {/* Simple Footer */}
+        <footer className="text-center py-3 mt-auto">
+          <p className="text-muted small mb-0">
+            © 2025 Evangelion Event System. All rights reserved.
+          </p>
+        </footer>
       </div>
     </div>
   );

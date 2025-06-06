@@ -3,26 +3,40 @@ import React, { useState } from 'react';
 const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-
-  const handleApprove = async () => {
+  const [actionLoading, setActionLoading] = useState(false);  const handleApprove = async () => {
     setActionLoading(true);
     try {
-      await onApprove(admin.id);
+      const adminId = admin._id || admin.id;
+      console.log('AdminApprovalCard: Approving admin - Raw admin object:', admin);
+      console.log('AdminApprovalCard: Admin ID:', adminId, 'Type:', typeof adminId);
+      console.log('AdminApprovalCard: admin._id:', admin._id, 'admin.id:', admin.id);
+      
+      if (!adminId) {
+        throw new Error('Admin ID is missing from admin object');
+      }
+      
+      await onApprove(adminId);
     } finally {
       setActionLoading(false);
     }
   };
-
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
       alert('Please provide a reason for rejection');
       return;
     }
-    
     setActionLoading(true);
     try {
-      await onReject(admin.id, rejectionReason);
+      const adminId = admin._id || admin.id;
+      console.log('AdminApprovalCard: Rejecting admin - Raw admin object:', admin);
+      console.log('AdminApprovalCard: Admin ID:', adminId, 'Type:', typeof adminId);
+      console.log('AdminApprovalCard: admin._id:', admin._id, 'admin.id:', admin.id);
+      
+      if (!adminId) {
+        throw new Error('Admin ID is missing from admin object');
+      }
+      
+      await onReject(adminId, rejectionReason);
       setShowRejectModal(false);
       setRejectionReason('');
     } finally {
@@ -56,11 +70,14 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
             <div className="col-md-8">
               <h5 className="card-title mb-2">
                 {admin.firstName} {admin.lastName}
-              </h5>
-              <div className="text-muted mb-3">
+              </h5>              <div className="text-muted mb-3">
+                <div><strong>Name:</strong> {admin.name}</div>
                 <div><strong>Email:</strong> {admin.email}</div>
-                <div><strong>Phone:</strong> {admin.phoneNumber || 'N/A'}</div>
-                <div><strong>State:</strong> {admin.state || 'N/A'}</div>
+                <div><strong>State:</strong> {
+                  typeof admin.state === 'object' && admin.state?.name 
+                    ? admin.state.name 
+                    : admin.state || 'N/A'
+                }</div>
                 <div><strong>Applied:</strong> {formatDate(admin.createdAt)}</div>
               </div>
               
@@ -99,11 +116,6 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
                 >
                   <i className="fas fa-times me-2"></i>
                   Reject
-                </button>
-                
-                <button className="btn btn-outline-secondary btn-sm">
-                  <i className="fas fa-eye me-2"></i>
-                  View Details
                 </button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import Footer from './Footer';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
@@ -19,9 +20,7 @@ const Layout = ({ children }) => {
         <Sidebar 
           collapsed={sidebarCollapsed} 
           setCollapsed={setSidebarCollapsed} 
-        />
-
-        {/* Main content */}
+        />        {/* Main content */}
         <main 
           className="flex-grow-1 p-3"
           style={{
@@ -33,6 +32,9 @@ const Layout = ({ children }) => {
           {children}
         </main>
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

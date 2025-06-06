@@ -16,12 +16,18 @@ const SuperAdminTabs = ({ dashboardData }) => {
       loadPendingAdmins();
     }
   }, [activeTab]);
-
   const loadPendingAdmins = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await analyticsService.getPendingAdmins();
+      console.log('SuperAdminTabs: Loaded pending admins:', data);
+      console.log('SuperAdminTabs: Admin objects:', data?.map(admin => ({ 
+        _id: admin._id, 
+        id: admin.id, 
+        name: admin.name, 
+        email: admin.email 
+      })));
       setPendingAdmins(data || []);
     } catch (err) {
       console.error('Error loading pending admins:', err);
@@ -46,14 +52,13 @@ const SuperAdminTabs = ({ dashboardData }) => {
   };
 
   const handleApproveAdmin = async (adminId) => {
-    try {
-      await analyticsService.approveAdmin(adminId, {
+    try {      await analyticsService.approveAdmin(adminId, {
         approvedBy: 'Super Admin',
         approvedAt: new Date().toISOString()
       });
       
       // Remove from pending list
-      setPendingAdmins(prev => prev.filter(admin => admin.id !== adminId));
+      setPendingAdmins(prev => prev.filter(admin => (admin._id || admin.id) !== adminId));
       
       // Show success message
       alert('Admin approved successfully!');
@@ -64,11 +69,10 @@ const SuperAdminTabs = ({ dashboardData }) => {
   };
 
   const handleRejectAdmin = async (adminId, reason) => {
-    try {
-      await analyticsService.rejectAdmin(adminId, reason);
+    try {      await analyticsService.rejectAdmin(adminId, reason);
       
       // Remove from pending list
-      setPendingAdmins(prev => prev.filter(admin => admin.id !== adminId));
+      setPendingAdmins(prev => prev.filter(admin => (admin._id || admin.id) !== adminId));
       
       // Show success message
       alert('Admin rejection recorded successfully!');
@@ -333,10 +337,9 @@ const SuperAdminTabs = ({ dashboardData }) => {
             Refresh
           </button>
         </div>
-        
-        {pendingAdmins.map(admin => (
+          {pendingAdmins.map(admin => (
           <AdminApprovalCard
-            key={admin.id}
+            key={admin._id || admin.id}
             admin={admin}
             onApprove={handleApproveAdmin}
             onReject={handleRejectAdmin}

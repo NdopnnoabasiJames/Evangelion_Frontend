@@ -25,11 +25,15 @@ export const analyticsService = {
       throw new Error(error.response?.data?.message || 'Failed to fetch pending admin registrations');
     }
   },
-
   // Approve admin registration
   approveAdmin: async (adminId, adminData) => {
     try {
-      console.log('Analytics: Approving admin:', adminId, adminData);
+      console.log('Analytics: Approving admin - ID:', adminId, 'Type:', typeof adminId, 'Data:', adminData);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Admin ID is undefined or invalid');
+      }
+      
       const response = await api.post(`/api/users/approve-admin/${adminId}`, adminData);
       return response.data;
     } catch (error) {
@@ -37,11 +41,15 @@ export const analyticsService = {
       throw new Error(error.response?.data?.message || 'Failed to approve admin registration');
     }
   },
-
   // Reject admin registration
   rejectAdmin: async (adminId, reason) => {
     try {
-      console.log('Analytics: Rejecting admin:', adminId, reason);
+      console.log('Analytics: Rejecting admin - ID:', adminId, 'Type:', typeof adminId, 'Reason:', reason);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Admin ID is undefined or invalid');
+      }
+      
       const response = await api.post(`/api/users/reject-admin/${adminId}`, { reason });
       return response.data;
     } catch (error) {

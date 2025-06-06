@@ -69,8 +69,7 @@ const Login = () => {
                   loading={loading}
                   error={error}
                 />
-                
-                <div className="text-center mt-4">
+                  <div className="text-center mt-4">
                   <p className="text-muted mb-2">
                     Don't have an account?{' '}
                     <Link to="/register" style={{ color: 'var(--primary-purple)' }}>
@@ -85,6 +84,13 @@ const Login = () => {
             </div>
           </div>
         </div>
+        
+        {/* Simple Footer */}
+        <footer className="text-center py-3 mt-auto">
+          <p className="text-muted small mb-0">
+            © 2025 Evangelion Event System. All rights reserved.
+          </p>
+        </footer>
       </div>
     </div>
   );
