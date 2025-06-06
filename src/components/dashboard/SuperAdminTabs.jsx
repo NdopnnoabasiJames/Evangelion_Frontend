@@ -76,41 +76,8 @@ const SuperAdminTabs = ({ dashboardData }) => {
       console.error('Error rejecting admin:', err);
       alert('Failed to reject admin: ' + (err.message || 'Unknown error'));
     }
-  };
-  const renderOverview = () => (
+  };  const renderOverview = () => (
     <div>
-      {/* System Health Status Banner */}
-      {dashboardData?.healthStatus && (
-        <div className={`alert ${
-          dashboardData.healthStatus === 'healthy' ? 'alert-success' : 
-          dashboardData.healthStatus === 'warning' ? 'alert-warning' : 'alert-danger'
-        } mb-4`}>
-          <div className="d-flex align-items-center justify-content-between">
-            <div className="d-flex align-items-center">
-              <i className={`fas ${
-                dashboardData.healthStatus === 'healthy' ? 'fa-check-circle' : 
-                dashboardData.healthStatus === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle'
-              } me-2`}></i>
-              <strong>System Status: {dashboardData.healthStatus.toUpperCase()}</strong>
-              <span className="ms-3">Health Score: {dashboardData.healthScore || 0}%</span>
-            </div>
-            {dashboardData.systemUptime && (
-              <small>Uptime: {Math.floor(dashboardData.systemUptime / 3600)}h {Math.floor((dashboardData.systemUptime % 3600) / 60)}m</small>
-            )}
-          </div>
-          {dashboardData?.healthAlerts && dashboardData.healthAlerts.length > 0 && (
-            <div className="mt-2">
-              <strong>Alerts:</strong>
-              <ul className="mb-0 mt-1">
-                {dashboardData.healthAlerts.map((alert, index) => (
-                  <li key={index}>{alert}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Primary Metrics Cards */}
       <div className="row g-4 mb-4">
         <div className="col-lg-3 col-md-6">
@@ -156,19 +123,15 @@ const SuperAdminTabs = ({ dashboardData }) => {
               </div>
             </div>
           </div>
-        </div>
-        <div className="col-lg-3 col-md-6">
+        </div>        <div className="col-lg-3 col-md-6">
           <div className="card bg-warning text-dark h-100">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <h4 className="mb-0">{dashboardData?.pendingAdmins || 0}</h4>
-                  <p className="mb-0">Pending Approvals</p>
-                  {dashboardData?.pendingAdmins > 0 && (
-                    <small className="text-danger">Requires attention</small>
-                  )}
+                  <h4 className="mb-0">{dashboardData?.totalZones || 0}</h4>
+                  <p className="mb-0">Total Zones</p>
                 </div>
-                <i className="fas fa-clock fa-2x opacity-75"></i>
+                <i className="fas fa-layer-group fa-2x opacity-75"></i>
               </div>
             </div>
           </div>
@@ -184,18 +147,8 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 <i className="fas fa-sitemap me-2"></i>
                 Admin Hierarchy Overview
               </h5>
-            </div>
-            <div className="card-body">
+            </div>            <div className="card-body">
               <div className="row g-3">
-                <div className="col-md-6">
-                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
-                    <div>
-                      <h6 className="mb-1">Super Admins</h6>
-                      <h4 className="mb-0 text-dark">{dashboardData?.adminsByRole?.superAdmins || 0}</h4>
-                    </div>
-                    <i className="fas fa-crown fa-2x text-warning"></i>
-                  </div>
-                </div>
                 <div className="col-md-6">
                   <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                     <div>
@@ -212,8 +165,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
                       <h4 className="mb-0 text-success">{dashboardData?.adminsByRole?.branchAdmins || 0}</h4>
                     </div>
                     <i className="fas fa-building fa-2x text-success"></i>
-                  </div>
-                </div>
+                  </div>                </div>
                 <div className="col-md-6">
                   <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                     <div>
@@ -221,6 +173,15 @@ const SuperAdminTabs = ({ dashboardData }) => {
                       <h4 className="mb-0 text-info">{dashboardData?.adminsByRole?.zonalAdmins || 0}</h4>
                     </div>
                     <i className="fas fa-layer-group fa-2x text-info"></i>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                    <div>
+                      <h6 className="mb-1">Workers</h6>
+                      <h4 className="mb-0 text-secondary">{dashboardData?.adminsByRole?.workers || 0}</h4>
+                    </div>
+                    <i className="fas fa-users fa-2x text-secondary"></i>
                   </div>
                 </div>
               </div>
@@ -275,11 +236,9 @@ const SuperAdminTabs = ({ dashboardData }) => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
+      </div>      {/* Quick Actions */}
       <div className="row g-4">
-        <div className="col-lg-6">
+        <div className="col-lg-12">
           <div className="card">
             <div className="card-header">
               <h5 className="mb-0">
@@ -288,14 +247,13 @@ const SuperAdminTabs = ({ dashboardData }) => {
               </h5>
             </div>
             <div className="card-body">
-              <div className="d-grid gap-2">
+              <div className="d-grid gap-2 d-md-flex">
                 <button 
                   className="btn btn-primary"
                   onClick={() => setActiveTab('admin-management')}
-                  disabled={!dashboardData?.pendingAdmins || dashboardData.pendingAdmins === 0}
                 >
                   <i className="fas fa-user-check me-2"></i>
-                  Review Pending Admins ({dashboardData?.pendingAdmins || 0})
+                  Manage Admins
                 </button>
                 <button className="btn btn-outline-primary">
                   <i className="fas fa-download me-2"></i>
@@ -308,59 +266,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
                   <i className="fas fa-list-alt me-2"></i>
                   View Audit Trail
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-6">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <i className="fas fa-bell me-2"></i>
-                Recent Activity
-              </h5>
-            </div>
-            <div className="card-body">
-              <div className="list-group list-group-flush">
-                {dashboardData?.recentRegistrations > 0 && (
-                  <div className="list-group-item border-0 px-0">
-                    <div className="d-flex align-items-center">
-                      <i className="fas fa-user-plus text-success me-3"></i>
-                      <div>
-                        <h6 className="mb-1">{dashboardData.recentRegistrations} new registrations</h6>
-                        <small className="text-muted">In the last 24 hours</small>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {dashboardData?.pendingAdmins > 0 && (
-                  <div className="list-group-item border-0 px-0">
-                    <div className="d-flex align-items-center">
-                      <i className="fas fa-clock text-warning me-3"></i>
-                      <div>
-                        <h6 className="mb-1">{dashboardData.pendingAdmins} pending approvals</h6>
-                        <small className="text-muted">Waiting for review</small>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {dashboardData?.healthAlerts && dashboardData.healthAlerts.length > 0 && (
-                  <div className="list-group-item border-0 px-0">
-                    <div className="d-flex align-items-center">
-                      <i className="fas fa-exclamation-triangle text-danger me-3"></i>
-                      <div>
-                        <h6 className="mb-1">{dashboardData.healthAlerts.length} system alerts</h6>
-                        <small className="text-muted">Requires attention</small>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {(!dashboardData?.recentRegistrations && !dashboardData?.pendingAdmins && (!dashboardData?.healthAlerts || dashboardData.healthAlerts.length === 0)) && (
-                  <div className="text-center py-3">
-                    <i className="fas fa-check-circle text-success fa-2x mb-2"></i>
-                    <p className="text-muted mb-0">All systems operating normally</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>

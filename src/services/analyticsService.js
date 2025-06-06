@@ -363,39 +363,21 @@ export const analyticsService = {
       throw new Error(error.response?.data?.message || 'Failed to fetch user role breakdown');
     }
   },
-
-  // Get system health indicators
-  getSystemHealth: async () => {
-    try {
-      console.log('Analytics: Fetching system health indicators...');
-      const response = await api.get('/api/users/system-health');
-      return response.data;
-    } catch (error) {
-      console.error('Analytics: Error fetching system health:', error);
-      throw new Error(error.response?.data?.message || 'Failed to fetch system health indicators');
-    }
-  },
-
   // Enhanced Super Admin Dashboard with Phase 2 metrics
   getEnhancedSuperAdminStats: async () => {
-    try {
+    try{
       console.log('Analytics: Fetching enhanced super admin dashboard stats...');
-      
-      const [
+        const [
         systemMetrics,
         hierarchyStats,
         roleBreakdown,
-        systemHealth,
         pendingAdmins
       ] = await Promise.all([
         analyticsService.getSystemMetrics(),
         analyticsService.getAdminHierarchyStats(),
         analyticsService.getUserRoleBreakdown(),
-        analyticsService.getSystemHealth(),
         analyticsService.getPendingAdmins()
-      ]);
-
-      const enhancedStats = {
+      ]);      const enhancedStats = {
         // Phase 1 data (existing)
         pendingAdmins: Array.isArray(pendingAdmins) ? pendingAdmins.length : 0,
         pendingAdminsList: pendingAdmins,
@@ -404,47 +386,35 @@ export const analyticsService = {
         systemMetrics,
         hierarchyStats,
         roleBreakdown,
-        systemHealth,
         
         // Derived metrics for dashboard cards
-        totalUsers: systemMetrics?.users?.total || 0,
-        totalStates: systemMetrics?.hierarchy?.states || 0,
-        totalBranches: systemMetrics?.hierarchy?.branches || 0,
-        totalZones: systemMetrics?.hierarchy?.zones || 0,
-        totalEvents: systemMetrics?.events?.total || 0,
-        totalGuests: systemMetrics?.guests?.total || 0,
+        totalUsers: systemMetrics?.totalUsers || 0,
+        totalStates: systemMetrics?.totalStates || 0,
+        totalBranches: systemMetrics?.totalBranches || 0,
+        totalZones: systemMetrics?.totalZones || 0,
+        totalEvents: systemMetrics?.totalEvents || 0,
+        totalGuests: systemMetrics?.totalGuests || 0,
         
         // Admin breakdown for visual charts
         adminsByRole: {
-          superAdmins: hierarchyStats?.superAdmins?.total || 0,
-          stateAdmins: hierarchyStats?.stateAdmins?.total || 0,
-          branchAdmins: hierarchyStats?.branchAdmins?.total || 0,
-          zonalAdmins: hierarchyStats?.zonalAdmins?.total || 0
-        },
-        
-        // System health indicators
-        healthStatus: systemHealth?.status || 'unknown',
-        healthScore: systemHealth?.score || 0,
-        healthAlerts: systemHealth?.alerts || [],
-        
-        // Quick action metrics
-        recentRegistrations: systemHealth?.metrics?.recentRegistrations || 0,
-        systemUptime: systemHealth?.metrics?.uptime || 0
+          stateAdmins: hierarchyStats?.stateAdmins || 0,
+          branchAdmins: hierarchyStats?.branchAdmins || 0,
+          zonalAdmins: hierarchyStats?.zonalAdmins || 0,
+          workers: hierarchyStats?.workers || 0
+        }
       };
 
       console.log('Analytics: Enhanced super admin stats:', enhancedStats);
       return enhancedStats;
     } catch (error) {
       console.error('Analytics: Error fetching enhanced super admin stats:', error);
-      
-      // Return fallback data with both Phase 1 and Phase 2 structure
+        // Return fallback data with both Phase 1 and Phase 2 structure
       return {
         pendingAdmins: 0,
         pendingAdminsList: [],
         systemMetrics: {},
         hierarchyStats: {},
         roleBreakdown: {},
-        systemHealth: { status: 'unknown', score: 0, alerts: [] },
         totalUsers: 0,
         totalStates: 0,
         totalBranches: 0,
@@ -452,16 +422,11 @@ export const analyticsService = {
         totalEvents: 0,
         totalGuests: 0,
         adminsByRole: {
-          superAdmins: 0,
           stateAdmins: 0,
           branchAdmins: 0,
-          zonalAdmins: 0
-        },
-        healthStatus: 'unknown',
-        healthScore: 0,
-        healthAlerts: [],
-        recentRegistrations: 0,
-        systemUptime: 0
+          zonalAdmins: 0,
+          workers: 0
+        }
       };
     }
   },

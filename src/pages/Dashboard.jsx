@@ -253,43 +253,7 @@ const Dashboard = () => {  const { user } = useAuth();
             </small>
           </div>
         )}
-        
-        {getDashboardContent()}
-        
-        <div className="row mt-4">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Quick Actions</h5>
-                {dashboardData?.notifications > 0 && (
-                  <span className="badge bg-danger">{dashboardData.notifications}</span>
-                )}
-              </div>
-              <div className="card-body">
-                <div className="d-flex flex-wrap gap-2">                  {user?.role === ROLES.WORKER && (
-                    <button className="btn btn-primary">Register New Guest</button>
-                  )}
-                  {user?.role === ROLES.REGISTRAR && (
-                    <button className="btn btn-success">Check-in Guest</button>
-                  )}
-                  {[ROLES.BRANCH_ADMIN, ROLES.STATE_ADMIN, ROLES.SUPER_ADMIN].includes(user?.role) && (
-                    <>
-                      <button className="btn btn-primary">Create Event</button>
-                      <button className="btn btn-outline-primary">View Reports</button>
-                    </>
-                  )}
-                </div>
-                {dashboardData?.recentActivity && (
-                  <div className="mt-3 pt-3 border-top">
-                    <small className="text-muted">
-                      <strong>Recent Activity:</strong> {dashboardData.recentActivity}
-                    </small>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+          {getDashboardContent()}
       </div>
     </Layout>
   );
