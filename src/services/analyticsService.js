@@ -25,6 +25,19 @@ export const analyticsService = {
       throw new Error(error.response?.data?.message || 'Failed to fetch pending admin registrations');
     }
   },
+
+  // Get approved admin registrations
+  getApprovedAdmins: async () => {
+    try {
+      console.log('Analytics: Fetching approved admin registrations...');
+      const response = await api.get('/api/users/approved-admins');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching approved admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch approved admin registrations');
+    }
+  },
+
   // Approve admin registration
   approveAdmin: async (adminId, adminData) => {
     try {

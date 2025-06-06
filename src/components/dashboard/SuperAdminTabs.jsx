@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import AdminApprovalCard from './AdminApprovalCard';
+import ApprovedAdminCard from './ApprovedAdminCard';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 
 const SuperAdminTabs = ({ dashboardData }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingAdmins, setPendingAdmins] = useState([]);
+  const [approvedAdmins, setApprovedAdmins] = useState([]);
   const [adminHistory, setAdminHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [approvedLoading, setApprovedLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [approvedError, setApprovedError] = useState(null);
   // Load pending admins when Admin Management tab is active
   useEffect(() => {
     if (activeTab === 'admin-management') {
       loadPendingAdmins();
+      loadApprovedAdmins();
     }
-  }, [activeTab]);
-  const loadPendingAdmins = async () => {
+  }, [activeTab]);  const loadPendingAdmins = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -34,6 +37,21 @@ const SuperAdminTabs = ({ dashboardData }) => {
       setError(err.message || 'Failed to load pending admins');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadApprovedAdmins = async () => {
+    setApprovedLoading(true);
+    setApprovedError(null);
+    try {
+      const data = await analyticsService.getApprovedAdmins();
+      console.log('SuperAdminTabs: Loaded approved admins:', data);
+      setApprovedAdmins(data || []);
+    } catch (err) {
+      console.error('Error loading approved admins:', err);
+      setApprovedError(err.message || 'Failed to load approved admins');
+    } finally {
+      setApprovedLoading(false);
     }
   };
 
@@ -277,7 +295,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
       </div>
     </div>
   );
-
   const renderAdminManagement = () => {
     if (loading) {
       return (
@@ -300,52 +317,97 @@ const SuperAdminTabs = ({ dashboardData }) => {
       );
     }
 
-    if (pendingAdmins.length === 0) {
-      return (
-        <div className="card">
-          <div className="card-body text-center py-5">
-            <i className="fas fa-check-circle fa-3x text-success mb-3"></i>
-            <h4>No Pending Approvals</h4>
-            <p className="text-muted">All State Admin registrations have been processed.</p>
+    return (
+      <div>
+        {/* Pending Admins Section */}
+        <div className="mb-5">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h5 className="mb-1">Pending State Admin Registrations</h5>
+              <p className="text-muted mb-0">
+                {pendingAdmins.length} registration{pendingAdmins.length !== 1 ? 's' : ''} awaiting approval
+              </p>
+            </div>
             <button 
               className="btn btn-outline-primary"
               onClick={loadPendingAdmins}
+              disabled={loading}
             >
               <i className="fas fa-refresh me-2"></i>
               Refresh
             </button>
           </div>
-        </div>
-      );
-    }
 
-    return (
-      <div>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h5 className="mb-1">Pending State Admin Registrations</h5>
-            <p className="text-muted mb-0">
-              {pendingAdmins.length} registration{pendingAdmins.length !== 1 ? 's' : ''} awaiting approval
-            </p>
-          </div>
-          <button 
-            className="btn btn-outline-primary"
-            onClick={loadPendingAdmins}
-            disabled={loading}
-          >
-            <i className="fas fa-refresh me-2"></i>
-            Refresh
-          </button>
+          {pendingAdmins.length === 0 ? (
+            <div className="card">
+              <div className="card-body text-center py-5">
+                <i className="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h4>No Pending Approvals</h4>
+                <p className="text-muted">All State Admin registrations have been processed.</p>
+              </div>
+            </div>
+          ) : (
+            pendingAdmins.map(admin => (
+              <AdminApprovalCard
+                key={admin._id || admin.id}
+                admin={admin}
+                onApprove={handleApproveAdmin}
+                onReject={handleRejectAdmin}
+                loading={loading}
+              />
+            ))
+          )}
         </div>
-          {pendingAdmins.map(admin => (
-          <AdminApprovalCard
-            key={admin._id || admin.id}
-            admin={admin}
-            onApprove={handleApproveAdmin}
-            onReject={handleRejectAdmin}
-            loading={loading}
-          />
-        ))}
+
+        {/* Approved Admins Section */}
+        <div>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h5 className="mb-1">Approved State Admins</h5>
+              <p className="text-muted mb-0">
+                {approvedAdmins.length} approved admin{approvedAdmins.length !== 1 ? 's' : ''} currently active
+              </p>
+            </div>
+            <button 
+              className="btn btn-outline-success"
+              onClick={loadApprovedAdmins}
+              disabled={approvedLoading}
+            >
+              <i className="fas fa-refresh me-2"></i>
+              Refresh
+            </button>
+          </div>
+
+          {approvedLoading ? (
+            <div className="row g-4">
+              {[...Array(2)].map((_, index) => (
+                <div key={index} className="col-12">
+                  <LoadingCard height="150px" />
+                </div>
+              ))}
+            </div>
+          ) : approvedError ? (
+            <ErrorDisplay 
+              message={approvedError}
+              onRetry={loadApprovedAdmins}
+            />
+          ) : approvedAdmins.length === 0 ? (
+            <div className="card">
+              <div className="card-body text-center py-5">
+                <i className="fas fa-users fa-3x text-muted mb-3"></i>
+                <h4>No Approved Admins</h4>
+                <p className="text-muted">No State Admins have been approved yet.</p>
+              </div>
+            </div>
+          ) : (
+            approvedAdmins.map(admin => (
+              <ApprovedAdminCard
+                key={admin._id || admin.id}
+                admin={admin}
+              />
+            ))
+          )}
+        </div>
       </div>
     );
   };
