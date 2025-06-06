@@ -184,7 +184,7 @@ const Dashboard = () => {  const { user } = useAuth();
           <div className="row mb-4">
             <div className="col-12">
               <h2 className="text-primary">Dashboard</h2>
-              <p className="text-muted">Welcome back, {user?.firstName || user?.email}</p>
+              <p className="text-muted">Welcome back, {user?.name}</p>
             </div>
           </div>
           <div className="row g-4">

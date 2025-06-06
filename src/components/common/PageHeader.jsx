@@ -338,9 +338,9 @@ export const HeaderConfigurations = {
   }),
 
   // Dashboard header for different roles
-  dashboard: (role, userName, onRefresh) => ({
+  dashboard: (role, name, onRefresh) => ({
     title: 'Dashboard',
-    subtitle: `Welcome back, ${userName}`,
+    subtitle: `Welcome back, ${name}`,
     actions: [
       {
         label: 'Refresh',

@@ -327,37 +327,52 @@ export const analyticsService = {
   },
 
   // System Metrics Functions for Phase 2 Super Admin Dashboard
-
   // Get comprehensive system metrics
   getSystemMetrics: async () => {
     try {
       console.log('Analytics: Fetching comprehensive system metrics...');
       const response = await api.get('/api/users/system-metrics');
-      return response.data;
+      console.log('Analytics: System metrics raw response:', response.data);
+      
+      // Extract the actual data from nested structure
+      const systemMetrics = response.data?.data || response.data || {};
+      console.log('Analytics: Extracted system metrics:', systemMetrics);
+      
+      return systemMetrics;
     } catch (error) {
       console.error('Analytics: Error fetching system metrics:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch system metrics');
     }
   },
-
   // Get admin hierarchy statistics
   getAdminHierarchyStats: async () => {
     try {
       console.log('Analytics: Fetching admin hierarchy statistics...');
       const response = await api.get('/api/users/admin-hierarchy-stats');
-      return response.data;
+      console.log('Analytics: Admin hierarchy raw response:', response.data);
+      
+      // Extract the actual data from nested structure
+      const hierarchyStats = response.data?.data || response.data || {};
+      console.log('Analytics: Extracted hierarchy stats:', hierarchyStats);
+      
+      return hierarchyStats;
     } catch (error) {
       console.error('Analytics: Error fetching admin hierarchy stats:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch admin hierarchy statistics');
     }
   },
-
   // Get user role breakdown
   getUserRoleBreakdown: async () => {
     try {
       console.log('Analytics: Fetching user role breakdown...');
       const response = await api.get('/api/users/user-role-breakdown');
-      return response.data;
+      console.log('Analytics: User role breakdown raw response:', response.data);
+      
+      // Extract the actual data from nested structure
+      const roleBreakdown = response.data?.data || response.data || {};
+      console.log('Analytics: Extracted role breakdown:', roleBreakdown);
+      
+      return roleBreakdown;
     } catch (error) {
       console.error('Analytics: Error fetching user role breakdown:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch user role breakdown');

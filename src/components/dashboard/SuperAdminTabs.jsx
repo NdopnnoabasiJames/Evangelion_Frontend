@@ -116,7 +116,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
               <div className="d-flex justify-content-between align-items-center">
                 <div>
                   <h4 className="mb-0">{dashboardData?.totalEvents || 0}</h4>
-                  <p className="mb-0">Events</p>
+                  <p className="mb-0">Services/Programs</p>
                   <small className="opacity-75">{dashboardData?.totalGuests || 0} guests</small>
                 </div>
                 <i className="fas fa-calendar fa-2x opacity-75"></i>
@@ -211,7 +211,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
               </div>
               <div className="mb-3">
                 <div className="d-flex justify-content-between mb-2">
-                  <span>Active Events</span>
+                  <span>Active Services/Programs</span>
                   <strong>{dashboardData?.totalEvents || 0}</strong>
                 </div>
                 <div className="progress" style={{height: '8px'}}>
