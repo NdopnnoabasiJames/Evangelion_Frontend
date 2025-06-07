@@ -336,20 +336,36 @@ export const HeaderConfigurations = {
       }
     ]
   }),
-
   // Dashboard header for different roles
-  dashboard: (role, name, onRefresh) => ({
-    title: 'Dashboard',
-    subtitle: `Welcome back, ${name}`,
-    actions: [
-      {
-        label: 'Refresh',
-        icon: 'bi-arrow-clockwise',
-        variant: 'outline-primary',
-        onClick: onRefresh
-      }
-    ]
-  })
+  dashboard: (role, name, onRefresh, stateInfo = null, branchInfo = null) => {
+    let title = 'Dashboard';
+    let subtitle = `Welcome back, ${name}`;
+
+    // Customize title and subtitle based on role and location
+    if (role === 'state_admin' && stateInfo) {
+      title = `${stateInfo.name || stateInfo} State Admin Dashboard`;
+      subtitle = `Welcome back, ${name} - Managing ${stateInfo.name || stateInfo} State`;
+    } else if (role === 'branch_admin' && branchInfo) {
+      title = `${branchInfo.name || branchInfo} Branch Admin Dashboard`;
+      subtitle = `Welcome back, ${name} - Managing ${branchInfo.name || branchInfo} Branch`;
+    } else if (role === 'super_admin') {
+      title = 'Super Admin Dashboard';
+      subtitle = `Welcome back, ${name} - System Administrator`;
+    }
+
+    return {
+      title,
+      subtitle,
+      actions: [
+        {
+          label: 'Refresh',
+          icon: 'bi-arrow-clockwise',
+          variant: 'outline-primary',
+          onClick: onRefresh
+        }
+      ]
+    };
+  }
 };
 
 export { ActionButton };

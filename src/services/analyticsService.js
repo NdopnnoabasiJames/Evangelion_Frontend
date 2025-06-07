@@ -2,6 +2,19 @@ import api from './api';
 import { API_ENDPOINTS } from '../utils/constants';
 
 export const analyticsService = {
+  // Get current user profile with populated state/branch information
+  getUserProfile: async () => {
+    try {
+      console.log('Analytics: Fetching current user profile...');
+      const response = await api.get('/api/auth/profile');
+      console.log('Analytics: User profile response:', response);
+      return response.data?.data?.data || response.data?.data || response.data;
+    } catch (error) {
+      console.error('Analytics: Error fetching user profile:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch user profile');
+    }
+  },
+
   // Get basic dashboard analytics
   getDashboardAnalytics: async (eventId = null) => {
     try {

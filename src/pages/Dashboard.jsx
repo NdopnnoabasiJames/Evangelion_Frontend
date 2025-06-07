@@ -13,11 +13,33 @@ const Dashboard = () => {  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
 
   // Debug logging for user object
   console.log('Dashboard: Current user object:', user);
   console.log('Dashboard: User role:', user?.role);
   console.log('Dashboard: Available ROLES:', ROLES);
+  
+  // Fetch user profile with populated state/branch information
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const response = await analyticsService.getUserProfile();
+        const profile = response?.data?.data || response?.data || response;
+        console.log('Dashboard: User profile with state info:', profile);
+        setUserProfile(profile);
+      } catch (err) {
+        console.error('Dashboard: Error fetching user profile:', err);
+        // Fallback to user from auth context
+        setUserProfile(user);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+  
   // Load dashboard data from API
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -229,12 +251,17 @@ const Dashboard = () => {  const { user } = useAuth();
         </div>
       </Layout>
     );
-  }
-  return (
+  }  return (
     <Layout>
       <div className="container-fluid">
         <PageHeader
-          {...HeaderConfigurations.dashboard(user?.role, user?.firstName || user?.email, refreshDashboard)}
+          {...HeaderConfigurations.dashboard(
+            user?.role, 
+            user?.firstName || user?.name || user?.email, 
+            refreshDashboard, 
+            userProfile?.state,
+            userProfile?.branch
+          )}
         />
         
         {dashboardData?.lastUpdated && (

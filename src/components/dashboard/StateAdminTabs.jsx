@@ -126,23 +126,6 @@ const StateAdminTabs = ({ dashboardData }) => {
 
   const renderOverview = () => (
     <div>
-      {/* State Identification Banner */}
-      <div className="card bg-primary text-white mb-4">
-        <div className="card-body">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h4 className="mb-1">
-                Welcome, {user.name}
-              </h4>
-              <p className="mb-0 opacity-75">
-                {user.state} Staddte Admin
-              </p>
-            </div>
-            <i className="fas fa-map-marker-alt fa-3x opacity-50"></i>
-          </div>
-        </div>
-      </div>
-
       {/* Statistics Cards */}
       <div className="row g-4 mb-4">
         <div className="col-lg-3 col-md-6">
