@@ -5,6 +5,7 @@ import { LoadingCard, ErrorDisplay } from '../components/common/Loading';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
 import SuperAdminTabs from '../components/dashboard/SuperAdminTabs';
+import StateAdminTabs from '../components/dashboard/StateAdminTabs';
 import { ROLES } from '../utils/constants';
 import analyticsService from '../services/analyticsService';
 
@@ -125,18 +126,8 @@ const Dashboard = () => {  const { user } = useAuth();
     switch (user?.role) {
       case ROLES.SUPER_ADMIN:
         return <SuperAdminTabs dashboardData={dashboardData} />;
-      
-      case ROLES.STATE_ADMIN:
-        return (
-          <StatisticsGrid
-            cards={[
-              StatisticsCardTypes.branches(dashboardData.branches),
-              StatisticsCardTypes.activeEvents(dashboardData.activeEvents),
-              StatisticsCardTypes.totalGuests(dashboardData.totalGuests)
-            ]}
-            columns={3}
-          />
-        );
+        case ROLES.STATE_ADMIN:
+        return <StateAdminTabs dashboardData={dashboardData} />;
       
       case ROLES.BRANCH_ADMIN:
         return (
@@ -212,7 +203,7 @@ const Dashboard = () => {  const { user } = useAuth();
           <div className="row mb-4">
             <div className="col-12">
               <h2 className="text-primary">Dashboard</h2>
-              <p className="text-muted">Welcome back, {user?.firstName || user?.email}</p>
+              <p className="text-muted">Welcome back, {user?.name}</p>
             </div>
           </div>
           <ErrorDisplay 

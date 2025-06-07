@@ -16,7 +16,7 @@ const Header = () => {
         
         <div className="navbar-nav ms-auto d-flex flex-row align-items-center">
           <span className="text-white me-3">
-            Welcome, {user?.firstName || user?.email}
+            Welcome, {user?.name}
           </span>
           <span className="badge me-3" style={{ backgroundColor: 'var(--primary-yellow)', color: 'var(--purple-darker)' }}>
             {user?.role}

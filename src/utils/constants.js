@@ -89,13 +89,12 @@ export const API_ENDPOINTS = {  AUTH: {
     WORKER_PERFORMANCE: '/api/admin/guests/analytics/worker-performance',
     EVENT_SUMMARY: '/api/admin/guests/analytics/events',
     EXPORT: '/api/admin/guests/export'
-  },
-  ADMIN: {
+  },  ADMIN: {
     USERS: '/api/admin/users',
     HIERARCHY: '/api/admin-hierarchy',
     STATES: '/api/admin-hierarchy/states',
-    BRANCHES: '/api/admin-hierarchy/branches',
-    ZONES: '/api/admin-hierarchy/zones',
+    BRANCHES: '/api/branches',
+    ZONES: '/api/zones',
     STATISTICS: '/api/admin/statistics'
   }
 };
