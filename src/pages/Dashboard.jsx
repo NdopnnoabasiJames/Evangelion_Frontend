@@ -6,6 +6,7 @@ import PageHeader, { HeaderConfigurations } from '../components/common/PageHeade
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
 import SuperAdminTabs from '../components/dashboard/SuperAdminTabs';
 import StateAdminTabs from '../components/dashboard/StateAdminTabs';
+import BranchAdminTabs from '../components/dashboard/BranchAdminTabs';
 import { ROLES } from '../utils/constants';
 import analyticsService from '../services/analyticsService';
 
@@ -150,18 +151,8 @@ const Dashboard = () => {  const { user } = useAuth();
         return <SuperAdminTabs dashboardData={dashboardData} />;
         case ROLES.STATE_ADMIN:
         return <StateAdminTabs dashboardData={dashboardData} />;
-      
-      case ROLES.BRANCH_ADMIN:
-        return (
-          <StatisticsGrid
-            cards={[
-              StatisticsCardTypes.zones(dashboardData.zones),
-              StatisticsCardTypes.totalWorkers(dashboardData.workers),
-              StatisticsCardTypes.totalRegistrars(dashboardData.registrars)
-            ]}
-            columns={3}
-          />
-        );
+        case ROLES.BRANCH_ADMIN:
+        return <BranchAdminTabs dashboardData={dashboardData} />;
       
       case ROLES.WORKER:
         return (
