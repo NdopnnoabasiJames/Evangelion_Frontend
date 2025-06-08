@@ -220,6 +220,50 @@ export const dashboardStatsService = {
     }
   },
 
+  // Zonal Admin Dashboard Statistics
+  getZonalAdminDashboardStats: async () => {
+    try {
+      console.log('DashboardStats: Fetching zonal admin dashboard stats...');
+      
+      const [
+        basicAnalytics,
+        registrarSummary
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
+        api.get(`${API_ENDPOINTS.REGISTRARS.BASE}/assignments-summary`)
+      ]);
+
+      const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+      const registrarData = registrarSummary.data?.data || registrarSummary.data || {};
+
+      const stats = {
+        totalRegistrars: registrarData?.totalRegistrars || 0,
+        activeEvents: 0, // We'll implement this endpoint later
+        totalGuests: analyticsData?.totalGuests || 0,
+        recentCheckIns: analyticsData?.checkedInGuests || 0,
+        
+        // Legacy fields for backward compatibility
+        registrars: registrarData?.totalRegistrars || 0,
+        assignedRegistrars: registrarData?.assignedRegistrars || 0,
+        unassignedRegistrars: registrarData?.unassignedRegistrars || 0
+      };
+
+      console.log('DashboardStats: Zonal admin stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('DashboardStats: Error fetching zonal admin stats:', error);
+      return {
+        totalRegistrars: 0,
+        activeEvents: 0,
+        totalGuests: 0,
+        recentCheckIns: 0,
+        registrars: 0,
+        assignedRegistrars: 0,
+        unassignedRegistrars: 0
+      };
+    }
+  },
+
   // Registrar Dashboard Statistics
   getRegistrarDashboardStats: async () => {
     try {
@@ -258,6 +302,8 @@ export const dashboardStatsService = {
         return dashboardStatsService.getStateAdminDashboardStats();
       case 'branch_admin':
         return dashboardStatsService.getBranchAdminDashboardStats();
+      case 'zonal_admin':
+        return dashboardStatsService.getZonalAdminDashboardStats();
       case 'worker':
         return dashboardStatsService.getWorkerDashboardStats();
       case 'registrar':

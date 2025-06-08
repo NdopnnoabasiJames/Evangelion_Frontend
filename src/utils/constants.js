@@ -82,8 +82,9 @@ export const API_ENDPOINTS = {  AUTH: {
     SEARCH_GUESTS: '/api/registrars/guests/search',
     CHECK_IN_GUEST: '/api/registrars/guests/check-in',
     DASHBOARD: '/api/registrars/dashboard',
-    STATISTICS: '/api/registrars/events'
-  },  ANALYTICS: {
+    STATISTICS: '/api/registrars/events',
+    ASSIGNMENTS_SUMMARY: '/api/registrars/assignments-summary'
+  },ANALYTICS: {
     DASHBOARD: '/api/admin/guests/analytics/basic',
     TRENDS: '/api/admin/guests/analytics/trends',
     WORKER_PERFORMANCE: '/api/admin/guests/analytics/worker-performance',

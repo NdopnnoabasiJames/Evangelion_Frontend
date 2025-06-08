@@ -57,13 +57,16 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
 
   return (
     <>
-      <div className="card border-warning mb-3">
-        <div className="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+      <div className="card border-warning mb-3">        <div className="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
           <h6 className="mb-0 text-warning">
             <i className="fas fa-clock me-2"></i>
             Pending Approval
-          </h6>
-          <span className="badge bg-warning text-dark">State Admin</span>
+          </h6>          <span className="badge bg-warning text-dark">
+            {admin.role === 'zonal_admin' ? 'Zonal Admin' : 
+             admin.role === 'state_admin' ? 'State Admin' : 
+             admin.role === 'branch_admin' ? 'Branch Admin' : 
+             'Admin'}
+          </span>
         </div>
         <div className="card-body">
           <div className="row">
@@ -78,6 +81,20 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
                     ? admin.state.name 
                     : admin.state || 'N/A'
                 }</div>
+                {admin.branch && (
+                  <div><strong>Branch:</strong> {
+                    typeof admin.branch === 'object' && admin.branch?.name 
+                      ? admin.branch.name 
+                      : admin.branch || 'N/A'
+                  }</div>
+                )}
+                {admin.zone && (
+                  <div><strong>Zone:</strong> {
+                    typeof admin.zone === 'object' && admin.zone?.name 
+                      ? admin.zone.name 
+                      : admin.zone || 'N/A'
+                  }</div>
+                )}
                 <div><strong>Applied:</strong> {formatDate(admin.createdAt)}</div>
               </div>
               

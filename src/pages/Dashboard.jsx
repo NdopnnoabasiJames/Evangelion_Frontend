@@ -7,6 +7,7 @@ import { StatisticsGrid, StatisticsCardTypes } from '../components/common/Statis
 import SuperAdminTabs from '../components/dashboard/SuperAdminTabs';
 import StateAdminTabs from '../components/dashboard/StateAdminTabs';
 import BranchAdminTabs from '../components/dashboard/BranchAdminTabs';
+import ZonalAdminTabs from '../components/dashboard/ZonalAdminTabs';
 import { ROLES } from '../utils/constants';
 import analyticsService from '../services/analyticsService';
 
@@ -97,14 +98,22 @@ const Dashboard = () => {  const { user } = useAuth();
           activeEvents: 12,
           totalGuests: 892,
           recentActivity: 'Branch "Ikeja Zone" updated'
-        };
-      case ROLES.BRANCH_ADMIN:
+        };      case ROLES.BRANCH_ADMIN:
         return {
           ...baseData,
           zones: 5,
           workers: 25,
           registrars: 8,
           recentActivity: 'New worker assigned'
+        };
+      case ROLES.ZONAL_ADMIN:
+        return {
+          ...baseData,
+          totalRegistrars: 8,
+          activeEvents: 3,
+          totalGuests: 145,
+          recentCheckIns: 23,
+          recentActivity: 'New registrar assigned'
         };
       case ROLES.WORKER:
         return {
@@ -146,13 +155,14 @@ const Dashboard = () => {  const { user } = useAuth();
   const getDashboardContent = () => {
     if (!dashboardData) return null;
 
-    switch (user?.role) {
-      case ROLES.SUPER_ADMIN:
+    switch (user?.role) {      case ROLES.SUPER_ADMIN:
         return <SuperAdminTabs dashboardData={dashboardData} />;
         case ROLES.STATE_ADMIN:
         return <StateAdminTabs dashboardData={dashboardData} />;
         case ROLES.BRANCH_ADMIN:
         return <BranchAdminTabs dashboardData={dashboardData} />;
+        case ROLES.ZONAL_ADMIN:
+        return <ZonalAdminTabs dashboardData={dashboardData} />;
       
       case ROLES.WORKER:
         return (
