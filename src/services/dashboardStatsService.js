@@ -236,11 +236,17 @@ export const dashboardStatsService = {
       ] = await Promise.all([
         api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
         api.get(API_ENDPOINTS.REGISTRARS.ASSIGNMENTS_SUMMARY)
-      ]);      console.log('DashboardStats: Basic analytics response:', basicAnalytics.data);
+      ]);
+
+      console.log('DashboardStats: Basic analytics response:', basicAnalytics.data);
       console.log('DashboardStats: Registrar summary response:', registrarSummary.data);
+      console.log('DashboardStats: Registrar summary status:', registrarSummary.status);
 
       const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
       const registrarData = registrarSummary.data?.data || registrarSummary.data || {};
+      
+      console.log('DashboardStats: Extracted analytics data:', analyticsData);
+      console.log('DashboardStats: Extracted registrar data:', registrarData);
 
       const stats = {
         totalRegistrars: registrarData?.totalRegistrars || 0,

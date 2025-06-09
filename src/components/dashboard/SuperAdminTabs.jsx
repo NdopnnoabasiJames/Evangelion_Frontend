@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import AdminApprovalCard from './AdminApprovalCard';
 import ApprovedAdminCard from './ApprovedAdminCard';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
+import { TabbedInterface, TabPane } from '../common/TabNavigation';
+import EventsList from '../events/EventsList';
+import EventDelegation from '../events/EventDelegation';
+import HierarchicalEventCreation from '../events/HierarchicalEventCreation';
+import PickupStationAssignment from '../events/PickupStationAssignment';
 import analyticsService from '../../services/analyticsService';
+import { useApi } from '../../hooks/useApi';
+import { API_ENDPOINTS } from '../../utils/constants';
 
 const SuperAdminTabs = ({ dashboardData }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -13,13 +20,32 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const [approvedLoading, setApprovedLoading] = useState(false);
   const [error, setError] = useState(null);
   const [approvedError, setApprovedError] = useState(null);
-  // Load pending admins when Admin Management tab is active
+  // Event management state
+  const [events, setEvents] = useState([]);
+  const [pendingEvents, setPendingEvents] = useState([]);
+  const [eventActiveTab, setEventActiveTab] = useState('list');
+
+  // Fetch events data for super admin
+  const { data: eventsData, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useApi(
+    API_ENDPOINTS.EVENTS.LIST, 
+    { immediate: activeTab === 'events' }
+  );
+
+  const { data: hierarchicalEventsData, refetch: refetchHierarchicalEvents } = useApi(
+    API_ENDPOINTS.EVENTS.HIERARCHICAL,
+    { immediate: activeTab === 'events' }
+  );  // Load pending admins when Admin Management tab is active
   useEffect(() => {
     if (activeTab === 'admin-management') {
       loadPendingAdmins();
       loadApprovedAdmins();
+    } else if (activeTab === 'events') {
+      // Events data is loaded automatically via useApi hook
+      if (eventsData) {
+        setEvents(eventsData);
+      }
     }
-  }, [activeTab]);  const loadPendingAdmins = async () => {
+  }, [activeTab, eventsData]);const loadPendingAdmins = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -267,8 +293,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 <i className="fas fa-bolt me-2"></i>
                 Quick Actions
               </h5>
-            </div>
-            <div className="card-body">
+            </div>            <div className="card-body">
               <div className="d-grid gap-2 d-md-flex">
                 <button 
                   className="btn btn-primary"
@@ -276,6 +301,13 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 >
                   <i className="fas fa-user-check me-2"></i>
                   Manage Admins
+                </button>
+                <button 
+                  className="btn btn-success"
+                  onClick={() => setActiveTab('events')}
+                >
+                  <i className="fas fa-calendar me-2"></i>
+                  Manage Events
                 </button>
                 <button className="btn btn-outline-primary">
                   <i className="fas fa-download me-2"></i>
@@ -427,7 +459,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
       </div>
     </div>
   );
-
   const renderSystemManagement = () => (
     <div className="card">
       <div className="card-header">
@@ -443,6 +474,108 @@ const SuperAdminTabs = ({ dashboardData }) => {
       </div>
     </div>
   );
+  const renderEventManagement = () => {
+    const eventTabs = [
+      {
+        key: 'list',
+        label: 'All Events',
+        icon: 'bi-list-ul'
+      },
+      {
+        key: 'create',
+        label: 'Create Event',
+        icon: 'bi-plus-circle'
+      },
+      {
+        key: 'hierarchical',
+        label: 'Hierarchical Events',
+        icon: 'bi-diagram-3'
+      },
+      {
+        key: 'pickup-stations',
+        label: 'Pickup Stations',
+        icon: 'bi-geo-alt'
+      }
+    ];
+
+    if (eventsLoading) {
+      return (
+        <div className="row g-4">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="col-12">
+              <LoadingCard height="200px" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h5 className="mb-0">
+            <i className="fas fa-calendar me-2"></i>
+            Event Management
+          </h5>
+        </div>
+        <div className="card-body">
+          <TabbedInterface
+            tabs={eventTabs}
+            activeTab={eventActiveTab}
+            onTabChange={setEventActiveTab}
+          >
+            <TabPane tabId="list" title="All Events">
+              <EventsList 
+                events={events}
+                loading={eventsLoading}
+                error={eventsError}
+                canManage={true} // Super admin can manage all events
+                canEdit={true}
+                canDelete={true}
+                onRefresh={() => {
+                  refetchEvents();
+                  refetchHierarchicalEvents();
+                }}
+              />
+            </TabPane>
+
+            <TabPane tabId="create" title="Create Event">
+              <HierarchicalEventCreation 
+                onEventCreated={() => {
+                  refetchEvents();
+                  refetchHierarchicalEvents();
+                }}
+              />
+            </TabPane>
+
+            <TabPane tabId="hierarchical" title="Hierarchical Events">
+              <div className="mb-3">
+                <h6>System-wide Event Overview</h6>
+                <p className="text-muted">Manage events across all organizational levels</p>
+              </div>
+              <EventsList 
+                events={hierarchicalEventsData || []}
+                loading={eventsLoading}
+                error={eventsError}
+                canManage={true}
+                canEdit={true}
+                canDelete={true}
+                showHierarchy={true}
+                onRefresh={refetchHierarchicalEvents}
+              />
+            </TabPane>
+
+            <TabPane tabId="pickup-stations" title="Pickup Stations">
+              <PickupStationAssignment 
+                canManage={true}
+                showGlobalView={true}
+              />
+            </TabPane>
+          </TabbedInterface>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -457,8 +590,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             <i className="fas fa-chart-line me-2"></i>
             Overview
           </button>
-        </li>
-        <li className="nav-item" role="presentation">
+        </li>        <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('admin-management')}
@@ -469,6 +601,21 @@ const SuperAdminTabs = ({ dashboardData }) => {
             {pendingAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingAdmins.length}
+              </span>
+            )}
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
+            onClick={() => setActiveTab('events')}
+            type="button"
+          >
+            <i className="fas fa-calendar me-2"></i>
+            Events
+            {dashboardData?.activeEvents > 0 && (
+              <span className="badge bg-info text-white ms-2">
+                {dashboardData.activeEvents}
               </span>
             )}
           </button>
@@ -493,12 +640,11 @@ const SuperAdminTabs = ({ dashboardData }) => {
             System Management
           </button>
         </li>
-      </ul>
-
-      {/* Tab Content */}
+      </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'admin-management' && renderAdminManagement()}
+        {activeTab === 'events' && renderEventManagement()}
         {activeTab === 'audit-trail' && renderAuditTrail()}
         {activeTab === 'system-management' && renderSystemManagement()}
       </div>
