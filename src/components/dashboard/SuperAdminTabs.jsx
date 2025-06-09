@@ -9,9 +9,11 @@ import HierarchicalEventCreation from '../events/HierarchicalEventCreation';
 import PickupStationAssignment from '../events/PickupStationAssignment';
 import analyticsService from '../../services/analyticsService';
 import { useApi } from '../../hooks/useApi';
+import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 const SuperAdminTabs = ({ dashboardData }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingAdmins, setPendingAdmins] = useState([]);
   const [approvedAdmins, setApprovedAdmins] = useState([]);
@@ -36,6 +38,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
     { immediate: activeTab === 'events' }
   );  // Load pending admins when Admin Management tab is active
   useEffect(() => {
+    console.log('SuperAdminTabs: Tab changed to', activeTab);
     if (activeTab === 'admin-management') {
       loadPendingAdmins();
       loadApprovedAdmins();
@@ -301,10 +304,12 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 >
                   <i className="fas fa-user-check me-2"></i>
                   Manage Admins
-                </button>
-                <button 
+                </button>                <button 
                   className="btn btn-success"
-                  onClick={() => setActiveTab('events')}
+                  onClick={() => {
+                    console.log('SuperAdminTabs: Manage Events button clicked');
+                    setActiveTab('events');
+                  }}
                 >
                   <i className="fas fa-calendar me-2"></i>
                   Manage Events
@@ -522,9 +527,11 @@ const SuperAdminTabs = ({ dashboardData }) => {
           <TabbedInterface
             tabs={eventTabs}
             activeTab={eventActiveTab}
-            onTabChange={setEventActiveTab}
-          >
-            <TabPane tabId="list" title="All Events">
+            onTabChange={(tab) => {
+              console.log('SuperAdminTabs: Event tab changed to', tab);
+              setEventActiveTab(tab);
+            }}
+          >            <TabPane tabId="list" title="All Events">
               <EventsList 
                 events={events}
                 loading={eventsLoading}
@@ -536,14 +543,19 @@ const SuperAdminTabs = ({ dashboardData }) => {
                   refetchEvents();
                   refetchHierarchicalEvents();
                 }}
+                onCreateEvent={() => {
+                  console.log('SuperAdminTabs: Switching to create tab');
+                  setEventActiveTab('create');
+                }}
               />
-            </TabPane>
-
-            <TabPane tabId="create" title="Create Event">
+            </TabPane><TabPane tabId="create" title="Create Event">
               <HierarchicalEventCreation 
+                userRole={user?.role || 'super_admin'}
                 onEventCreated={() => {
                   refetchEvents();
                   refetchHierarchicalEvents();
+                  // Switch back to list tab after creation
+                  setEventActiveTab('list');
                 }}
               />
             </TabPane>
@@ -552,8 +564,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
               <div className="mb-3">
                 <h6>System-wide Event Overview</h6>
                 <p className="text-muted">Manage events across all organizational levels</p>
-              </div>
-              <EventsList 
+              </div>              <EventsList 
                 events={hierarchicalEventsData || []}
                 loading={eventsLoading}
                 error={eventsError}
@@ -562,6 +573,10 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 canDelete={true}
                 showHierarchy={true}
                 onRefresh={refetchHierarchicalEvents}
+                onCreateEvent={() => {
+                  console.log('SuperAdminTabs: Switching to create tab from hierarchical');
+                  setEventActiveTab('create');
+                }}
               />
             </TabPane>
 

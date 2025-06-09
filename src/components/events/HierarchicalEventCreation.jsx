@@ -3,6 +3,8 @@ import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
+  console.log('HierarchicalEventCreation: Component rendered', { userRole });
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -15,19 +17,24 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
 
   const { execute: createEvent } = useApi(null, { immediate: false });
 
+  console.log('HierarchicalEventCreation: Current state', { formData, creating, error });
   const getEventEndpoint = () => {
-    switch (userRole) {
-      case 'super_admin':
-        return API_ENDPOINTS.ADMIN.CREATE_SUPER_ADMIN_EVENT;
-      case 'state_admin':
-        return API_ENDPOINTS.ADMIN.CREATE_STATE_ADMIN_EVENT;
-      case 'branch_admin':
-        return API_ENDPOINTS.ADMIN.CREATE_BRANCH_ADMIN_EVENT;
-      case 'zonal_admin':
-        return API_ENDPOINTS.ADMIN.CREATE_ZONAL_ADMIN_EVENT;
-      default:
-        return API_ENDPOINTS.EVENTS.HIERARCHICAL;
-    }
+    const endpoint = (() => {
+      switch (userRole) {
+        case 'super_admin':
+          return API_ENDPOINTS.ADMIN.CREATE_SUPER_ADMIN_EVENT;
+        case 'state_admin':
+          return API_ENDPOINTS.ADMIN.CREATE_STATE_ADMIN_EVENT;
+        case 'branch_admin':
+          return API_ENDPOINTS.ADMIN.CREATE_BRANCH_ADMIN_EVENT;
+        case 'zonal_admin':
+          return API_ENDPOINTS.ADMIN.CREATE_ZONAL_ADMIN_EVENT;
+        default:
+          return API_ENDPOINTS.EVENTS.HIERARCHICAL;
+      }
+    })();
+    console.log('HierarchicalEventCreation: Using endpoint', { userRole, endpoint });
+    return endpoint;
   };
 
   const getScopeOptions = () => {
@@ -55,9 +62,9 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
         return [];
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('HierarchicalEventCreation: Form submitted', { formData, userRole });
     setCreating(true);
     setError(null);
 

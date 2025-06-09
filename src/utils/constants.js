@@ -56,7 +56,7 @@ export const API_ENDPOINTS = {  AUTH: {
     PROFILE: '/api/auth/profile'
   },  EVENTS: {
     BASE: '/api/events',
-    HIERARCHICAL: '/api/events/hierarchical',
+    HIERARCHICAL: '/api/admin-hierarchy/events',
     ACCESSIBLE: '/api/events/accessible',
     ACTIVE: '/api/events/active',
     UPCOMING: '/api/events/upcoming',

@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBadge } from '../../utils/statusUtils.jsx';
 import { ErrorDisplay, EmptyState } from '../common/Loading';
 
-const EventsList = ({ events, loading, error, canEdit, onRefresh }) => {
+const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent }) => {
   if (error) {
     return (
       <ErrorDisplay 
@@ -12,19 +12,21 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh }) => {
       />
     );
   }
-
   if (!events || events.length === 0) {
     return (
       <EmptyState 
         icon="bi-calendar-event"
         title="No Events Found"
         description="There are no events available at the moment. Create your first event to get started."
-        action={
-          <button className="btn btn-primary mt-3">
+        action={onCreateEvent && (
+          <button 
+            className="btn btn-primary mt-3"
+            onClick={onCreateEvent}
+          >
             <i className="bi bi-plus-circle me-2"></i>
             Create Your First Event
           </button>
-        }
+        )}
       />
     );
   }

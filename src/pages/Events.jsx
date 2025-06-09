@@ -169,14 +169,17 @@ const Events = () => {
           onTabChange={setActiveTab}
           tabs={getTabsForRole()}
           variant="tabs"
-        >
-          <TabPane tabId="list" title="Events List">
+        >          <TabPane tabId="list" title="Events List">
             <EventsList 
               events={events}
               loading={loading}
               error={error}
               canEdit={canEditEvents}
               onRefresh={refreshAllData}
+              onCreateEvent={canCreateEvents ? () => {
+                console.log('Events page: Switching to create tab');
+                setActiveTab('create');
+              } : null}
             />
           </TabPane>
 

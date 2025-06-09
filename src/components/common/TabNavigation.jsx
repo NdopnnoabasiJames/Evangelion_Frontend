@@ -127,6 +127,16 @@ export const TabbedInterface = ({
   justify = false,
   vertical = false
 }) => {
+  // Clone children with isActive prop
+  const childrenWithProps = React.Children.map(children, (child) => {
+    if (React.isValidElement(child) && child.type === TabPane) {
+      return React.cloneElement(child, {
+        isActive: child.props.tabId === activeTab
+      });
+    }
+    return child;
+  });
+
   return (
     <div className={vertical ? 'row' : ''}>
       <div className={vertical ? 'col-md-3' : ''}>
@@ -142,7 +152,7 @@ export const TabbedInterface = ({
       </div>
       <div className={vertical ? 'col-md-9' : ''}>
         <TabContent className={contentClassName}>
-          {children}
+          {childrenWithProps}
         </TabContent>
       </div>
     </div>
