@@ -218,20 +218,26 @@ export const dashboardStatsService = {
         recentActivity: 'Guest registration activity'
       };
     }
-  },
-
-  // Zonal Admin Dashboard Statistics
+  },  // Zonal Admin Dashboard Statistics
   getZonalAdminDashboardStats: async () => {
     try {
       console.log('DashboardStats: Fetching zonal admin dashboard stats...');
+      
+      // First get user profile to understand the zonal admin's zone assignment
+      const userProfileResponse = await api.get('/api/auth/profile');
+      const userProfile = userProfileResponse.data?.data?.data || userProfileResponse.data?.data || userProfileResponse.data;
+      console.log('DashboardStats: Zonal admin profile:', userProfile);
+      console.log('DashboardStats: Zone assignment:', userProfile?.zone);
+      console.log('DashboardStats: Assigned zones array:', userProfile?.assignedZones);
       
       const [
         basicAnalytics,
         registrarSummary
       ] = await Promise.all([
         api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
-        api.get(`${API_ENDPOINTS.REGISTRARS.BASE}/assignments-summary`)
-      ]);
+        api.get(API_ENDPOINTS.REGISTRARS.ASSIGNMENTS_SUMMARY)
+      ]);      console.log('DashboardStats: Basic analytics response:', basicAnalytics.data);
+      console.log('DashboardStats: Registrar summary response:', registrarSummary.data);
 
       const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
       const registrarData = registrarSummary.data?.data || registrarSummary.data || {};
@@ -246,13 +252,19 @@ export const dashboardStatsService = {
         registrars: registrarData?.totalRegistrars || 0,
         assignedRegistrars: registrarData?.assignedRegistrars || 0,
         unassignedRegistrars: registrarData?.unassignedRegistrars || 0
-      };
-
-      console.log('DashboardStats: Zonal admin stats:', stats);
-      return stats;
+      };      console.log('DashboardStats: Final zonal admin stats:', stats);
+      
+      // Info for zero registrars (normal for new system)
+      if (stats.totalRegistrars === 0) {
+        console.info('DashboardStats: No registrars found for zone:', userProfile?.zone?.name || 'No zone assigned');
+        console.info('DashboardStats: This is normal for a new system or zone with no registrar assignments yet');
+      }
+        return stats;
     } catch (error) {
       console.error('DashboardStats: Error fetching zonal admin stats:', error);
-      return {
+      
+      // Return fallback stats
+      const fallbackStats = {
         totalRegistrars: 0,
         activeEvents: 0,
         totalGuests: 0,
@@ -261,6 +273,8 @@ export const dashboardStatsService = {
         assignedRegistrars: 0,
         unassignedRegistrars: 0
       };
+        console.log('DashboardStats: Returning fallback stats for zonal admin due to error');
+      return fallbackStats;
     }
   },
 

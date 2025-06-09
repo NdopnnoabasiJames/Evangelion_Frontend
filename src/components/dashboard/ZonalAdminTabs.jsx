@@ -19,13 +19,9 @@ const ZonalAdminTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('ZonalAdminTabs: Loading real zone statistics...');
-      console.log('ZonalAdminTabs: Current user object:', user);
-      console.log('ZonalAdminTabs: User zone:', user?.zone);
-      console.log('ZonalAdminTabs: User branch:', user?.branch);
-      console.log('ZonalAdminTabs: User state:', user?.state);
+      console.log('ZonalAdminTabs: Loading zone statistics...');
       
-        // Call the real dashboard stats service for zonal admin
+      // Call the real dashboard stats service for zonal admin
       const dashboardStats = await dashboardStatsService.getDashboardStatsByRole('zonal_admin');
       
       console.log('ZonalAdminTabs: Received dashboard stats:', dashboardStats);
@@ -37,11 +33,18 @@ const ZonalAdminTabs = ({ dashboardData }) => {
         recentCheckIns: dashboardStats.recentCheckIns || 0,
         zoneName: user?.zone?.name || 'Your Zone',
         branchName: user?.branch?.name || 'Your Branch',
-        stateName: user?.state?.name || 'Your State'
-      };
-      
-      console.log('ZonalAdminTabs: Processed zone data:', zoneData);
+        stateName: user?.state?.name || 'Your State',
+        // Add assignment info
+        hasZoneAssignment: !!user?.zone,
+        zoneId: user?.zone?._id,
+        assignedZonesCount: user?.assignedZones?.length || 0
+      };      
+      console.log('ZonalAdminTabs: Processed zone data for', zoneData.zoneName);
       setZoneStats(zoneData);
+      
+      if (zoneData.totalRegistrars === 0) {
+        console.info('ZonalAdminTabs: No registrars assigned to zone:', zoneData.zoneName);
+      }
     } catch (err) {
       console.error('Error loading zone statistics:', err);
       setError(err.message || 'Failed to load zone statistics');
@@ -54,7 +57,10 @@ const ZonalAdminTabs = ({ dashboardData }) => {
         recentCheckIns: 0,
         zoneName: user?.zone?.name || 'Your Zone',
         branchName: user?.branch?.name || 'Your Branch',
-        stateName: user?.state?.name || 'Your State'
+        stateName: user?.state?.name || 'Your State',
+        hasZoneAssignment: !!user?.zone,
+        zoneId: user?.zone?._id,
+        assignedZonesCount: user?.assignedZones?.length || 0
       });
     } finally {
       setLoading(false);

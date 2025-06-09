@@ -54,13 +54,18 @@ export const API_ENDPOINTS = {  AUTH: {
     LOGIN: '/api/auth/login',
     REGISTER: '/api/auth/register',
     PROFILE: '/api/auth/profile'
-  },EVENTS: {
+  },  EVENTS: {
     BASE: '/api/events',
     HIERARCHICAL: '/api/events/hierarchical',
     ACCESSIBLE: '/api/events/accessible',
     ACTIVE: '/api/events/active',
-    UPCOMING: '/api/events/upcoming'
-  },  GUESTS: {
+    UPCOMING: '/api/events/upcoming',
+    NEEDING_BRANCH_SELECTION: '/api/admin-hierarchy/events/needing-branch-selection',
+    NEEDING_ZONE_SELECTION: '/api/admin-hierarchy/events/needing-zone-selection',
+    SELECT_BRANCHES: '/api/admin-hierarchy/events',
+    SELECT_ZONES: '/api/admin-hierarchy/events',
+    ASSIGN_PICKUP_STATIONS: '/api/events'
+  },GUESTS: {
     BASE: '/api/guests',
     ADMIN: '/api/admin/guests',
     ANALYTICS: '/api/admin/guests/analytics',
@@ -93,10 +98,20 @@ export const API_ENDPOINTS = {  AUTH: {
   },  ADMIN: {
     USERS: '/api/admin/users',
     HIERARCHY: '/api/admin-hierarchy',
-    STATES: '/api/admin-hierarchy/states',
-    BRANCHES: '/api/branches',
-    ZONES: '/api/zones',
-    STATISTICS: '/api/admin/statistics'
+    STATES: '/api/admin-hierarchy/accessible-states',
+    BRANCHES: '/api/admin-hierarchy/accessible-branches',
+    ZONES: '/api/admin-hierarchy/accessible-zones',
+    STATISTICS: '/api/admin/statistics',
+    AVAILABLE_OPTIONS: '/api/admin-hierarchy/events',
+    CREATE_SUPER_ADMIN_EVENT: '/api/admin-hierarchy/events/super-admin',
+    CREATE_STATE_ADMIN_EVENT: '/api/admin-hierarchy/events/state-admin',
+    CREATE_BRANCH_ADMIN_EVENT: '/api/admin-hierarchy/events/branch-admin',
+    CREATE_ZONAL_ADMIN_EVENT: '/api/admin-hierarchy/events/zonal-admin'
+  },
+  PICKUP_STATIONS: {
+    BASE: '/api/pickup-stations',
+    ASSIGN: '/api/pickup-stations/assign',
+    ZONE_STATIONS: '/api/pickup-stations/zone'
   }
 };
 

@@ -1,19 +1,21 @@
 import api from './api';
 import { API_ENDPOINTS } from '../utils/constants';
-import adminManagementService from './adminManagementService';
-import dashboardStatsService from './dashboardStatsService';
-import systemMetricsService from './systemMetricsService';
 
 export const analyticsService = {
-  // Re-export admin management functions
-  ...adminManagementService,
-  
-  // Re-export dashboard stats functions
-  ...dashboardStatsService,
-  
-  // Re-export system metrics functions
-  ...systemMetricsService,
-  // Core analytics functions
+  // Get current user profile with populated state/branch information
+  getUserProfile: async () => {
+    try {
+      console.log('Analytics: Fetching current user profile...');
+      const response = await api.get('/api/auth/profile');
+      console.log('Analytics: User profile response:', response);
+      return response.data?.data?.data || response.data?.data || response.data;
+    } catch (error) {
+      console.error('Analytics: Error fetching user profile:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch user profile');
+    }
+  },
+
+  // Get basic dashboard analytics
   getDashboardAnalytics: async (eventId = null) => {
     try {
       const params = eventId ? { eventId } : {};
@@ -21,6 +23,375 @@ export const analyticsService = {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch dashboard analytics');
+    }
+  },
+
+  // Admin Management Functions for Super Admin
+  // Get pending admin registrations
+  getPendingAdmins: async () => {
+    try {
+      console.log('Analytics: Fetching pending admin registrations...');
+      const response = await api.get('/api/users/pending-admins');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching pending admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch pending admin registrations');
+    }
+  },
+
+  // Get approved admin registrations
+  getApprovedAdmins: async () => {
+    try {
+      console.log('Analytics: Fetching approved admin registrations...');
+      const response = await api.get('/api/users/approved-admins');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching approved admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch approved admin registrations');
+    }
+  },
+
+  // Approve admin registration
+  approveAdmin: async (adminId, adminData) => {
+    try {
+      console.log('Analytics: Approving admin - ID:', adminId, 'Type:', typeof adminId, 'Data:', adminData);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Admin ID is undefined or invalid');
+      }
+      
+      const response = await api.post(`/api/users/approve-admin/${adminId}`, adminData);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error approving admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to approve admin registration');
+    }
+  },
+  // Reject admin registration
+  rejectAdmin: async (adminId, reason) => {
+    try {
+      console.log('Analytics: Rejecting admin - ID:', adminId, 'Type:', typeof adminId, 'Reason:', reason);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Admin ID is undefined or invalid');
+      }
+      
+      const response = await api.post(`/api/users/reject-admin/${adminId}`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error rejecting admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to reject admin registration');
+    }
+  },
+
+  // Get admin approval history
+  getAdminApprovalHistory: async () => {
+    try {
+      console.log('Analytics: Fetching admin approval history...');
+      const response = await api.get('/api/users/admin-approval-history');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching admin approval history:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch admin approval history');
+    }
+  },
+
+  // Get super admin dashboard statistics
+  getSuperAdminDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching super admin dashboard stats...');
+      
+      // Fetch multiple data sources for super admin using CORRECT endpoints
+      const [
+        basicAnalytics,
+        statesResponse,
+        eventsResponse
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD), // /api/admin/guests/analytics/basic
+        api.get('/api/states'), // Correct states endpoint
+        api.get('/api/events') // Use basic events endpoint instead of accessible
+      ]);      console.log('Analytics: Basic analytics response:', basicAnalytics.data);
+      console.log('Analytics: States response:', statesResponse.data);
+      console.log('Analytics: Events response:', eventsResponse.data);
+
+      // Extract data from API responses - they have { data: [...] } structure
+      const statesData = statesResponse.data?.data || statesResponse.data || [];
+      const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
+      const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+
+      // For user count, let's try to get it from basic analytics or set a default
+      const totalUsers = analyticsData?.totalUsers || 0;
+
+      const stats = {
+        totalStates: Array.isArray(statesData) ? statesData.length : 0,
+        totalEvents: Array.isArray(eventsData) ? eventsData.length : 0,
+        totalUsers: totalUsers,
+        totalGuests: analyticsData?.totalGuests || 0,
+        checkedInGuests: analyticsData?.checkedInGuests || 0,
+        checkInRate: analyticsData?.checkInRate || 0
+      };
+
+      console.log('Analytics: Final stats object:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching super admin stats:', error);
+      console.error('Analytics: Error details:', error.response?.data);
+      
+      // Return fallback data instead of throwing error
+      const fallbackStats = {
+        totalStates: 0,
+        totalEvents: 0,
+        totalUsers: 0,
+        totalGuests: 0,
+        checkedInGuests: 0,
+        checkInRate: 0
+      };
+      
+      console.log('Analytics: Returning fallback stats:', fallbackStats);
+      return fallbackStats;
+    }
+  },  // Get state admin dashboard statistics
+  getStateAdminDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching state admin dashboard stats...');      // First get the current user's profile to get their state ID
+      const userProfileResponse = await api.get('/api/auth/profile');
+      console.log('Analytics: Full profile response:', userProfileResponse);
+      const userProfile = userProfileResponse.data?.data?.data || userProfileResponse.data?.data || userProfileResponse.data;
+      console.log('Analytics: Extracted user profile:', userProfile);
+      const stateId = userProfile?.state?._id || userProfile?.state;
+      console.log('Analytics: Extracted state ID:', stateId);
+      
+      if (!stateId) {
+        console.error('Analytics: State admin has no state assigned');
+        console.error('Analytics: User profile structure:', userProfile);
+        throw new Error('State admin must have a state assigned');
+      }
+
+      console.log('Analytics: Fetching data for state ID:', stateId);
+      
+      const [
+        basicAnalytics,
+        branchesResponse,
+        zonesResponse,
+        eventsResponse
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
+        api.get(`/api/branches/by-state/${stateId}`),
+        api.get(`/api/zones/by-state/${stateId}`),
+        api.get('/api/events')
+      ]);
+
+      // Extract data from API responses
+      const branchesData = branchesResponse.data?.data || branchesResponse.data || [];
+      const zonesData = zonesResponse.data?.data || zonesResponse.data || [];
+      const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
+      const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+
+      const activeEvents = Array.isArray(eventsData) ? eventsData.filter(event => 
+        ['active', 'published', 'in_progress'].includes(event.status)
+      ) : [];
+
+      const stats = {
+        totalBranches: Array.isArray(branchesData) ? branchesData.length : 0,
+        totalZones: Array.isArray(zonesData) ? zonesData.length : 0,
+        activeEvents: activeEvents.length,
+        totalGuests: analyticsData?.totalGuests || 0,
+        checkInRate: analyticsData?.checkInRate || 0
+      };
+
+      console.log('Analytics: State admin stats for state', stateId, ':', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching state admin stats:', error);
+      return {
+        totalBranches: 0,
+        totalZones: 0,
+        activeEvents: 0,
+        totalGuests: 0,
+        checkInRate: 0
+      };
+    }
+  },
+
+  // Branch Admin functions for State Admin
+  // Get pending branch admin registrations
+  getPendingBranchAdmins: async () => {
+    try {
+      console.log('Analytics: Fetching pending branch admin registrations...');
+      const response = await api.get('/api/users/pending-branch-admins');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching pending branch admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch pending branch admin registrations');
+    }
+  },
+
+  // Get approved branch admin registrations
+  getApprovedBranchAdmins: async () => {
+    try {
+      console.log('Analytics: Fetching approved branch admin registrations...');
+      const response = await api.get('/api/users/approved-branch-admins');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching approved branch admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch approved branch admin registrations');
+    }
+  },
+
+  // Approve branch admin registration
+  approveBranchAdmin: async (adminId, adminData) => {
+    try {
+      console.log('Analytics: Approving branch admin - ID:', adminId, 'Type:', typeof adminId, 'Data:', adminData);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Branch Admin ID is undefined or invalid');
+      }
+      
+      const response = await api.post(`/api/users/approve-branch-admin/${adminId}`, adminData);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error approving branch admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to approve branch admin registration');
+    }
+  },
+
+  // Reject branch admin registration
+  rejectBranchAdmin: async (adminId, reason) => {
+    try {
+      console.log('Analytics: Rejecting branch admin - ID:', adminId, 'Type:', typeof adminId, 'Reason:', reason);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Branch Admin ID is undefined or invalid');
+      }
+      
+      const response = await api.post(`/api/users/reject-branch-admin/${adminId}`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error rejecting branch admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to reject branch admin registration');
+    }
+  },  // Get branch admin dashboard statistics
+  getBranchAdminDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching branch admin dashboard stats...');
+        // First get the current user's profile to get their branch ID
+      const userProfileResponse = await api.get('/api/auth/profile');
+      const userProfile = userProfileResponse.data?.data?.data || userProfileResponse.data?.data || userProfileResponse.data;
+      const branchId = userProfile?.branch?._id || userProfile?.branch;
+      
+      if (!branchId) {
+        console.error('Analytics: Branch admin has no branch assigned');
+        throw new Error('Branch admin must have a branch assigned');
+      }
+
+      console.log('Analytics: Fetching data for branch ID:', branchId);
+      
+      const [
+        basicAnalytics,
+        zonesResponse
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
+        api.get(`/api/zones/by-branch/${branchId}`)
+      ]);
+
+      // Extract data from API responses
+      const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+      const zonesData = zonesResponse.data?.data || zonesResponse.data || [];
+
+      const stats = {
+        zones: Array.isArray(zonesData) ? zonesData.length : 0,
+        workers: 0, // We'll need to implement this endpoint later
+        registrars: 0, // We'll need to implement this endpoint later
+        totalGuests: analyticsData?.totalGuests || 0
+      };
+
+      console.log('Analytics: Branch admin stats for branch', branchId, ':', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching branch admin stats:', error);
+      return {
+        zones: 0,
+        workers: 0,
+        registrars: 0,
+        totalGuests: 0
+      };
+    }
+  },
+  // Get worker dashboard statistics
+  getWorkerDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching worker dashboard stats...');
+      
+      const [
+        trendsResponse
+      ] = await Promise.all([
+        api.get(API_ENDPOINTS.ANALYTICS.TRENDS, { params: { days: 7 } })
+      ]);
+
+      const thisWeekRegistrations = trendsResponse.data?.reduce((sum, day) => 
+        sum + (day.registrations || 0), 0
+      ) || 0;
+
+      const stats = {
+        guestsRegistered: 0, // We'll need to implement MY_GUESTS endpoint later
+        thisWeek: thisWeekRegistrations,
+        recentActivity: 'Guest registration activity'
+      };
+
+      console.log('Analytics: Worker stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching worker stats:', error);
+      return {
+        guestsRegistered: 0,
+        thisWeek: 0,
+        recentActivity: 'Guest registration activity'
+      };
+    }
+  },
+  // Get registrar dashboard statistics
+  getRegistrarDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching registrar dashboard stats...');
+      
+      // For now, return basic stats until we implement the registrar dashboard endpoint
+      const stats = {
+        checkinsToday: 0,
+        totalCheckins: 0,
+        pendingCheckins: 0,
+        recentActivity: 'Check-in session activity'
+      };
+
+      console.log('Analytics: Registrar stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('Analytics: Error fetching registrar stats:', error);
+      return {
+        checkinsToday: 0,
+        totalCheckins: 0,
+        pendingCheckins: 0,
+        recentActivity: 'Check-in session activity'
+      };
+    }
+  },  // Get role-specific dashboard data
+  getDashboardStatsByRole: async (userRole) => {
+    console.log('Analytics: getDashboardStatsByRole called with role:', userRole);
+    
+    switch (userRole) {
+      case 'super_admin':
+        console.log('Analytics: Calling getEnhancedSuperAdminStats for Phase 2');
+        return analyticsService.getEnhancedSuperAdminStats();
+      case 'state_admin':
+        return analyticsService.getStateAdminDashboardStats();
+      case 'branch_admin':
+        return analyticsService.getBranchAdminDashboardStats();
+      case 'worker':
+        return analyticsService.getWorkerDashboardStats();
+      case 'registrar':
+        return analyticsService.getRegistrarDashboardStats();
+      default:
+        console.log('Analytics: Falling back to default getDashboardAnalytics');
+        return analyticsService.getDashboardAnalytics();
     }
   },
 
