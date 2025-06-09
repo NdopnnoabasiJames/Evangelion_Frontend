@@ -8,9 +8,8 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  useEffect(() => {
-    const initAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);  useEffect(() => {
+    const initAuth = async () => {
       try {
         console.log('=== Auth Initialization Starting ===');
         const currentUser = authService.getCurrentUser();
@@ -20,14 +19,33 @@ export const AuthProvider = ({ children }) => {
         console.log('Auth init - currentUser:', currentUser);
         
         if (currentUser && token) {
-          console.log('Setting user as authenticated');
-          setUser(currentUser);
-          setIsAuthenticated(true);
+          console.log('Token found, fetching full user profile...');
+          try {
+            // Fetch the full user profile with populated hierarchy data
+            const profileResponse = await authService.getProfile();
+            const fullUser = profileResponse.data;
+            
+            console.log('Full user profile fetched:', fullUser);
+            
+            // Normalize user data structure - flatten if nested in data property
+            const normalizedUser = fullUser.data || fullUser;
+            
+            // Update localStorage with the normalized user data
+            localStorage.setItem('user', JSON.stringify(normalizedUser));
+            
+            setUser(normalizedUser);
+            setIsAuthenticated(true);
+          } catch (profileError) {
+            console.error('Failed to fetch user profile:', profileError);
+            // If profile fetch fails, fall back to stored user data
+            setUser(currentUser);
+            setIsAuthenticated(true);
+          }
         } else {
           console.log('No valid auth data found, user remains unauthenticated');
           setUser(null);
           setIsAuthenticated(false);
-        }      } catch (error) {
+        }} catch (error) {
         console.error('Auth initialization error:', error);
         // Don't redirect during initialization, just clear data
         localStorage.removeItem('authToken');
@@ -42,14 +60,34 @@ export const AuthProvider = ({ children }) => {
 
     initAuth();
   }, []);
-
   const login = async (credentials) => {
     try {
       setLoading(true);
       const { user: userData } = await authService.login(credentials);
-      setUser(userData);
-      setIsAuthenticated(true);
-      return userData;
+      
+      // After login, fetch the full user profile with populated hierarchy data
+      try {
+        const profileResponse = await authService.getProfile();
+        const fullUser = profileResponse.data;
+        
+        console.log('Full user profile after login:', fullUser);
+        
+        // Normalize user data structure - flatten if nested in data property
+        const normalizedUser = fullUser.data || fullUser;
+        
+        // Update localStorage with the normalized user data
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        
+        setUser(normalizedUser);
+        setIsAuthenticated(true);
+        return normalizedUser;
+      } catch (profileError) {
+        console.error('Failed to fetch user profile after login:', profileError);
+        // Fall back to login response data
+        setUser(userData);
+        setIsAuthenticated(true);
+        return userData;
+      }
     } catch (error) {
       throw error;
     } finally {
@@ -61,13 +99,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
   };
-
   const hasRole = (role) => {
-    return user?.role === role;
+    const userRole = user?.role || user?.data?.role;
+    return userRole === role;
   };
 
   const hasAnyRole = (roles) => {
-    return roles.includes(user?.role);
+    const userRole = user?.role || user?.data?.role;
+    return roles.includes(userRole);
   };
 
   const value = {

@@ -8,6 +8,7 @@ import SuperAdminTabs from '../components/dashboard/SuperAdminTabs';
 import StateAdminTabs from '../components/dashboard/StateAdminTabs';
 import BranchAdminTabs from '../components/dashboard/BranchAdminTabs';
 import ZonalAdminTabs from '../components/dashboard/ZonalAdminTabs';
+
 import { ROLES } from '../utils/constants';
 import analyticsService from '../services/analyticsService';
 
@@ -251,13 +252,12 @@ const Dashboard = () => {  const { user } = useAuth();
           />
         </div>
       </Layout>
-    );
-  }  return (
+    );  }  return (
     <Layout>
       <div className="container-fluid">
         <PageHeader
           {...HeaderConfigurations.dashboard(
-            user?.role, 
+            user?.role,
             user?.firstName || user?.name || user?.email, 
             refreshDashboard, 
             userProfile?.state,

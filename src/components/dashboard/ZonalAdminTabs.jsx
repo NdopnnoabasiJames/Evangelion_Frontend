@@ -15,12 +15,16 @@ const ZonalAdminTabs = ({ dashboardData }) => {
     if (activeTab === 'overview') {
       loadZoneStatistics();
     }
-  }, [activeTab]);
-  const loadZoneStatistics = async () => {
+  }, [activeTab]);  const loadZoneStatistics = async () => {
     setLoading(true);
     setError(null);
     try {
       console.log('ZonalAdminTabs: Loading real zone statistics...');
+      console.log('ZonalAdminTabs: Current user object:', user);
+      console.log('ZonalAdminTabs: User zone:', user?.zone);
+      console.log('ZonalAdminTabs: User branch:', user?.branch);
+      console.log('ZonalAdminTabs: User state:', user?.state);
+      
         // Call the real dashboard stats service for zonal admin
       const dashboardStats = await dashboardStatsService.getDashboardStatsByRole('zonal_admin');
       
