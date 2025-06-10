@@ -26,10 +26,9 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const [events, setEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
   const [eventActiveTab, setEventActiveTab] = useState('list');
-
   // Fetch events data for super admin
   const { data: eventsData, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useApi(
-    API_ENDPOINTS.EVENTS.LIST, 
+    API_ENDPOINTS.EVENTS.ACCESSIBLE, 
     { immediate: activeTab === 'events' }
   );
 
@@ -45,7 +44,11 @@ const SuperAdminTabs = ({ dashboardData }) => {
     } else if (activeTab === 'events') {
       // Events data is loaded automatically via useApi hook
       if (eventsData) {
-        setEvents(eventsData);
+        // Handle both direct array and wrapped response
+        const processedEvents = Array.isArray(eventsData) 
+          ? eventsData 
+          : (eventsData.data || []);
+        setEvents(processedEvents);
       }
     }
   }, [activeTab, eventsData]);const loadPendingAdmins = async () => {
@@ -179,10 +182,10 @@ const SuperAdminTabs = ({ dashboardData }) => {
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <h4 className="mb-0">{dashboardData?.totalZones || 0}</h4>
-                  <p className="mb-0">Total Zones</p>
+                  <h4 className="mb-0">{dashboardData?.totalPickupStations || 0}</h4>
+                  <p className="mb-0">Total Pickup Stations</p>
                 </div>
-                <i className="fas fa-layer-group fa-2x opacity-75"></i>
+                <i className="fas fa-map-marker-alt fa-2x opacity-75"></i>
               </div>
             </div>
           </div>
@@ -247,16 +250,15 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 System Statistics
               </h5>
             </div>
-            <div className="card-body">
-              <div className="mb-3">
+            <div className="card-body">              <div className="mb-3">
                 <div className="d-flex justify-content-between mb-2">
-                  <span>Total Zones</span>
-                  <strong>{dashboardData?.totalZones || 0}</strong>
+                  <span>Total Pickup Stations</span>
+                  <strong>{dashboardData?.totalPickupStations || 0}</strong>
                 </div>
                 <div className="progress" style={{height: '8px'}}>
                   <div 
                     className="progress-bar bg-info" 
-                    style={{width: `${Math.min(100, (dashboardData?.totalZones || 0) * 2)}%`}}
+                    style={{width: `${Math.min(100, (dashboardData?.totalPickupStations || 0) * 2)}%`}}
                   ></div>
                 </div>
               </div>

@@ -36,10 +36,8 @@ const Events = () => {
     { immediate: user?.role === 'branch_admin' }
   );  useEffect(() => {
     if (eventsData) {
-      console.log('Events: Raw API response:', eventsData);
       // Ensure we get the array of events from the API response
       const eventsArray = Array.isArray(eventsData) ? eventsData : (eventsData.data || []);
-      console.log('Events: Processed events array:', eventsArray);
       setEvents(eventsArray);
     }
     setLoading(eventsLoading);
