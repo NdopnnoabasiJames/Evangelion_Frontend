@@ -3,47 +3,83 @@ import { useApi } from '../../hooks/useApi';
 import { EmptyState } from '../common/Loading';
 import { API_ENDPOINTS } from '../../utils/constants';
 import PickupStationSelector from './PickupStationSelector';
+import PickupStationsViewer from './PickupStationsViewer';
+import { useAuth } from '../../hooks/useAuth';
 
-const PickupStationAssignment = ({ zonalAdminId, onAssignmentComplete }) => {
+const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete }) => {
+  const { user } = useAuth();
+
+  // If super admin, show the viewer component
+  if (user?.role === 'super_admin') {
+    return <PickupStationsViewer userRole={user.role} />;
+  }
+
+  // Rest of the component for zonal admins
   const [eventsForAssignment, setEventsForAssignment] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [pickupStations, setPickupStations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const { execute: fetchEvents } = useApi(null, { immediate: false });
   const { execute: fetchStations } = useApi(null, { immediate: false });
+
+  // Safety check: only zonal admins should access the assignment functionality
+  if (user?.role !== 'zonal_admin') {
+    return (
+      <div className="alert alert-warning" role="alert">
+        <i className="bi bi-exclamation-triangle me-2"></i>
+        Pickup station assignment is only available for Zonal Admins.
+      </div>
+    );
+  }
 
   useEffect(() => {
     fetchEventsForAssignment();
     fetchZonePickupStations();
   }, []);
-
   const fetchEventsForAssignment = async () => {
     try {
+      setError(null);
       const events = await fetchEvents('/api/events/for-pickup-assignment');
-      setEventsForAssignment(events);
+      // Ensure we have an array
+      const eventsArray = Array.isArray(events) ? events : (events?.data || []);
+      setEventsForAssignment(eventsArray);
     } catch (error) {
       console.error('Failed to fetch events for assignment:', error);
+      setError('Failed to load events for pickup assignment');
+      setEventsForAssignment([]);
     }
   };
 
   const fetchZonePickupStations = async () => {
     try {
       const stations = await fetchStations(API_ENDPOINTS.PICKUP_STATIONS.ZONE_STATIONS);
-      setPickupStations(stations);
+      // Ensure we have an array
+      const stationsArray = Array.isArray(stations) ? stations : (stations?.data || []);
+      setPickupStations(stationsArray);
     } catch (error) {
       console.error('Failed to fetch pickup stations:', error);
+      setPickupStations([]);
     } finally {
       setLoading(false);
     }
   };
-
   if (loading) {
     return (
       <div className="text-center py-5">
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger" role="alert">
+        <i className="bi bi-exclamation-triangle me-2"></i>
+        {error}
       </div>
     );
   }
@@ -57,9 +93,8 @@ const PickupStationAssignment = ({ zonalAdminId, onAssignmentComplete }) => {
               <i className="bi bi-calendar-event me-2"></i>
               Events Needing Pickup Assignment
             </h5>
-          </div>
-          <div className="card-body">
-            {eventsForAssignment.length === 0 ? (
+          </div>          <div className="card-body">
+            {!Array.isArray(eventsForAssignment) || eventsForAssignment.length === 0 ? (
               <EmptyState 
                 icon="bi-check-circle"
                 title="No Events Pending"

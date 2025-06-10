@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
   console.log('HierarchicalEventCreation: Component rendered', { userRole });
-  
-  const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
     name: '',
     description: '',
     date: '',
     location: '',
-    scope: 'national' // Default scope
-  });
-  const [creating, setCreating] = useState(false);
+    selectedStates: [] // For super admin state selection
+  });const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
 
   const { execute: createEvent } = useApi(null, { immediate: false });
+  // Load states for super admin
+  const { data: states, loading: statesLoading, error: statesError } = useApi('/api/states', { 
+    immediate: userRole === 'super_admin' 
+  });
 
   console.log('HierarchicalEventCreation: Current state', { formData, creating, error });
   const getEventEndpoint = () => {
@@ -36,14 +38,8 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
     console.log('HierarchicalEventCreation: Using endpoint', { userRole, endpoint });
     return endpoint;
   };
-
   const getScopeOptions = () => {
     switch (userRole) {
-      case 'super_admin':
-        return [
-          { value: 'national', label: 'National Event (All States)' },
-          { value: 'regional', label: 'Regional Event (Selected States)' }
-        ];
       case 'state_admin':
         return [
           { value: 'state', label: 'State-wide Event (All Branches)' },
@@ -61,17 +57,34 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
       default:
         return [];
     }
-  };
-  const handleSubmit = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('HierarchicalEventCreation: Form submitted', { formData, userRole });
+    
+    // Validate state selection for super admin
+    if (userRole === 'super_admin' && formData.selectedStates.length === 0) {
+      setError('Please select at least one state');
+      return;
+    }
+    
     setCreating(true);
     setError(null);
 
-    try {
+    try {      // Prepare form data based on user role
+      const submitData = userRole === 'super_admin' 
+        ? {
+            name: formData.name,
+            description: formData.description,
+            date: formData.date,
+            states: formData.selectedStates, // Base DTO expects 'states'
+            branches: [], // Required by base DTO
+            selectedStates: formData.selectedStates // For hierarchical service
+          }
+        : formData;
+
       await createEvent(getEventEndpoint(), {
         method: 'POST',
-        body: formData
+        body: submitData
       });
       
       onEventCreated();
@@ -81,13 +94,32 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
     } finally {
       setCreating(false);
     }
-  };
-
-  const handleChange = (e) => {
+  };const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleStateSelection = (e) => {
+    const value = e.target.value;
+    const isChecked = e.target.checked;
+    
+    setFormData(prev => ({
+      ...prev,
+      selectedStates: isChecked 
+        ? [...prev.selectedStates, value]
+        : prev.selectedStates.filter(state => state !== value)
+    }));
+  };
+
+  const handleSelectAllStates = (e) => {
+    const isChecked = e.target.checked;
+    
+    setFormData(prev => ({
+      ...prev,
+      selectedStates: isChecked ? states?.data?.map(state => state._id) || [] : []
+    }));
   };
 
   return (
@@ -150,46 +182,104 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
                       required
                     />
                   </div>
+                </div>                <div className="col-md-6">                  {userRole === 'super_admin' ? (
+                    <div className="mb-3">
+                      <label className="form-label">
+                        Select States *
+                        {formData.selectedStates.length > 0 && (
+                          <span className="badge bg-primary ms-2">
+                            {formData.selectedStates.length} selected
+                          </span>
+                        )}
+                      </label>
+                      <div className="border rounded p-2" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        {statesLoading ? (
+                          <div className="text-center">
+                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Loading states...
+                          </div>
+                        ) : statesError ? (
+                          <div className="text-danger">
+                            <i className="bi bi-exclamation-triangle me-2"></i>
+                            Error loading states
+                          </div>
+                        ) : states?.data?.length ? (
+                          <>
+                            <div className="form-check border-bottom pb-2 mb-2">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="select-all-states"
+                                checked={formData.selectedStates.length === states.data.length && states.data.length > 0}
+                                onChange={handleSelectAllStates}
+                              />
+                              <label className="form-check-label fw-bold" htmlFor="select-all-states">
+                                Select All States
+                              </label>
+                            </div>
+                            {states.data.map(state => (
+                              <div key={state._id} className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  value={state._id}
+                                  id={`state-${state._id}`}
+                                  checked={formData.selectedStates.includes(state._id)}
+                                  onChange={handleStateSelection}
+                                />
+                                <label className="form-check-label" htmlFor={`state-${state._id}`}>
+                                  {state.name}
+                                </label>
+                              </div>
+                            ))}
+                          </>
+                        ) : (
+                          <div className="text-muted">No states available</div>
+                        )}
+                      </div>
+                      <div className="form-text">
+                        Select the states where this event will be held.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-3">
+                      <label htmlFor="location" className="form-label">Location</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="location"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        placeholder="Event location"
+                      />
+                    </div>
+                  )}
                 </div>
-
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="location" className="form-label">Location</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="location"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      placeholder="Event location"
-                    />
+              </div>              {/* Event Scope - only for non-super admins */}
+              {userRole !== 'super_admin' && (
+                <div className="mb-3">
+                  <label htmlFor="scope" className="form-label">Event Scope *</label>
+                  <select
+                    className="form-select"
+                    id="scope"
+                    name="scope"
+                    value={formData.scope || ''}
+                    onChange={handleChange}
+                    required
+                  >
+                    {getScopeOptions().map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="form-text">
+                    {userRole === 'state_admin' && 'State-wide events will be delegated to Branch Admins for zone selection.'}
+                    {userRole === 'branch_admin' && 'Branch-wide events will be delegated to Zonal Admins for pickup station assignment.'}
                   </div>
                 </div>
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="scope" className="form-label">Event Scope *</label>
-                <select
-                  className="form-select"
-                  id="scope"
-                  name="scope"
-                  value={formData.scope}
-                  onChange={handleChange}
-                  required
-                >
-                  {getScopeOptions().map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="form-text">
-                  {userRole === 'super_admin' && 'National events will be delegated to State Admins for branch selection.'}
-                  {userRole === 'state_admin' && 'State-wide events will be delegated to Branch Admins for zone selection.'}
-                  {userRole === 'branch_admin' && 'Branch-wide events will be delegated to Zonal Admins for pickup station assignment.'}
-                </div>
-              </div>
+              )}
 
               <div className="d-flex justify-content-end gap-2">
                 <button

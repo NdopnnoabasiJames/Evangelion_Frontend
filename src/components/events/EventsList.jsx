@@ -11,8 +11,7 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
         title="Failed to load events"
       />
     );
-  }
-  if (!events || events.length === 0) {
+  }  if (!Array.isArray(events) || events.length === 0) {
     return (
       <EmptyState 
         icon="bi-calendar-event"

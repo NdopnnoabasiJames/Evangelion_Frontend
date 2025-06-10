@@ -34,30 +34,37 @@ const Events = () => {
   const { data: eventsNeedingZoneSelection, refetch: refetchZoneSelection } = useApi(
     user?.role === 'branch_admin' ? API_ENDPOINTS.EVENTS.NEEDING_ZONE_SELECTION : null,
     { immediate: user?.role === 'branch_admin' }
-  );
-
-  useEffect(() => {
+  );  useEffect(() => {
     if (eventsData) {
-      setEvents(eventsData);
+      console.log('Events: Raw API response:', eventsData);
+      // Ensure we get the array of events from the API response
+      const eventsArray = Array.isArray(eventsData) ? eventsData : (eventsData.data || []);
+      console.log('Events: Processed events array:', eventsArray);
+      setEvents(eventsArray);
     }
     setLoading(eventsLoading);
     setError(eventsError);
   }, [eventsData, eventsLoading, eventsError]);
-
   useEffect(() => {
     // Set pending events based on user role
     if (user?.role === 'state_admin' && eventsNeedingBranchSelection) {
-      setPendingEvents(eventsNeedingBranchSelection);
+      const pendingArray = Array.isArray(eventsNeedingBranchSelection) 
+        ? eventsNeedingBranchSelection 
+        : (eventsNeedingBranchSelection.data || []);
+      setPendingEvents(pendingArray);
     } else if (user?.role === 'branch_admin' && eventsNeedingZoneSelection) {
-      setPendingEvents(eventsNeedingZoneSelection);
+      const pendingArray = Array.isArray(eventsNeedingZoneSelection) 
+        ? eventsNeedingZoneSelection 
+        : (eventsNeedingZoneSelection.data || []);
+      setPendingEvents(pendingArray);
     }
   }, [eventsNeedingBranchSelection, eventsNeedingZoneSelection, user?.role]);
-
   // Role-based permissions
   const canCreateEvents = ['super_admin', 'state_admin', 'branch_admin', 'zonal_admin'].includes(user?.role);
   const canEditEvents = ['super_admin', 'state_admin', 'branch_admin'].includes(user?.role);
   const canDelegateEvents = ['state_admin', 'branch_admin'].includes(user?.role);
   const canAssignPickupStations = user?.role === 'zonal_admin';
+  const canViewPickupStations = ['super_admin', 'zonal_admin'].includes(user?.role);
 
   const refreshAllData = () => {
     refetch();
@@ -134,12 +141,10 @@ const Events = () => {
         label: 'Create Event',
         icon: 'bi-plus-circle'
       });
-    }
-
-    if (canAssignPickupStations) {
+    }    if (canViewPickupStations) {
       baseTabs.push({
         key: 'pickup-stations',
-        label: 'Pickup Stations',
+        label: user?.role === 'super_admin' ? 'View Pickup Stations' : 'Pickup Stations',
         icon: 'bi-geo-alt'
       });
     }
@@ -191,28 +196,28 @@ const Events = () => {
                 onDelegationComplete={refreshAllData}
               />
             </TabPane>
-          )}
-
-          {canCreateEvents && (
+          )}          {canCreateEvents && (
             <TabPane tabId="create" title="Create Event">
               <HierarchicalEventCreation 
                 userRole={user?.role}
                 onEventCreated={() => {
                   setActiveTab('list');
-                  refreshAllData();
+                  // Small delay to ensure backend has processed the event
+                  setTimeout(() => {
+                    refreshAllData();
+                  }, 500);
                 }}
               />
             </TabPane>
-          )}
-
-          {canAssignPickupStations && (
+          )}          {canViewPickupStations && (
             <TabPane tabId="pickup-stations" title="Pickup Stations">
               <PickupStationAssignment 
                 zonalAdminId={user?.id}
+                userRole={user?.role}
                 onAssignmentComplete={refreshAllData}
               />
             </TabPane>
-          )}        </TabbedInterface>
+          )}</TabbedInterface>
       </div>
     </Layout>
   );

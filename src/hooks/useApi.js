@@ -12,15 +12,14 @@ export const useApi = (endpoint, options = {}) => {
     body = null,
     dependencies = []
   } = options;
-
   const execute = async (customEndpoint = null, customOptions = {}) => {
+    const url = customEndpoint || endpoint;
+    const requestMethod = customOptions.method || method;
+    const requestBody = customOptions.body || body;
+    
     try {
       setLoading(true);
       setError(null);
-
-      const url = customEndpoint || endpoint;
-      const requestMethod = customOptions.method || method;
-      const requestBody = customOptions.body || body;
 
       let response;
       
@@ -48,7 +47,7 @@ export const useApi = (endpoint, options = {}) => {
       return response.data;    } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'An error occurred';
       setError(errorMessage);
-      console.warn('API call failed:', errorMessage, 'for endpoint:', endpoint || url);
+      console.warn('API call failed:', errorMessage, 'for endpoint:', url);
       // Don't throw error for failed API calls, just set error state
       return null;
     } finally {
