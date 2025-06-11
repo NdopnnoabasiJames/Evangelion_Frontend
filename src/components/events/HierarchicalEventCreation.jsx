@@ -3,7 +3,6 @@ import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
-  console.log('HierarchicalEventCreation: Component rendered', { userRole });
     const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -19,7 +18,6 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
     immediate: userRole === 'super_admin' 
   });
 
-  console.log('HierarchicalEventCreation: Current state', { formData, creating, error });
   const getEventEndpoint = () => {
     const endpoint = (() => {
       switch (userRole) {
@@ -35,7 +33,6 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
           return API_ENDPOINTS.EVENTS.HIERARCHICAL;
       }
     })();
-    console.log('HierarchicalEventCreation: Using endpoint', { userRole, endpoint });
     return endpoint;
   };
   const getScopeOptions = () => {
@@ -58,9 +55,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
         return [];
     }
   };  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log('HierarchicalEventCreation: Form submitted', { formData, userRole });
-    
+    e.preventDefault();    
     // Validate state selection for super admin
     if (userRole === 'super_admin' && formData.selectedStates.length === 0) {
       setError('Please select at least one state');

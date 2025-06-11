@@ -7,9 +7,6 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
     setActionLoading(true);
     try {
       const adminId = admin._id || admin.id;
-      console.log('AdminApprovalCard: Approving admin - Raw admin object:', admin);
-      console.log('AdminApprovalCard: Admin ID:', adminId, 'Type:', typeof adminId);
-      console.log('AdminApprovalCard: admin._id:', admin._id, 'admin.id:', admin.id);
       
       if (!adminId) {
         throw new Error('Admin ID is missing from admin object');
@@ -28,9 +25,6 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
     setActionLoading(true);
     try {
       const adminId = admin._id || admin.id;
-      console.log('AdminApprovalCard: Rejecting admin - Raw admin object:', admin);
-      console.log('AdminApprovalCard: Admin ID:', adminId, 'Type:', typeof adminId);
-      console.log('AdminApprovalCard: admin._id:', admin._id, 'admin.id:', admin.id);
       
       if (!adminId) {
         throw new Error('Admin ID is missing from admin object');

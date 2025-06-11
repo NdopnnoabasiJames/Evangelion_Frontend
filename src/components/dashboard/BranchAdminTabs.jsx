@@ -36,7 +36,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setError(null);
     try {
       const stats = await analyticsService.getBranchAdminDashboardStats();
-      console.log('BranchAdminTabs: Loaded branch statistics:', stats);
       setBranchStatistics(stats || {
         totalZones: 0,
         activeEvents: 0,
@@ -56,7 +55,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setError(null);
     try {
       const data = await analyticsService.getPendingZonalAdmins();
-      console.log('BranchAdminTabs: Loaded pending zonal admins:', data);
       setPendingZonalAdmins(data || []);
     } catch (err) {
       console.error('Error loading pending zonal admins:', err);
@@ -71,7 +69,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setApprovedError(null);
     try {
       const data = await analyticsService.getApprovedZonalAdmins();
-      console.log('BranchAdminTabs: Loaded approved zonal admins:', data);
       setApprovedZonalAdmins(data || []);
     } catch (err) {
       console.error('Error loading approved zonal admins:', err);

@@ -11,21 +11,15 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);  useEffect(() => {
     const initAuth = async () => {
       try {
-        console.log('=== Auth Initialization Starting ===');
         const currentUser = authService.getCurrentUser();
         const token = authService.getToken();
         
-        console.log('Auth init - token:', token);
-        console.log('Auth init - currentUser:', currentUser);
-        
         if (currentUser && token) {
-          console.log('Token found, fetching full user profile...');
           try {
             // Fetch the full user profile with populated hierarchy data
             const profileResponse = await authService.getProfile();
             const fullUser = profileResponse.data;
             
-            console.log('Full user profile fetched:', fullUser);
             
             // Normalize user data structure - flatten if nested in data property
             const normalizedUser = fullUser.data || fullUser;
@@ -42,7 +36,6 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true);
           }
         } else {
-          console.log('No valid auth data found, user remains unauthenticated');
           setUser(null);
           setIsAuthenticated(false);
         }} catch (error) {
@@ -53,7 +46,6 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setIsAuthenticated(false);
       } finally {
-        console.log('Auth initialization complete, setting loading to false');
         setLoading(false);
       }
     };
@@ -69,9 +61,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const profileResponse = await authService.getProfile();
         const fullUser = profileResponse.data;
-        
-        console.log('Full user profile after login:', fullUser);
-        
+            
         // Normalize user data structure - flatten if nested in data property
         const normalizedUser = fullUser.data || fullUser;
         
