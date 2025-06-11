@@ -15,21 +15,13 @@ const Dashboard = () => {  const { user } = useAuth();
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-
-  // Debug logging for user object
-  console.log('Dashboard: Current user object:', user);
-  console.log('Dashboard: User role:', user?.role);
-  console.log('Dashboard: Available ROLES:', ROLES);
   
   // Fetch user profile with populated state/branch information
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!user) return;
-      
-      try {
-        const response = await analyticsService.getUserProfile();
+        try {        const response = await analyticsService.getUserProfile();
         const profile = response?.data?.data || response?.data || response;
-        console.log('Dashboard: User profile with state info:', profile);
         setUserProfile(profile);
       } catch (err) {
         console.error('Dashboard: Error fetching user profile:', err);

@@ -27,7 +27,6 @@ const StateAdminTabs = ({ dashboardData }) => {
   
   // Initial load when component mounts
   useEffect(() => {
-    console.log('StateAdminTabs: Initial data load');
     loadPendingBranchAdmins();
     loadStateStatistics();
     loadApprovedBranchAdmins();
@@ -36,7 +35,6 @@ const StateAdminTabs = ({ dashboardData }) => {
   const loadStateStatistics = async () => {
     try {
       const stats = await analyticsService.getStateAdminDashboardStats();
-      console.log('StateAdminTabs: Loaded state statistics:', stats);
       setStateStatistics(stats || {
         totalBranches: 0,
         totalZones: 0,

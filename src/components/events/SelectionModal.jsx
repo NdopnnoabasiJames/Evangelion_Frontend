@@ -20,60 +20,18 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
       setError(null);
       
       if (userRole === 'state_admin') {
-        // Fetch branches accessible to the state admin
-        console.log('SelectionModal: Fetching branches for state admin...');
-        console.log('SelectionModal: API endpoint:', API_ENDPOINTS.ADMIN.BRANCHES);
-        
         const response = await fetchOptions(
           `${API_ENDPOINTS.ADMIN.BRANCHES}`
         );
-        
-        console.log('SelectionModal: Branches API response:', response);
-        console.log('SelectionModal: Response type:', typeof response);
-        console.log('SelectionModal: Response data:', response?.data);
-        
-        // Handle different response formats
-        let branches = [];
-        if (response && response.data) {
-          branches = Array.isArray(response.data) ? response.data : [response.data];
-        } else if (response && Array.isArray(response)) {
-          branches = response;
-        } else if (response) {
-          branches = [response];
-        }
-        
-        console.log('SelectionModal: Processed branches:', branches);
-        setAvailableItems(branches);
+        setAvailableItems(response?.data || response || []);
         
       } else if (userRole === 'branch_admin') {
-        // Fetch zones accessible to the branch admin
-        console.log('SelectionModal: Fetching zones for branch admin...');
-        console.log('SelectionModal: API endpoint:', API_ENDPOINTS.ADMIN.ZONES);
-        
         const response = await fetchOptions(
           `${API_ENDPOINTS.ADMIN.ZONES}`
         );
-        
-        console.log('SelectionModal: Zones API response:', response);
-        console.log('SelectionModal: Response type:', typeof response);
-        console.log('SelectionModal: Response data:', response?.data);
-        
-        // Handle different response formats
-        let zones = [];
-        if (response && response.data) {
-          zones = Array.isArray(response.data) ? response.data : [response.data];
-        } else if (response && Array.isArray(response)) {
-          zones = response;
-        } else if (response) {
-          zones = [response];
-        }
-        
-        console.log('SelectionModal: Processed zones:', zones);
-        setAvailableItems(zones);
+        setAvailableItems(response?.data || response || []);
       }
     } catch (error) {
-      console.error('SelectionModal: Error fetching available options:', error);
-      console.error('SelectionModal: Error details:', error.response);
       setError(error.response?.data?.message || error.message || 'Failed to load available options');
     } finally {
       setLoading(false);

@@ -30,9 +30,7 @@ export const authService = {  // Login user
   // Get user profile
   getProfile: async () => {
     try {
-      console.log('AuthService: Fetching user profile...');
       const response = await api.get(API_ENDPOINTS.AUTH.PROFILE);
-      console.log('AuthService: Profile response:', response.data);
       return response.data;
     } catch (error) {
       console.error('AuthService: Profile fetch error:', error);
