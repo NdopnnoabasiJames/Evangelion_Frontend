@@ -534,22 +534,24 @@ const SuperAdminTabs = ({ dashboardData }) => {
               setEventActiveTab(tab);
             }}
           >            <TabPane tabId="list" title="All Events">
-              <EventsList 
-                events={events}
-                loading={eventsLoading}
-                error={eventsError}
-                canManage={true} // Super admin can manage all events
-                canEdit={true}
-                canDelete={true}
-                onRefresh={() => {
-                  refetchEvents();
-                  refetchHierarchicalEvents();
-                }}
-                onCreateEvent={() => {
-                  console.log('SuperAdminTabs: Switching to create tab');
-                  setEventActiveTab('create');
-                }}
-              />
+              <div className="events-container">
+                <EventsList 
+                  events={events}
+                  loading={eventsLoading}
+                  error={eventsError}
+                  canManage={true} // Super admin can manage all events
+                  canEdit={true}
+                  canDelete={true}
+                  onRefresh={() => {
+                    refetchEvents();
+                    refetchHierarchicalEvents();
+                  }}
+                  onCreateEvent={() => {
+                    console.log('SuperAdminTabs: Switching to create tab');
+                    setEventActiveTab('create');
+                  }}
+                />
+              </div>
             </TabPane><TabPane tabId="create" title="Create Event">
               <HierarchicalEventCreation 
                 userRole={user?.role || 'super_admin'}
@@ -560,26 +562,27 @@ const SuperAdminTabs = ({ dashboardData }) => {
                   setEventActiveTab('list');
                 }}
               />
-            </TabPane>
-
-            <TabPane tabId="hierarchical" title="Hierarchical Events">
+            </TabPane>            <TabPane tabId="hierarchical" title="Hierarchical Events">
               <div className="mb-3">
                 <h6>System-wide Event Overview</h6>
                 <p className="text-muted">Manage events across all organizational levels</p>
-              </div>              <EventsList 
-                events={hierarchicalEventsData || []}
-                loading={eventsLoading}
-                error={eventsError}
-                canManage={true}
-                canEdit={true}
-                canDelete={true}
-                showHierarchy={true}
-                onRefresh={refetchHierarchicalEvents}
-                onCreateEvent={() => {
-                  console.log('SuperAdminTabs: Switching to create tab from hierarchical');
-                  setEventActiveTab('create');
-                }}
-              />
+              </div>
+              <div className="events-container">
+                <EventsList 
+                  events={hierarchicalEventsData || []}
+                  loading={eventsLoading}
+                  error={eventsError}
+                  canManage={true}
+                  canEdit={true}
+                  canDelete={true}
+                  showHierarchy={true}
+                  onRefresh={refetchHierarchicalEvents}
+                  onCreateEvent={() => {
+                    console.log('SuperAdminTabs: Switching to create tab from hierarchical');
+                    setEventActiveTab('create');
+                  }}
+                />
+              </div>
             </TabPane>
 
             <TabPane tabId="pickup-stations" title="Pickup Stations">

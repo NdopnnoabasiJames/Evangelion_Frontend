@@ -30,12 +30,11 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
     );
   }
 
-  return (
-    <div className="row g-4">
+  return (    <div className="row g-4">
       {events.map((event) => (
         <div key={event._id} className="col-12 col-sm-6 col-lg-4">
-          <div className="card h-100 shadow-sm border-0 card-hover-lift">
-            <div className="card-header bg-white border-0 pb-0">
+          <div className="card h-100 border border-primary border-opacity-10 card-hover-lift event-card">
+            <div className="card-header bg-gradient border-0 pb-0">
               <div className="d-flex justify-content-between align-items-start">
                 <h5 className="card-title mb-1 text-truncate" style={{ color: 'var(--primary-purple)' }}>
                   {event.name}
@@ -56,12 +55,17 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                 <small className="text-muted">
                   {new Date(event.date).toLocaleDateString()}
                 </small>
-              </div>
-              
-              <div className="mb-2">
+              </div>              <div className="mb-2">
                 <i className="bi bi-geo-alt me-2 text-muted"></i>
                 <small className="text-muted text-truncate d-block">
-                  {event.location || 'Location TBD'}
+                  {event.creatorLevel === 'super_admin' && event.availableStates?.length > 0
+                    ? event.availableStates.length === 1 
+                      ? event.availableStates[0]?.name || `${event.availableStates.length} state selected`
+                      : event.availableStates.length <= 3
+                      ? event.availableStates.map(state => state?.name).filter(Boolean).join(', ')
+                      : `${event.availableStates.length} states selected`
+                    : event.location || 'Location TBD'
+                  }
                 </small>
               </div>
               

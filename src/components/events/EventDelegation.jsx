@@ -52,11 +52,17 @@ const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
                       <i className="bi bi-calendar me-1"></i>
                       {new Date(event.date).toLocaleDateString()}
                     </small>
-                  </div>
-                  <div className="col-md-6">
+                  </div>                  <div className="col-md-6">
                     <small className="text-muted">
                       <i className="bi bi-geo-alt me-1"></i>
-                      {event.location || 'Location TBD'}
+                      {event.creatorLevel === 'super_admin' && event.availableStates?.length > 0
+                        ? event.availableStates.length === 1 
+                          ? event.availableStates[0]?.name || `${event.availableStates.length} state selected`
+                          : event.availableStates.length <= 3
+                          ? event.availableStates.map(state => state?.name).filter(Boolean).join(', ')
+                          : `${event.availableStates.length} states selected`
+                        : event.location || 'Location TBD'
+                      }
                     </small>
                   </div>
                 </div>
