@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import LoginForm from '../components/forms/LoginForm';
+import logo from '../assets/evangelion-logo.svg';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -44,23 +45,19 @@ const Login = () => {
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-4">
             <div className="card shadow-lg border-0">
-              <div className="card-body p-5">
-                {/* Logo/Brand */}
+              <div className="card-body p-5">                {/* Logo/Brand */}
                 <div className="text-center mb-4">
-                  <div 
-                    className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
-                    style={{ 
-                      width: '60px', 
-                      height: '60px',
-                      backgroundColor: 'var(--primary-purple)',
-                      color: 'var(--primary-yellow)'
-                    }}
-                  >
-                    <strong style={{ fontSize: '1.5rem' }}>E</strong>
+                  <div className="mx-auto mb-3 d-flex align-items-center justify-content-center">
+                    <img 
+                      src={logo} 
+                      alt="EVANGELION Logo" 
+                      height="50"
+                      style={{ 
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                        maxWidth: '150px'
+                      }}
+                    />
                   </div>
-                  <h3 className="fw-bold" style={{ color: 'var(--primary-purple)' }}>
-                    EVANGELION
-                  </h3>
                   <p className="text-muted">Sign in to your account</p>
                 </div>
                 
