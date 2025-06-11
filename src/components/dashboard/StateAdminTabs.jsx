@@ -56,13 +56,33 @@ const StateAdminTabs = ({ dashboardData }) => {
       console.error('Error loading pending branch admins count:', err);
     }
   };
-
   const loadApprovedBranchAdmins = async () => {
     try {
       const data = await analyticsService.getApprovedBranchAdmins();
       setApprovedBranchAdmins(data || []);
     } catch (err) {
       console.error('Error loading approved branch admins:', err);
+    }
+  };
+
+  const handleApproveBranchAdmin = async (adminId, adminData) => {
+    try {
+      await analyticsService.approveBranchAdmin(adminId, adminData);
+      // Refresh both lists after approval
+      loadPendingBranchAdmins();
+      loadApprovedBranchAdmins();
+    } catch (err) {
+      console.error('Error approving branch admin:', err);
+    }
+  };
+
+  const handleRejectBranchAdmin = async (adminId, reason) => {
+    try {
+      await analyticsService.rejectBranchAdmin(adminId, reason);
+      // Refresh pending list after rejection
+      loadPendingBranchAdmins();
+    } catch (err) {
+      console.error('Error rejecting branch admin:', err);
     }
   };
   return (
@@ -114,8 +134,20 @@ const StateAdminTabs = ({ dashboardData }) => {
             pendingBranchAdmins={pendingBranchAdmins}
             onManageBranchAdmins={() => setActiveTab('branch-admin-management')}
           />
+        )}        {activeTab === 'branch-admin-management' && (
+          <BranchAdminManagement 
+            pendingBranchAdmins={pendingBranchAdmins}
+            approvedBranchAdmins={approvedBranchAdmins}
+            loading={false}
+            approvedLoading={false}
+            error={null}
+            approvedError={null}
+            onApproveBranchAdmin={handleApproveBranchAdmin}
+            onRejectBranchAdmin={handleRejectBranchAdmin}
+            onRefreshPending={loadPendingBranchAdmins}
+            onRefreshApproved={loadApprovedBranchAdmins}
+          />
         )}
-        {activeTab === 'branch-admin-management' && <BranchAdminManagement />}
         {activeTab === 'events' && <StateAdminEvents />}
       </div>
     </div>
