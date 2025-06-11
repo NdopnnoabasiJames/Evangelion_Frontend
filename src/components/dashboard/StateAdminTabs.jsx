@@ -16,7 +16,6 @@ const StateAdminTabs = ({ dashboardData }) => {
     activeEvents: 0,
     totalGuests: 0
   });
-
   // Load data when component mounts or tab changes
   useEffect(() => {
     loadPendingBranchAdmins();
@@ -25,6 +24,14 @@ const StateAdminTabs = ({ dashboardData }) => {
       loadApprovedBranchAdmins();
     }
   }, [activeTab]);
+  
+  // Initial load when component mounts
+  useEffect(() => {
+    console.log('StateAdminTabs: Initial data load');
+    loadPendingBranchAdmins();
+    loadStateStatistics();
+    loadApprovedBranchAdmins();
+  }, []);
 
   const loadStateStatistics = async () => {
     try {

@@ -124,10 +124,10 @@ export const STATUS = {
   INACTIVE: 'inactive'
 };
 
-// Event statuses
+// Event statuses - match the backend EventStatus enum
 export const EVENT_STATUS = {
   DRAFT: 'draft',
-  ACTIVE: 'active',
+  PUBLISHED: 'published',  // This is considered "active" in the system
   COMPLETED: 'completed',
   CANCELLED: 'cancelled'
 };

@@ -168,8 +168,7 @@ export const analyticsService = {
       }
 
       console.log('Analytics: Fetching data for state ID:', stateId);
-      
-      const [
+        const [
         basicAnalytics,
         branchesResponse,
         zonesResponse,
@@ -178,18 +177,37 @@ export const analyticsService = {
         api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
         api.get(`/api/branches/by-state/${stateId}`),
         api.get(`/api/zones/by-state/${stateId}`),
-        api.get('/api/events')
-      ]);
-
-      // Extract data from API responses
+        api.get(API_ENDPOINTS.EVENTS.ACCESSIBLE)
+      ]);      // Extract data from API responses
       const branchesData = branchesResponse.data?.data || branchesResponse.data || [];
       const zonesData = zonesResponse.data?.data || zonesResponse.data || [];
       const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
       const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
-
-      const activeEvents = Array.isArray(eventsData) ? eventsData.filter(event => 
-        ['active', 'published', 'in_progress'].includes(event.status)
-      ) : [];
+        console.log('Analytics: State events response:', eventsResponse.data);
+      console.log('Analytics: Extracted events data:', eventsData);
+      
+      // Log all event statuses to understand what values we're getting
+      if (Array.isArray(eventsData) && eventsData.length > 0) {
+        console.log('Analytics: Event statuses in data:');
+        eventsData.forEach((event, index) => {
+          console.log(`Event ${index}: "${event.name}" has status: "${event.status}"`);
+        });
+      }      const activeEvents = Array.isArray(eventsData) ? eventsData.filter(event => {
+        // Events are considered active if they have isActive: true OR status is 'published'
+        // Based on the database structure, we need to check both fields
+        const isActiveByFlag = event.isActive === true;
+        const isActiveByStatus = ['published', 'draft'].includes(event.status);
+        const isActive = isActiveByFlag || isActiveByStatus;
+        
+        console.log(`Analytics: Event "${event.name}" - status: "${event.status}", isActive: ${event.isActive}, considered active: ${isActive}`);
+        
+        if (isActive) {
+          console.log('Analytics: Found active event:', event.name, 'with status:', event.status, 'isActive:', event.isActive);
+        }
+        return isActive;
+      }) : [];
+      
+      console.log('Analytics: Total active events found:', activeEvents.length);
 
       const stats = {
         totalBranches: Array.isArray(branchesData) ? branchesData.length : 0,
@@ -200,9 +218,16 @@ export const analyticsService = {
       };
 
       console.log('Analytics: State admin stats for state', stateId, ':', stats);
-      return stats;
-    } catch (error) {
+      return stats;    } catch (error) {
       console.error('Analytics: Error fetching state admin stats:', error);
+      console.error('Analytics: Error details:', error.response?.data?.message || error.message);
+      
+      // Log response status and data if available
+      if (error.response) {
+        console.error('Analytics: Error response status:', error.response.status);
+        console.error('Analytics: Error response data:', error.response.data);
+      }
+      
       return {
         totalBranches: 0,
         totalZones: 0,

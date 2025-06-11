@@ -29,12 +29,10 @@ export const getStatusBadgeClass = (status, type = 'general') => {
         default:
           return 'bg-secondary';
       }
-      
-    case 'event':
+        case 'event':
       // For events
       switch (normalizedStatus) {
-        case 'active':
-        case 'published':
+        case 'published':  // Published is the active state in the backend
           return 'bg-success';
         case 'upcoming':
         case 'draft':
