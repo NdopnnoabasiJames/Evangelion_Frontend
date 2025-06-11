@@ -61,9 +61,9 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                   {event.creatorLevel === 'super_admin' && event.availableStates?.length > 0
                     ? event.availableStates.length === 1 
                       ? event.availableStates[0]?.name || `${event.availableStates.length} state selected`
-                      : event.availableStates.length <= 3
+                      : event.availableStates.length <= 6
                       ? event.availableStates.map(state => state?.name).filter(Boolean).join(', ')
-                      : `${event.availableStates.length} states selected`
+                      : `${event.availableStates.map(state => state?.name).filter(Boolean).slice(0, 3).join(', ')} and ${event.availableStates.length - 3} more states`
                     : event.location || 'Location TBD'
                   }
                 </small>
