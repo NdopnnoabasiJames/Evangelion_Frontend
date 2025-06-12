@@ -43,9 +43,50 @@ const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
                     {userRole === 'state_admin' ? 'Select Branches' : 'Select Zones'}
                   </button>
                 </div>
-              </div>
-              <div className="card-body">
+              </div>              <div className="card-body">
                 <p className="text-muted mb-2">{event.description}</p>
+                
+                {/* Delegation Status */}
+                <div className="mb-3">
+                  {userRole === 'state_admin' && (
+                    <div className="d-flex flex-wrap gap-2">                      <span className="badge bg-primary">
+                        <i className="bi bi-building me-1"></i>
+                        {event.availableBranches?.length > 0 
+                          ? `${event.availableBranches.map(branch => 
+                              typeof branch === 'object' ? branch.name : branch
+                            ).join(', ')} delegated`
+                          : 'No branches delegated yet'
+                        }
+                      </span>
+                      {event.availableStates?.length > 0 && (
+                        <span className="badge bg-info">
+                          <i className="bi bi-map me-1"></i>
+                          Available in {event.availableStates.length} State{event.availableStates.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {userRole === 'branch_admin' && (
+                    <div className="d-flex flex-wrap gap-2">                      <span className="badge bg-primary">
+                        <i className="bi bi-geo-alt me-1"></i>
+                        {event.availableZones?.length > 0 
+                          ? `${event.availableZones.map(zone => 
+                              typeof zone === 'object' ? zone.name : zone
+                            ).join(', ')} delegated`
+                          : 'No zones delegated yet'
+                        }
+                      </span>
+                      {event.availableBranches?.length > 0 && (
+                        <span className="badge bg-info">
+                          <i className="bi bi-building me-1"></i>
+                          Available in {event.availableBranches.length} Branch{event.availableBranches.length !== 1 ? 'es' : ''}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div className="row">
                   <div className="col-md-6">
                     <small className="text-muted">

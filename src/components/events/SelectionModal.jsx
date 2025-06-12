@@ -10,11 +10,9 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
   const [error, setError] = useState(null);
 
   const { execute: fetchOptions } = useApi(null, { immediate: false });
-  const { execute: submitSelection } = useApi(null, { immediate: false });
-
-  useEffect(() => {
+  const { execute: submitSelection } = useApi(null, { immediate: false });  useEffect(() => {
     fetchAvailableOptions();
-  }, [event._id]);  const fetchAvailableOptions = async () => {
+  }, [event._id]);const fetchAvailableOptions = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -39,13 +37,46 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
   };
 
   const handleItemToggle = (itemId) => {
+    // Prevent selection if already delegated
+    const isDelegated = isItemDelegated(itemId);
+    if (isDelegated) return;
+
     setSelectedItems(prev => 
       prev.includes(itemId) 
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
     );
+  };  // Check if item is already delegated to this event
+  const isItemDelegated = (itemId) => {
+    if (userRole === 'state_admin') {
+      // Handle both object and string formats for availableBranches
+      return event.availableBranches?.some(branch => {
+        if (typeof branch === 'object' && branch._id) {
+          return branch._id === itemId || branch._id.toString() === itemId.toString();
+        }
+        return branch === itemId || branch.toString() === itemId.toString();
+      }) || false;
+    } else if (userRole === 'branch_admin') {
+      // Handle both object and string formats for availableZones
+      return event.availableZones?.some(zone => {
+        if (typeof zone === 'object' && zone._id) {
+          return zone._id === itemId || zone._id.toString() === itemId.toString();
+        }
+        return zone === itemId || zone.toString() === itemId.toString();
+      }) || false;
+    }
+    return false;
   };
 
+  // Get available items (not yet delegated)
+  const getAvailableItems = () => {
+    return availableItems.filter(item => !isItemDelegated(item._id));
+  };
+
+  // Get delegated items
+  const getDelegatedItems = () => {
+    return availableItems.filter(item => isItemDelegated(item._id));
+  };
   const handleSubmit = async () => {
     if (selectedItems.length === 0) {
       setError('Please select at least one item');
@@ -68,6 +99,16 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
         method: 'PATCH',
         body
       });
+
+      // Show success notification
+      if (window.showNotification) {
+        window.showNotification(
+          `Successfully delegated "${event.name}" to ${selectedItems.length} ${itemType}!`,
+          'success'
+        );
+      } else {
+        alert(`✅ Successfully delegated "${event.name}" to ${selectedItems.length} ${itemType}!`);
+      }
 
       onComplete();
       onClose();
@@ -105,48 +146,91 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
                 <div className="spinner-border" role="status">
                   <span className="visually-hidden">Loading...</span>
                 </div>
-              </div>
-            ) : (
-              <div className="row g-3">
-                {availableItems.map(item => (
-                  <div key={item._id} className="col-md-6">
-                    <div 
-                      className={`card cursor-pointer ${selectedItems.includes(item._id) ? 'border-primary bg-primary bg-opacity-10' : ''}`}
-                      onClick={() => handleItemToggle(item._id)}
-                    >
-                      <div className="card-body p-3">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div>
-                            <h6 className="mb-1">{item.name}</h6>
-                            {item.location && (
-                              <small className="text-muted">
-                                <i className="bi bi-geo-alt me-1"></i>
-                                {item.location}
-                              </small>
-                            )}
-                          </div>
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={selectedItems.includes(item._id)}
-                              onChange={() => handleItemToggle(item._id)}
-                            />
+              </div>            ) : (
+              <div>
+                <div className="mb-3">
+                  <h6 className="mb-2">
+                    <i className="bi bi-list-ul me-2"></i>
+                    All {itemLabel} 
+                    <small className="text-muted ms-2">
+                      ({getAvailableItems().length} available, {getDelegatedItems().length} delegated)
+                    </small>
+                  </h6>
+                </div>
+                
+                <div className="row g-3">
+                  {availableItems.map(item => {
+                    const isDelegated = isItemDelegated(item._id);
+                    return (
+                      <div key={item._id} className="col-md-6">                        <div 
+                          className={`card ${
+                            isDelegated 
+                              ? 'border-secondary bg-light' 
+                              : selectedItems.includes(item._id) 
+                                ? 'border-primary bg-primary bg-opacity-10 cursor-pointer' 
+                                : 'border-success cursor-pointer'
+                          }`}
+                          onClick={() => !isDelegated && handleItemToggle(item._id)}
+                          style={{ 
+                            cursor: isDelegated ? 'not-allowed' : 'pointer',
+                            opacity: isDelegated ? '0.6' : '1',
+                            filter: isDelegated ? 'grayscale(30%)' : 'none',
+                            transition: 'all 0.2s ease-in-out'
+                          }}
+                        >
+                          <div className="card-body p-3">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div>
+                                <h6 className={`mb-1 ${isDelegated ? 'text-muted' : ''}`}>
+                                  {item.name}
+                                </h6>
+                                {item.location && (
+                                  <small className={isDelegated ? 'text-muted' : 'text-muted'}>
+                                    <i className="bi bi-geo-alt me-1"></i>
+                                    {item.location}
+                                  </small>
+                                )}
+                              </div>
+                              <div>
+                                {isDelegated ? (
+                                  <div className="text-center">
+                                    <i className="bi bi-check-circle-fill text-success"></i>
+                                    <small className="d-block text-success">Delegated</small>
+                                  </div>
+                                ) : (
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      checked={selectedItems.includes(item._id)}
+                                      onChange={() => handleItemToggle(item._id)}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
-          
-          <div className="modal-footer">
+            <div className="modal-footer">
             <div className="me-auto">
-              <small className="text-muted">
-                {selectedItems.length} {itemType} selected
-              </small>
+              <div className="d-flex flex-column">
+                <small className="text-muted">
+                  {selectedItems.length} {itemType} selected • {getAvailableItems().length} available
+                </small>
+                {getDelegatedItems().length > 0 && (
+                  <small className="text-success">
+                    <i className="bi bi-check-circle-fill me-1"></i>
+                    {getDelegatedItems().length} already delegated
+                  </small>
+                )}
+              </div>
             </div>
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
@@ -155,15 +239,17 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
               type="button" 
               className="btn btn-primary"
               onClick={handleSubmit}
-              disabled={submitting || selectedItems.length === 0}
+              disabled={submitting || selectedItems.length === 0 || getAvailableItems().length === 0}
             >
               {submitting ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2"></span>
                   Delegating...
                 </>
+              ) : getAvailableItems().length === 0 ? (
+                `All ${itemLabel} Delegated`
               ) : (
-                `Delegate to Selected ${itemLabel}`
+                `Delegate to ${selectedItems.length} ${itemLabel}`
               )}
             </button>
           </div>

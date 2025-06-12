@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import { ToastManager } from './components/common/Toast';
 
 // Import pages
 import Landing from './pages/Landing';
@@ -96,10 +97,12 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            
-            {/* Catch all route */}
+              {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          
+          {/* Toast notifications */}
+          <ToastManager />
         </div>
       </Router>
     </AuthProvider>
