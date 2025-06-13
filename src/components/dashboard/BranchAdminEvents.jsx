@@ -17,12 +17,11 @@ const BranchAdminEvents = () => {
     error: pendingError, 
     execute: refetchZoneSelection 
   } = useApi(API_ENDPOINTS.EVENTS.NEEDING_ZONE_SELECTION);
-
   const { 
     data: branchEvents, 
     loading: branchLoading, 
     error: branchError, 
-    execute: refetchEvents  } = useApi(API_ENDPOINTS.EVENTS.LIST);
+    execute: refetchEvents  } = useApi(API_ENDPOINTS.EVENTS.ACCESSIBLE);
 
   // Refresh all data
   const refreshAllData = () => {
@@ -64,10 +63,12 @@ const BranchAdminEvents = () => {
               />
             </div>
           </div>
-        );
-
-      case 'list':        if (branchLoading) return <Loading />;
+        );      case 'list':        if (branchLoading) return <Loading />;
         if (branchError) return <ErrorDisplay message={branchError} onRetry={refetchEvents} />;
+        
+        // Extract events array from API response
+        const eventsArray = Array.isArray(branchEvents) ? branchEvents : 
+                           Array.isArray(branchEvents?.data) ? branchEvents.data : [];
         
         return (
           <div>
@@ -77,7 +78,7 @@ const BranchAdminEvents = () => {
                 Events accessible in your branch - including events you created and events delegated to your branch.
               </p>
             </div>
-            <EventsList events={branchEvents} userRole="branch_admin" />
+            <EventsList events={eventsArray} userRole="branch_admin" />
           </div>
         );
 
@@ -115,13 +116,23 @@ const BranchAdminEvents = () => {
             key: 'pending',
             label: 'Zone Selection',
             icon: 'bi-diagram-3',
-            badge: (Array.isArray(pendingEvents) ? pendingEvents.length : (pendingEvents?.data?.length || 0)) > 0 ? 
-                   { count: Array.isArray(pendingEvents) ? pendingEvents.length : (pendingEvents?.data?.length || 0), className: 'bg-warning' } : null
+            badge: (() => {
+              const pendingArray = Array.isArray(pendingEvents) ? pendingEvents : 
+                                  Array.isArray(pendingEvents?.data) ? pendingEvents.data : [];
+              return pendingArray.length > 0 ? 
+                     { count: pendingArray.length, className: 'bg-warning' } : null;
+            })()
           },
           {
             key: 'list',
             label: 'Branch Events',
-            icon: 'bi-calendar-event'
+            icon: 'bi-calendar-event',
+            badge: (() => {
+              const branchArray = Array.isArray(branchEvents) ? branchEvents : 
+                                 Array.isArray(branchEvents?.data) ? branchEvents.data : [];
+              return branchArray.length > 0 ? 
+                     { count: branchArray.length, className: 'bg-primary' } : null;
+            })()
           },
           {
             key: 'create',

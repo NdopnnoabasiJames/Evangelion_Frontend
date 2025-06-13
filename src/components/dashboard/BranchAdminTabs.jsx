@@ -37,7 +37,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setError(null);
     try {
       const stats = await analyticsService.getBranchAdminDashboardStats();
-      console.log('🔧 Branch Dashboard Stats received:', stats);
       setBranchStatistics(stats || {
         totalZones: 0,
         activeEvents: 0,

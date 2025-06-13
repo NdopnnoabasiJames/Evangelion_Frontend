@@ -8,12 +8,9 @@ export const systemMetricsService = {
   // Get comprehensive system metrics
   getSystemMetrics: async () => {
     try {
-      console.log('SystemMetrics: Fetching comprehensive system metrics...');
       const response = await api.get('/api/users/system-metrics');
-      console.log('SystemMetrics: System metrics raw response:', response.data);
       
       const systemMetrics = response.data?.data || response.data || {};
-      console.log('SystemMetrics: Extracted system metrics:', systemMetrics);
       
       return systemMetrics;
     } catch (error) {
@@ -25,12 +22,9 @@ export const systemMetricsService = {
   // Get admin hierarchy statistics
   getAdminHierarchyStats: async () => {
     try {
-      console.log('SystemMetrics: Fetching admin hierarchy statistics...');
       const response = await api.get('/api/users/admin-hierarchy-stats');
-      console.log('SystemMetrics: Admin hierarchy raw response:', response.data);
       
       const hierarchyStats = response.data?.data || response.data || {};
-      console.log('SystemMetrics: Extracted hierarchy stats:', hierarchyStats);
       
       return hierarchyStats;
     } catch (error) {
@@ -42,12 +36,9 @@ export const systemMetricsService = {
   // Get user role breakdown
   getUserRoleBreakdown: async () => {
     try {
-      console.log('SystemMetrics: Fetching user role breakdown...');
       const response = await api.get('/api/users/user-role-breakdown');
-      console.log('SystemMetrics: User role breakdown raw response:', response.data);
       
       const roleBreakdown = response.data?.data || response.data || {};
-      console.log('SystemMetrics: Extracted role breakdown:', roleBreakdown);
       
       return roleBreakdown;
     } catch (error) {
@@ -59,7 +50,6 @@ export const systemMetricsService = {
   // Enhanced Super Admin Dashboard with Phase 2 metrics
   getEnhancedSuperAdminStats: async () => {
     try {
-      console.log('SystemMetrics: Fetching enhanced super admin dashboard stats...');
       
       const [
         systemMetrics,
@@ -100,7 +90,6 @@ export const systemMetricsService = {
         }
       };
 
-      console.log('SystemMetrics: Enhanced super admin stats:', enhancedStats);
       return enhancedStats;
     } catch (error) {
       console.error('SystemMetrics: Error fetching enhanced super admin stats:', error);
