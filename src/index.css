@@ -167,6 +167,17 @@ button:focus-visible {
   background: linear-gradient(135deg, var(--bg-light) 0%, rgba(86, 43, 121, 0.05) 100%);
 }
 
+/* Fix tab hover text visibility - Apply to all screen sizes */
+.nav-pills .nav-link:hover {
+  color: var(--white) !important;
+  background-color: var(--primary-purple) !important;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--white) !important;
+  background-color: var(--primary-purple) !important;
+}
+
 /* ==============================================
    MOBILE RESPONSIVENESS ENHANCEMENTS
    ============================================== */

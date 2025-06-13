@@ -32,12 +32,12 @@ const BranchAdminTabs = ({ dashboardData }) => {
       loadBranchStatistics();
     }
   }, [activeTab]);
-
   const loadBranchStatistics = async () => {
     setLoading(true);
     setError(null);
     try {
       const stats = await analyticsService.getBranchAdminDashboardStats();
+      console.log('🔧 Branch Dashboard Stats received:', stats);
       setBranchStatistics(stats || {
         totalZones: 0,
         activeEvents: 0,
