@@ -369,7 +369,6 @@ export const analyticsService = {
 
   getBranchAdminDashboardStats: async () => {
     try {
-      console.log('Analytics: Fetching branch admin dashboard stats...');
       const response = await api.get('/api/admin-hierarchy/branch/dashboard-stats');
       return response.data?.data || response.data || {};
     } catch (error) {

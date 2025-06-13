@@ -346,7 +346,7 @@ export const HeaderConfigurations = {
       title = `${stateInfo.name || stateInfo} State Admin Dashboard`;
       subtitle = `Welcome back, ${name} - Managing ${stateInfo.name || stateInfo} State`;
     } else if (role === 'branch_admin' && branchInfo) {
-      title = `${branchInfo.name || branchInfo} Branch Admin Dashboard`;
+      title = `${branchInfo.name || branchInfo} Admin Dashboard`;
       subtitle = `Welcome back, ${name} - Managing ${branchInfo.name || branchInfo} Branch`;
     } else if (role === 'super_admin') {
       title = 'Super Admin Dashboard';
