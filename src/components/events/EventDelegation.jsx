@@ -20,11 +20,9 @@ const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
     setSelectedEvent(event);
     setShowSelectionModal(true);
   };
-
   return (
-    <>
-      <div className="row g-4">
-        {events.map((event) => (
+    <>      <div className="row g-4">
+        {(Array.isArray(events) ? events : Array.isArray(events?.data) ? events.data : []).map((event) => (
           <div key={event._id} className="col-12">
             <div className="card border-warning">
               <div className="card-header bg-warning bg-opacity-10">

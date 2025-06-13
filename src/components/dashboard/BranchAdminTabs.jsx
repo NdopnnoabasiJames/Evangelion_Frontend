@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import AdminApprovalCard from './AdminApprovalCard';
 import ApprovedAdminCard from './ApprovedAdminCard';
+import BranchAdminEvents from './BranchAdminEvents';
+import ZoneAdminManagement from './ZoneAdminManagement';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 
@@ -425,15 +427,14 @@ const BranchAdminTabs = ({ dashboardData }) => {
             <i className="fas fa-chart-line me-2"></i>
             Overview
           </button>
-        </li>
-        <li className="nav-item" role="presentation">
+        </li>        <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'zonal-admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('zonal-admin-management')}
             type="button"
           >
             <i className="fas fa-user-shield me-2"></i>
-            Zonal Admin Management
+            Zone Admin Management
             {pendingZonalAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingZonalAdmins.length}
@@ -441,12 +442,25 @@ const BranchAdminTabs = ({ dashboardData }) => {
             )}
           </button>
         </li>
-      </ul>
-
-      {/* Tab Content */}
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
+            onClick={() => setActiveTab('events')}
+            type="button"
+          >
+            <i className="fas fa-calendar me-2"></i>
+            Events
+          </button>
+        </li>
+      </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'zonal-admin-management' && renderZonalAdminManagement()}
+        {activeTab === 'zonal-admin-management' && (
+          <ZoneAdminManagement 
+            onPendingCountChange={(count) => setPendingZonalAdmins(Array(count).fill({}))}
+          />
+        )}
+        {activeTab === 'events' && <BranchAdminEvents />}
       </div>
     </div>
   );

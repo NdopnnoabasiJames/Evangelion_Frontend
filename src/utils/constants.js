@@ -56,6 +56,7 @@ export const API_ENDPOINTS = {  AUTH: {
     PROFILE: '/api/auth/profile'
   },  EVENTS: {
     BASE: '/api/events',
+    LIST: '/api/events',
     HIERARCHICAL: '/api/admin-hierarchy/events',
     ACCESSIBLE: '/api/events/accessible',
     ACTIVE: '/api/events/active',
@@ -106,7 +107,14 @@ export const API_ENDPOINTS = {  AUTH: {
     CREATE_SUPER_ADMIN_EVENT: '/api/admin-hierarchy/events/super-admin',
     CREATE_STATE_ADMIN_EVENT: '/api/admin-hierarchy/events/state-admin',
     CREATE_BRANCH_ADMIN_EVENT: '/api/admin-hierarchy/events/branch-admin',
-    CREATE_ZONAL_ADMIN_EVENT: '/api/admin-hierarchy/events/zonal-admin'
+    CREATE_ZONAL_ADMIN_EVENT: '/api/admin-hierarchy/events/zonal-admin',
+    // Branch Admin specific endpoints
+    PENDING_ZONE_ADMINS: '/api/admin-hierarchy/branch/pending-zone-admins',
+    APPROVED_ZONE_ADMINS: '/api/admin-hierarchy/branch/approved-zone-admins',
+    APPROVE_ZONE_ADMIN: '/api/admin-hierarchy/branch/approve-zone-admin',
+    REJECT_ZONE_ADMIN: '/api/admin-hierarchy/branch/reject-zone-admin',
+    BRANCH_ZONES: '/api/admin-hierarchy/branch/zones',
+    BRANCH_DASHBOARD_STATS: '/api/admin-hierarchy/branch/dashboard-stats'
   },
   PICKUP_STATIONS: {
     BASE: '/api/pickup-stations',

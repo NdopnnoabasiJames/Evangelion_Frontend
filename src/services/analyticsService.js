@@ -311,49 +311,73 @@ export const analyticsService = {
           "Failed to reject branch admin registration"
       );
     }
-  }, // Get branch admin dashboard statistics
-  getBranchAdminDashboardStats: async () => {
+  },
+  // Branch Admin functions for Zone Admin management
+  getPendingZonalAdmins: async () => {
     try {
-      // First get the current user's profile to get their branch ID
-      const userProfileResponse = await api.get("/api/auth/profile");
-      const userProfile =
-        userProfileResponse.data?.data?.data ||
-        userProfileResponse.data?.data ||
-        userProfileResponse.data;
-      const branchId = userProfile?.branch?._id || userProfile?.branch;
-
-      if (!branchId) {
-        console.error("Analytics: Branch admin has no branch assigned");
-        throw new Error("Branch admin must have a branch assigned");
-      }
-
-      const [basicAnalytics, zonesResponse] = await Promise.all([
-        api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
-        api.get(`/api/zones/by-branch/${branchId}`),
-      ]);
-
-      // Extract data from API responses
-      const analyticsData =
-        basicAnalytics.data?.data || basicAnalytics.data || {};
-      const zonesData = zonesResponse.data?.data || zonesResponse.data || [];
-
-      const stats = {
-        zones: Array.isArray(zonesData) ? zonesData.length : 0,
-        workers: 0, // We'll need to implement this endpoint later
-        registrars: 0, // We'll need to implement this endpoint later
-        totalGuests: analyticsData?.totalGuests || 0,
-      };
-      return stats;
+      console.log('Analytics: Fetching pending zonal admin registrations...');
+      const response = await api.get('/api/admin-hierarchy/branch/pending-zone-admins');
+      return response.data?.data || response.data || [];
     } catch (error) {
-      console.error("Analytics: Error fetching branch admin stats:", error);
-      return {
-        zones: 0,
-        workers: 0,
-        registrars: 0,
-        totalGuests: 0,
-      };
+      console.error('Analytics: Error fetching pending zonal admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch pending zonal admin registrations');
     }
   },
+
+  getApprovedZonalAdmins: async () => {
+    try {
+      console.log('Analytics: Fetching approved zonal admin registrations...');
+      const response = await api.get('/api/admin-hierarchy/branch/approved-zone-admins');
+      return response.data?.data || response.data || [];
+    } catch (error) {
+      console.error('Analytics: Error fetching approved zonal admins:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch approved zonal admin registrations');
+    }
+  },
+
+  approveZonalAdmin: async (adminId, adminData) => {
+    try {
+      console.log('Analytics: Approving zonal admin - ID:', adminId, 'Type:', typeof adminId, 'Data:', adminData);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Zonal Admin ID is undefined or invalid');
+      }
+      
+      const response = await api.post(`/api/admin-hierarchy/branch/approve-zone-admin/${adminId}`, adminData);
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error approving zonal admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to approve zonal admin registration');
+    }
+  },
+
+  rejectZonalAdmin: async (adminId, reason) => {
+    try {
+      console.log('Analytics: Rejecting zonal admin - ID:', adminId, 'Type:', typeof adminId, 'Reason:', reason);
+      
+      if (!adminId || adminId === 'undefined') {
+        throw new Error('Zonal Admin ID is undefined or invalid');
+      }
+      
+      const response = await api.post(`/api/admin-hierarchy/branch/reject-zone-admin/${adminId}`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Analytics: Error rejecting zonal admin:', error);
+      throw new Error(error.response?.data?.message || 'Failed to reject zonal admin registration');
+    }
+  },
+
+  getBranchAdminDashboardStats: async () => {
+    try {
+      console.log('Analytics: Fetching branch admin dashboard stats...');
+      const response = await api.get('/api/admin-hierarchy/branch/dashboard-stats');
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      console.error('Analytics: Error fetching branch admin dashboard stats:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch branch admin dashboard statistics');
+    }
+  },
+
   // Get worker dashboard statistics
   getWorkerDashboardStats: async () => {
     try {
