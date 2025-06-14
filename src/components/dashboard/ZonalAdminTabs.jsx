@@ -3,13 +3,27 @@ import { useAuth } from '../../hooks/useAuth';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 import dashboardStatsService from '../../services/dashboardStatsService';
+import { useApi } from '../../hooks/useApi';
+import { API_ENDPOINTS } from '../../utils/constants';
+import { StatusBadge } from '../../utils/statusUtils';
 
 const ZonalAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // Debug log for tab changes
+  useEffect(() => {
+    console.log('🔍 [DEBUG] Active tab changed to:', activeTab);
+  }, [activeTab]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [zoneStats, setZoneStats] = useState(null);
+
+  // Fetch events accessible to this zonal admin
+  const { data: eventsData, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useApi(
+    API_ENDPOINTS.EVENTS.ACCESSIBLE, 
+    { immediate: true }
+  );
 
   useEffect(() => {
     if (activeTab === 'overview') {
@@ -237,19 +251,152 @@ const ZonalAdminTabs = ({ dashboardData }) => {
         </div>
       </div>
     );
-  };
+  };  const renderEvents = () => {
+    console.log('🔍 [DEBUG] renderEvents called!');
+    console.log('🔍 [DEBUG] Rendering events tab with data:', {
+      eventsData,
+      eventsLoading,
+      eventsError,
+      user: user?.id,
+      zone: user?.zone?.name
+    });
 
-  const renderEvents = () => {
+    if (eventsLoading) {
+      return (
+        <div className="row g-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="col-12 col-md-6 col-lg-4">
+              <LoadingCard loading className="h-100" minHeight="200px">
+                <div className="card-body">
+                  <div className="skeleton-item mb-3" style={{ width: '70%', height: '1.5rem' }}></div>
+                  <div className="skeleton-item mb-2" style={{ width: '100%', height: '1rem' }}></div>
+                  <div className="skeleton-item mb-2" style={{ width: '60%', height: '1rem' }}></div>
+                </div>
+              </LoadingCard>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (eventsError) {
+      return (
+        <ErrorDisplay 
+          error={eventsError} 
+          onRetry={refetchEvents}
+          title="Failed to load events"
+        />
+      );
+    }
+
+    const events = Array.isArray(eventsData) ? eventsData : (eventsData?.data || []);
+    
+    if (events.length === 0) {
+      return (
+        <div className="card">
+          <div className="card-body text-center py-5">
+            <i className="bi bi-calendar-event text-muted" style={{ fontSize: '3rem' }}></i>
+            <h4 className="mt-3">No Events Found</h4>
+            <p className="text-muted">
+              No events have been delegated to your zone yet.<br/>
+              Events delegated by branch admins will appear here.
+            </p>
+            <div className="mt-3">
+              <small className="text-muted">
+                <i className="bi bi-info-circle me-1"></i>
+                Zone: {user?.zone?.name || 'Not assigned'}
+              </small>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="card">
-        <div className="card-body text-center py-5">
-          <i className="fas fa-calendar fa-3x text-muted mb-3"></i>
-          <h4>Events Management</h4>
-          <p className="text-muted">Zone-level event management will be available here.</p>
-          <button className="btn btn-primary">
-            <i className="fas fa-plus me-2"></i>
-            Create Zone Event
-          </button>
+      <div className="row g-4">
+        {events.map((event) => (
+          <div key={event._id} className="col-12 col-md-6 col-lg-4">
+            <div className="card h-100 border border-primary border-opacity-10 card-hover-lift">
+              <div className="card-header bg-gradient border-0 pb-0">
+                <div className="d-flex justify-content-between align-items-start">
+                  <h5 className="card-title mb-1 text-truncate" style={{ color: 'var(--primary-purple)' }}>
+                    {event.name}
+                  </h5>
+                  <StatusBadge status={event.status} type="event" className="flex-shrink-0 ms-2" />
+                </div>
+                {event.creatorLevel && (
+                  <small className="text-muted">
+                    <i className="bi bi-person-badge me-1"></i>
+                    {event.creatorLevel.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} Event
+                  </small>
+                )}
+              </div>
+              
+              <div className="card-body">
+                <div className="mb-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <i className="bi bi-calendar-date text-primary me-2"></i>
+                    <span className="fw-medium">
+                      {new Date(event.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center mb-2">
+                    <i className="bi bi-clock text-primary me-2"></i>
+                    <span>{event.time}</span>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-geo-alt text-primary me-2"></i>
+                    <span className="text-truncate">{event.location}</span>
+                  </div>
+                </div>
+
+                {event.description && (
+                  <p className="card-text text-muted small mb-3" 
+                     style={{ 
+                       display: '-webkit-box',
+                       WebkitLineClamp: 2,
+                       WebkitBoxOrient: 'vertical',
+                       overflow: 'hidden'
+                     }}>
+                    {event.description}
+                  </p>
+                )}
+
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex gap-2">
+                    <button className="btn btn-sm btn-outline-primary">
+                      <i className="bi bi-eye me-1"></i>
+                      View Details
+                    </button>
+                    <button className="btn btn-sm btn-primary">
+                      <i className="bi bi-geo-alt me-1"></i>
+                      Assign Pickup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <p className="text-muted mb-0">
+              Showing {events.length} event{events.length !== 1 ? 's' : ''} for {user?.zone?.name || 'your zone'}
+            </p>
+            <button 
+              className="btn btn-outline-secondary btn-sm"
+              onClick={refetchEvents}
+            >
+              <i className="bi bi-arrow-clockwise me-1"></i>
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
     );

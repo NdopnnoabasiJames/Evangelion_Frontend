@@ -343,11 +343,11 @@ export const HeaderConfigurations = {
 
     // Customize title and subtitle based on role and location
     if (role === 'state_admin' && stateInfo) {
-      title = `${stateInfo.name || stateInfo} State Admin Dashboard`;
-      subtitle = `Welcome back, ${name} - Managing ${stateInfo.name || stateInfo} State`;
+      title = `${stateInfo.name} State Admin Dashboard`;
+      subtitle = `Welcome back, ${name} - Managing ${stateInfo.name}`;
     } else if (role === 'branch_admin' && branchInfo) {
-      title = `${branchInfo.name || branchInfo} Admin Dashboard`;
-      subtitle = `Welcome back, ${name} - Managing ${branchInfo.name || branchInfo} Branch`;
+      title = `${branchInfo.name} Admin Dashboard`;
+      subtitle = `Welcome back, ${name} - Managing ${branchInfo.name}`;
     } else if (role === 'super_admin') {
       title = 'Super Admin Dashboard';
       subtitle = `Welcome back, ${name} - System Administrator`;
