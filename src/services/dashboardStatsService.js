@@ -200,7 +200,7 @@ export const dashboardStatsService = {
         recentActivity: "Guest registration activity",
       };
     }
-  }, // Zonal Admin Dashboard Statistics
+  },  // Zonal Admin Dashboard Statistics
   getZonalAdminDashboardStats: async () => {
     try {
       // First get user profile to understand the zonal admin's zone assignment
@@ -208,7 +208,19 @@ export const dashboardStatsService = {
       const userProfile =
         userProfileResponse.data?.data?.data ||
         userProfileResponse.data?.data ||
-        userProfileResponse.data;
+        userProfileResponse.data;      // Get events accessible to this zonal admin
+      const eventsResponse = await api.get(API_ENDPOINTS.EVENTS.ACCESSIBLE);
+      const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
+      
+      // For zonal admins, count events more inclusively - they should see delegated events regardless of status
+      // except for cancelled events. This includes draft events that have been delegated to their zone.
+      const activeEventsCount = Array.isArray(eventsData) 
+        ? eventsData.filter(event => {
+            const isNotCancelled = event.status !== 'cancelled';
+            console.log(`🔍 [DEBUG] Event "${event.name}": status=${event.status}, isNotCancelled=${isNotCancelled}`);
+            return isNotCancelled;
+          }).length 
+        : 0;
 
       const [basicAnalytics, registrarSummary] = await Promise.all([
         api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
@@ -222,7 +234,7 @@ export const dashboardStatsService = {
 
       const stats = {
         totalRegistrars: registrarData?.totalRegistrars || 0,
-        activeEvents: 0, // We'll implement this endpoint later
+        activeEvents: activeEventsCount, // Now properly calculated from accessible events
         totalGuests: analyticsData?.totalGuests || 0,
         recentCheckIns: analyticsData?.checkedInGuests || 0,
 
@@ -231,6 +243,12 @@ export const dashboardStatsService = {
         assignedRegistrars: registrarData?.assignedRegistrars || 0,
         unassignedRegistrars: registrarData?.unassignedRegistrars || 0,
       };
+
+      console.log('🔍 [DEBUG] Zonal admin dashboard stats calculated:', {
+        totalEventsFound: Array.isArray(eventsData) ? eventsData.length : 0,
+        activeEventsCount: activeEventsCount,
+        zoneName: userProfile?.zone?.name || "No zone assigned"
+      });
 
       // Info for zero registrars (normal for new system)
       if (stats.totalRegistrars === 0) {
