@@ -4,7 +4,12 @@ const ApprovedAdminCard = ({ admin }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
+      const date = new Date(dateString);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -94,10 +99,9 @@ const ApprovedAdminCard = ({ admin }) => {
                     <i className="fas fa-user-check me-1"></i>
                     Approved by: {admin.approvedBy.name || admin.approvedBy.email || 'System'}
                   </small>
-                )}
-                <small className="d-block">
+                )}                <small className="d-block">
                   <i className="fas fa-calendar me-1"></i>
-                  Approved: {formatDate(admin.createdAt)}
+                  Approved: {formatDate(admin.approvedAt)}
                 </small>
                 <small className="d-block">
                   <i className="fas fa-toggle-on me-1 text-success"></i>

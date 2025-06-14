@@ -22,11 +22,14 @@ const ZoneAdminManagement = () => {
     execute: refetchApproved 
   } = useApi(API_ENDPOINTS.ADMIN.APPROVED_ZONE_ADMINS);  const { execute: approveAdmin } = useApi(null, { immediate: false });
   const { execute: rejectAdmin } = useApi(null, { immediate: false });
-
   const handleApprove = async (adminId) => {
     try {
       await approveAdmin(`${API_ENDPOINTS.ADMIN.APPROVE_ZONE_ADMIN}/${adminId}`, {
-        method: 'PATCH'
+        method: 'POST',
+        body: {
+          approvedBy: 'Branch Admin',
+          approvedAt: new Date().toISOString()
+        }
       });
       
       if (window.showNotification) {
@@ -41,11 +44,13 @@ const ZoneAdminManagement = () => {
       }
     }
   };
-
   const handleReject = async (adminId) => {
     try {
       await rejectAdmin(`${API_ENDPOINTS.ADMIN.REJECT_ZONE_ADMIN}/${adminId}`, {
-        method: 'PATCH'
+        method: 'POST',
+        body: {
+          reason: 'Request rejected by branch admin'
+        }
       });
       
       if (window.showNotification) {
