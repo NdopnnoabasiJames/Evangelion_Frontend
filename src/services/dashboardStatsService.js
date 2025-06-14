@@ -281,11 +281,11 @@ export const dashboardStatsService = {
       };
     }
   },
-
   // Get role-specific dashboard data
   getDashboardStatsByRole: async (userRole) => {
     switch (userRole) {
       case "super_admin":
+        // Dynamically import to avoid circular dependency
         const { systemMetricsService } = await import("./systemMetricsService");
         return systemMetricsService.getEnhancedSuperAdminStats();
       case "state_admin":
@@ -299,6 +299,7 @@ export const dashboardStatsService = {
       case "registrar":
         return dashboardStatsService.getRegistrarDashboardStats();
       default:
+        // Dynamically import to avoid circular dependency
         const { analyticsService } = await import("./analyticsService");
         return analyticsService.getDashboardAnalytics();
     }

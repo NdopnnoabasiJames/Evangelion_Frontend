@@ -185,14 +185,12 @@ export const dashboardService = {
         recentActivity: "Check-in session activity",
       };
     }
-  },
-  // Get role-specific dashboard data
+  },  // Get role-specific dashboard data
   getDashboardStatsByRole: async (userRole) => {
-    // Import systemMetricsService here to avoid circular dependency
-    const { systemMetricsService } = await import("./systemMetricsService");
-    
     switch (userRole) {
       case "super_admin":
+        // Dynamically import to avoid circular dependency
+        const { systemMetricsService } = await import("./systemMetricsService");
         return systemMetricsService.getEnhancedSuperAdminStats();
       case "state_admin":
         return dashboardService.getStateAdminDashboardStats();

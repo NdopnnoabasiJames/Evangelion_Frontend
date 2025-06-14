@@ -21,5 +21,19 @@ export default defineConfig({
         secure: false,
       }
     }
+  },
+  build: {
+    // Optimize bundle size and chunking
+    chunkSizeWarningLimit: 800, // Increase warning limit to 800KB
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor libraries into their own chunks
+          'react-vendor': ['react', 'react-dom'],
+          'chart-vendor': ['chart.js', 'react-chartjs-2'],
+          'bootstrap-vendor': ['bootstrap']
+        }
+      }
+    }
   }
 })

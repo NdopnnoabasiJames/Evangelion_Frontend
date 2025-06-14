@@ -1,5 +1,5 @@
 import api from './api';
-import adminManagementService from './adminManagementService';
+import adminManagementService from './adminManagement';
 
 /**
  * Service for comprehensive system metrics and enhanced dashboard data
