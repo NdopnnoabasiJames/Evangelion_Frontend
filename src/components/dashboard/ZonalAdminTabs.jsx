@@ -102,9 +102,8 @@ const ZonalAdminTabs = ({ dashboardData }) => {
         <div className="row mb-4">
           <div className="col-12">
             <div className="card bg-primary bg-gradient text-white">
-              <div className="card-body">
-                <h5 className="card-title mb-1">
-                  <i className="fas fa-map-marker-alt me-2"></i>
+              <div className="card-body">                <h5 className="card-title mb-1">
+                  <i className="bi bi-geo-alt-fill me-2"></i>
                   Zone Administration
                 </h5>
                 <div className="row">
@@ -124,9 +123,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Statistics Cards */}
+        </div>        {/* Statistics Cards */}
         <div className="row g-4 mb-4">
           <div className="col-lg-3 col-md-6">
             <div className="card border-0 shadow-sm">
@@ -134,7 +131,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-primary bg-opacity-10 text-primary p-3 rounded">
-                      <i className="fas fa-users fa-lg"></i>
+                      <i className="bi bi-people-fill fs-3"></i>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
@@ -152,7 +149,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-success bg-opacity-10 text-success p-3 rounded">
-                      <i className="fas fa-calendar-alt fa-lg"></i>
+                      <i className="bi bi-calendar-event-fill fs-3"></i>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
@@ -170,7 +167,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-info bg-opacity-10 text-info p-3 rounded">
-                      <i className="fas fa-user-friends fa-lg"></i>
+                      <i className="bi bi-person-hearts fs-3"></i>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
@@ -188,7 +185,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                 <div className="d-flex align-items-center">
                   <div className="flex-shrink-0">
                     <div className="bg-warning bg-opacity-10 text-warning p-3 rounded">
-                      <i className="fas fa-check-circle fa-lg"></i>
+                      <i className="bi bi-check-circle-fill fs-3"></i>
                     </div>
                   </div>
                   <div className="flex-grow-1 ms-3">
