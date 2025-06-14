@@ -10,62 +10,67 @@ const StateAdminOverview = ({
   return (
     <div>
       {/* Statistics Cards */}
-      <div className="row g-4 mb-4">
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-success text-white h-100">
+      <div className="row g-4 mb-4">        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-success-gradient text-white h-100">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{stateStatistics.totalBranches || dashboardData?.branches || 0}</h4>
-                  <p className="mb-0">Total Branches</p>
-                  <small className="opacity-75">In your state</small>
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-20 p-3 rounded">
+                    <i className="bi bi-building fs-3 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-building fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Total Branches</h6>
+                  <h3 className="mb-0 text-white">{stateStatistics.totalBranches || dashboardData?.branches || 0}</h3>
+                  <small className="text-white-50">In your state</small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-info text-white h-100">
+        </div>        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-info-gradient text-white h-100">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{stateStatistics.totalZones || 0}</h4>
-                  <p className="mb-0">Total Zones</p>
-                  <small className="opacity-75">Across all branches</small>
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-20 p-3 rounded">
+                    <i className="bi bi-diagram-3 fs-3 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-layer-group fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Total Zones</h6>
+                  <h3 className="mb-0 text-white">{stateStatistics.totalZones || 0}</h3>
+                  <small className="text-white-50">Across all branches</small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-warning text-dark h-100">
+        </div>        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-warning-gradient text-white h-100">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{stateStatistics.activeEvents || dashboardData?.activeEvents || 0}</h4>
-                  <p className="mb-0">Active Events</p>
-                  <small className="opacity-75">Currently running</small>
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-20 p-3 rounded">
+                    <i className="bi bi-calendar-event-fill fs-3 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-calendar fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Active Events</h6>
+                  <h3 className="mb-0 text-white">{stateStatistics.activeEvents || dashboardData?.activeEvents || 0}</h3>
+                  <small className="text-white-50">Currently running</small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-purple text-white h-100" style={{backgroundColor: 'var(--primary-purple)'}}>
+        </div>        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-purple-gradient text-white h-100">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{stateStatistics.totalGuests || dashboardData?.totalGuests || 0}</h4>
-                  <p className="mb-0">Total Guests</p>
-                  <small className="opacity-75">Registered in state</small>
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-20 p-3 rounded">
+                    <i className="bi bi-people-fill fs-3 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-users fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Total Guests</h6>
+                  <h3 className="mb-0 text-white">{stateStatistics.totalGuests || dashboardData?.totalGuests || 0}</h3>
+                  <small className="text-white-50">Registered in state</small>
+                </div>
               </div>
             </div>
           </div>
@@ -76,9 +81,8 @@ const StateAdminOverview = ({
       <div className="row g-4 mb-4">
         <div className="col-lg-8">
           <div className="card h-100">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <i className="fas fa-sitemap me-2"></i>
+            <div className="card-header">              <h5 className="mb-0">
+                <i className="bi bi-diagram-3 me-2"></i>
                 State Management Overview
               </h5>
             </div>
@@ -90,7 +94,7 @@ const StateAdminOverview = ({
                       <h6 className="mb-1">Branch Admins</h6>
                       <h4 className="mb-0 text-success">{approvedBranchAdmins.length}</h4>
                     </div>
-                    <i className="fas fa-user-tie fa-2x text-success"></i>
+                    <i className="bi bi-person-badge fs-2 text-success"></i>
                   </div>
                 </div>
                 <div className="col-md-6">
@@ -99,7 +103,7 @@ const StateAdminOverview = ({
                       <h6 className="mb-1">Pending Approvals</h6>
                       <h4 className="mb-0 text-warning">{pendingBranchAdmins.length}</h4>
                     </div>
-                    <i className="fas fa-clock fa-2x text-warning"></i>
+                    <i className="bi bi-clock fs-2 text-warning"></i>
                   </div>
                 </div>
               </div>
@@ -110,8 +114,7 @@ const StateAdminOverview = ({
         <div className="col-lg-4">
           <div className="card h-100">
             <div className="card-header">
-              <h5 className="mb-0">
-                <i className="fas fa-bolt me-2"></i>
+              <h5 className="mb-0">                <i className="bi bi-lightning-charge me-2"></i>
                 Quick Actions
               </h5>
             </div>
@@ -121,15 +124,15 @@ const StateAdminOverview = ({
                   className="btn btn-primary"
                   onClick={onManageBranchAdmins}
                 >
-                  <i className="fas fa-user-check me-2"></i>
+                  <i className="bi bi-person-check me-2"></i>
                   Manage Branch Admins
                 </button>
                 <button className="btn btn-outline-primary">
-                  <i className="fas fa-calendar-plus me-2"></i>
+                  <i className="bi bi-calendar-plus me-2"></i>
                   Create State Event
                 </button>
                 <button className="btn btn-outline-secondary">
-                  <i className="fas fa-download me-2"></i>
+                  <i className="bi bi-download me-2"></i>
                   Export State Report
                 </button>
               </div>

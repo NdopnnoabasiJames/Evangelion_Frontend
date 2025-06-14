@@ -6,6 +6,7 @@ import dashboardStatsService from '../../services/dashboardStatsService';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 import { StatusBadge } from '../../utils/statusUtils';
+import PickupStationAssignment from '../events/PickupStationAssignment';
 
 const ZonalAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
@@ -201,36 +202,44 @@ const ZonalAdminTabs = ({ dashboardData }) => {
         {/* Quick Actions */}
         <div className="row">
           <div className="col-12">
-            <div className="card">
-              <div className="card-header">
+            <div className="card">              <div className="card-header">
                 <h6 className="mb-0">
-                  <i className="fas fa-bolt me-2"></i>
+                  <i className="bi bi-lightning-fill me-2"></i>
                   Quick Actions
                 </h6>
               </div>
               <div className="card-body">
                 <div className="row g-3">
                   <div className="col-md-3">
-                    <button className="btn btn-outline-primary w-100">
-                      <i className="fas fa-bus me-2"></i>
+                    <button 
+                      className="btn btn-outline-primary w-100"
+                      onClick={() => setActiveTab('pickup-stations')}
+                    >
+                      <i className="bi bi-bus-front me-2"></i>
                       Manage Pickup Stations
                     </button>
                   </div>
                   <div className="col-md-3">
-                    <button className="btn btn-outline-success w-100">
-                      <i className="fas fa-users me-2"></i>
+                    <button 
+                      className="btn btn-outline-success w-100"
+                      onClick={() => setActiveTab('registrars')}
+                    >
+                      <i className="bi bi-people me-2"></i>
                       View Registrars
                     </button>
                   </div>
                   <div className="col-md-3">
-                    <button className="btn btn-outline-info w-100">
-                      <i className="fas fa-calendar me-2"></i>
+                    <button 
+                      className="btn btn-outline-info w-100"
+                      onClick={() => setActiveTab('events')}
+                    >
+                      <i className="bi bi-calendar-event me-2"></i>
                       Manage Events
                     </button>
                   </div>
                   <div className="col-md-3">
                     <button className="btn btn-outline-warning w-100">
-                      <i className="fas fa-chart-bar me-2"></i>
+                      <i className="bi bi-bar-chart-line me-2"></i>
                       View Reports
                     </button>
                   </div>
@@ -394,32 +403,28 @@ const ZonalAdminTabs = ({ dashboardData }) => {
       </div>
     );
   };
-
   const renderPickupStations = () => {
     return (
-      <div className="card">
-        <div className="card-body text-center py-5">
-          <i className="fas fa-bus fa-3x text-muted mb-3"></i>
-          <h4>Pickup Stations</h4>
-          <p className="text-muted">Manage bus pickup locations and schedules for your zone.</p>
-          <button className="btn btn-primary">
-            <i className="fas fa-plus me-2"></i>
-            Add Pickup Station
-          </button>
-        </div>
-      </div>
+      <PickupStationAssignment 
+        zonalAdminId={user?.id}
+        userRole={user?.role}
+        onAssignmentComplete={() => {
+          // Refresh data after assignment
+          loadZoneStatistics();
+          refetchEvents();
+        }}
+      />
     );
   };
-
   const renderRegistrars = () => {
     return (
       <div className="card">
         <div className="card-body text-center py-5">
-          <i className="fas fa-users fa-3x text-muted mb-3"></i>
-          <h4>Registrars</h4>
+          <i className="bi bi-people text-muted" style={{ fontSize: '3rem' }}></i>
+          <h4 className="mt-3">Registrars</h4>
           <p className="text-muted">View and manage registrars assigned to your zone.</p>
           <button className="btn btn-primary">
-            <i className="fas fa-eye me-2"></i>
+            <i className="bi bi-eye me-2"></i>
             View Registrars
           </button>
         </div>
@@ -428,8 +433,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
   };
 
   return (
-    <div>
-      {/* Tab Navigation */}
+    <div>      {/* Tab Navigation */}
       <ul className="nav nav-tabs mb-4" role="tablist">
         <li className="nav-item" role="presentation">
           <button
@@ -438,7 +442,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
             type="button"
             role="tab"
           >
-            <i className="fas fa-chart-line me-2"></i>
+            <i className="bi bi-bar-chart-line me-2"></i>
             Overview
           </button>
         </li>
@@ -449,7 +453,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
             type="button"
             role="tab"
           >
-            <i className="fas fa-calendar me-2"></i>
+            <i className="bi bi-calendar-event me-2"></i>
             Events
           </button>
         </li>
@@ -460,7 +464,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
             type="button"
             role="tab"
           >
-            <i className="fas fa-bus me-2"></i>
+            <i className="bi bi-bus-front me-2"></i>
             Pickup Stations
           </button>
         </li>
@@ -471,7 +475,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
             type="button"
             role="tab"
           >
-            <i className="fas fa-users me-2"></i>
+            <i className="bi bi-people me-2"></i>
             Registrars
           </button>
         </li>

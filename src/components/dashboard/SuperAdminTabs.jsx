@@ -125,59 +125,68 @@ const SuperAdminTabs = ({ dashboardData }) => {
   };  const renderOverview = () => (
     <div>
       {/* Primary Metrics Cards */}
-      <div className="row g-4 mb-4">
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-primary text-white h-100">
+      <div className="row g-4 mb-4">        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-primary bg-gradient text-white">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{dashboardData?.totalUsers || 0}</h4>
-                  <p className="mb-0">Total Users</p>
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-people-fill fs-2 text-white fw-bold"></i>
+                  </div>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="mb-1">Total Users</h6>
+                  <h3 className="mb-0 text-white">{dashboardData?.totalUsers || 0}</h3>
                   {dashboardData?.recentRegistrations > 0 && (
-                    <small className="opacity-75">+{dashboardData.recentRegistrations} today</small>
+                    <small className="text-white-75">+{dashboardData.recentRegistrations} today</small>
                   )}
                 </div>
-                <i className="fas fa-users fa-2x opacity-75"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-success text-white h-100">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{dashboardData?.totalStates || 0}</h4>
-                  <p className="mb-0">States</p>
-                  <small className="opacity-75">{dashboardData?.totalBranches || 0} branches</small>
-                </div>
-                <i className="fas fa-map-marker-alt fa-2x opacity-75"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-info text-white h-100">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{dashboardData?.totalEvents || 0}</h4>
-                  <p className="mb-0">Services/Programs</p>
-                  <small className="opacity-75">{dashboardData?.totalGuests || 0} guests</small>
-                </div>
-                <i className="fas fa-calendar fa-2x opacity-75"></i>
               </div>
             </div>
           </div>
         </div>        <div className="col-lg-3 col-md-6">
-          <div className="card bg-warning text-dark h-100">
+          <div className="card border-0 shadow-sm bg-success bg-gradient text-white">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{dashboardData?.totalPickupStations || 0}</h4>
-                  <p className="mb-0">Total Pickup Stations</p>
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-geo-alt-fill fs-2 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-map-marker-alt fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="mb-1">States</h6>
+                  <h3 className="mb-0 text-white">{dashboardData?.totalStates || 0}</h3>
+                  <small className="text-white-75">{dashboardData?.totalBranches || 0} branches</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-info bg-gradient text-white">
+            <div className="card-body">
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-calendar-event-fill fs-2 text-white fw-bold"></i>
+                  </div>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="mb-1">Services/Programs</h6>
+                  <h3 className="mb-0 text-white">{dashboardData?.totalEvents || 0}</h3>
+                  <small className="text-white-75">{dashboardData?.totalGuests || 0} guests</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-warning bg-gradient text-white">
+            <div className="card-body">
+              <div className="d-flex align-items-center">                <div className="flex-shrink-0">
+                  <div className="bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-pin-map-fill fs-2 text-white fw-bold"></i>
+                  </div>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="mb-1">Pickup Stations</h6>
+                  <h3 className="mb-0 text-white">{dashboardData?.totalPickupStations || 0}</h3>
+                </div>
               </div>
             </div>
           </div>
@@ -594,8 +603,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
             type="button"
-          >
-            <i className="fas fa-chart-line me-2"></i>
+          >            <i className="bi bi-graph-up me-2"></i>
             Overview
           </button>
         </li>        <li className="nav-item" role="presentation">
@@ -603,8 +611,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('admin-management')}
             type="button"
-          >
-            <i className="fas fa-user-shield me-2"></i>
+          >            <i className="bi bi-shield-check me-2"></i>
             Admin Management
             {pendingAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
@@ -618,8 +625,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
             onClick={() => setActiveTab('events')}
             type="button"
-          >
-            <i className="fas fa-calendar me-2"></i>
+          >            <i className="bi bi-calendar-event me-2"></i>
             Events
             {dashboardData?.activeEvents > 0 && (
               <span className="badge bg-info text-white ms-2">
@@ -633,8 +639,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'audit-trail' ? 'active' : ''}`}
             onClick={() => setActiveTab('audit-trail')}
             type="button"
-          >
-            <i className="fas fa-list-alt me-2"></i>
+          >            <i className="bi bi-list-check me-2"></i>
             Audit Trail
           </button>
         </li>
@@ -643,8 +648,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'system-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('system-management')}
             type="button"
-          >
-            <i className="fas fa-cogs me-2"></i>
+          >            <i className="bi bi-gear-fill me-2"></i>
             System Management
           </button>
         </li>

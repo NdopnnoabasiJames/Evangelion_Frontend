@@ -122,64 +122,68 @@ const BranchAdminTabs = ({ dashboardData }) => {
   };
 
   const renderOverview = () => (
-    <div>
-      {/* Statistics Cards */}
-      <div className="row g-4 mb-4">
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-primary text-white h-100">
+    <div>      {/* Statistics Cards */}
+      <div className="row g-4 mb-4">        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-primary bg-gradient text-white">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{branchStatistics.totalZones || dashboardData?.zones || 0}</h4>
-                  <p className="mb-0">Total Zones</p>
-                  <small className="opacity-75">In your branch</small>
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">                  <div className="bg-white bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-grid-3x3-gap-fill fs-2 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-layer-group fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Total Zones</h6>
+                  <h3 className="mb-0 text-white">{branchStatistics.totalZones || dashboardData?.zones || 0}</h3>
+                  <small className="text-white-75">In your branch</small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-warning text-dark h-100">
+        </div>        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-warning bg-gradient text-white">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{branchStatistics.activeEvents || dashboardData?.activeEvents || 0}</h4>
-                  <p className="mb-0">Active Events</p>
-                  <small className="opacity-75">Currently running</small>
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">                  <div className="bg-white bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-calendar-event-fill fs-2 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-calendar fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Active Events</h6>
+                  <h3 className="mb-0 text-white">{branchStatistics.activeEvents || dashboardData?.activeEvents || 0}</h3>
+                  <small className="text-white-75">Currently running</small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-purple text-white h-100" style={{backgroundColor: 'var(--primary-purple)'}}>
+        </div><div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-info bg-gradient text-white">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{branchStatistics.totalGuests || dashboardData?.totalGuests || 0}</h4>
-                  <p className="mb-0">Total Guests</p>
-                  <small className="opacity-75">Registered in branch</small>
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">                  <div className="bg-white bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-people-fill fs-2 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-users fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Total Guests</h6>
+                  <h3 className="mb-0 text-white">{branchStatistics.totalGuests || dashboardData?.totalGuests || 0}</h3>
+                  <small className="text-white-75">Registered in branch</small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-lg-3 col-md-6">
-          <div className="card bg-success text-white h-100">
+        </div>        <div className="col-lg-3 col-md-6">
+          <div className="card border-0 shadow-sm bg-success bg-gradient text-white">
             <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h4 className="mb-0">{branchStatistics.totalRegistrations || dashboardData?.totalRegistrations || 0}</h4>
-                  <p className="mb-0">Total Registrations</p>
-                  <small className="opacity-75">All time</small>
+              <div className="d-flex align-items-center">
+                <div className="flex-shrink-0">                  <div className="bg-white bg-opacity-25 backdrop-blur p-3 rounded">
+                    <i className="bi bi-clipboard-check-fill fs-2 text-white fw-bold"></i>
+                  </div>
                 </div>
-                <i className="fas fa-clipboard-list fa-2x opacity-75"></i>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="text-white-50 mb-1">Total Registrations</h6>
+                  <h3 className="mb-0 text-white">{branchStatistics.totalRegistrations || dashboardData?.totalRegistrations || 0}</h3>
+                  <small className="text-white-75">All time</small>
+                </div>
               </div>
             </div>
           </div>
@@ -422,17 +426,15 @@ const BranchAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
             type="button"
-          >
-            <i className="fas fa-chart-line me-2"></i>
+          >            <i className="bi bi-graph-up me-2"></i>
             Overview
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'zonal-admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('zonal-admin-management')}
-            type="button"
-          >
-            <i className="fas fa-user-shield me-2"></i>
+            type="button"          >
+            <i className="bi bi-shield-check me-2"></i>
             Zone Admin Management
             {pendingZonalAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
@@ -446,8 +448,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
             onClick={() => setActiveTab('events')}
             type="button"
-          >
-            <i className="fas fa-calendar me-2"></i>
+          >            <i className="bi bi-calendar-event me-2"></i>
             Events
           </button>
         </li>

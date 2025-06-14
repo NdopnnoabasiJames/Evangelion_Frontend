@@ -92,8 +92,7 @@ const StateAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
             type="button"
-          >
-            <i className="fas fa-chart-line me-2"></i>
+          >            <i className="bi bi-graph-up me-2"></i>
             Overview
           </button>
         </li>
@@ -101,9 +100,8 @@ const StateAdminTabs = ({ dashboardData }) => {
           <button
             className={`nav-link ${activeTab === 'branch-admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('branch-admin-management')}
-            type="button"
-          >
-            <i className="fas fa-user-shield me-2"></i>
+            type="button"          >
+            <i className="bi bi-shield-check me-2"></i>
             Branch Admin Management
             {pendingBranchAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
@@ -117,8 +115,7 @@ const StateAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
             onClick={() => setActiveTab('events')}
             type="button"
-          >
-            <i className="fas fa-calendar-alt me-2"></i>
+          >            <i className="bi bi-calendar-event me-2"></i>
             Events
           </button>
         </li>

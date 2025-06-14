@@ -395,3 +395,28 @@
     padding: 1rem;
   }
 }
+
+/* Dashboard Card Gradients */
+.bg-primary-gradient {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+.bg-success-gradient {
+  background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+}
+
+.bg-info-gradient {
+  background: linear-gradient(135deg, #0dcaf0 0%, #087990 100%);
+}
+
+.bg-warning-gradient {
+  background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+}
+
+.bg-purple-gradient {
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--purple-dark) 100%);
+}
+
+.bg-danger-gradient {
+  background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+}
