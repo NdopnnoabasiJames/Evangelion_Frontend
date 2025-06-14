@@ -252,15 +252,6 @@ const ZonalAdminTabs = ({ dashboardData }) => {
       </div>
     );
   };  const renderEvents = () => {
-    console.log('🔍 [DEBUG] renderEvents called!');
-    console.log('🔍 [DEBUG] Rendering events tab with data:', {
-      eventsData,
-      eventsLoading,
-      eventsError,
-      user: user?.id,
-      zone: user?.zone?.name
-    });
-
     if (eventsLoading) {
       return (
         <div className="row g-4">
@@ -333,8 +324,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
               </div>
               
               <div className="card-body">
-                <div className="mb-3">
-                  <div className="d-flex align-items-center mb-2">
+                <div className="mb-3">                  <div className="d-flex align-items-center mb-2">
                     <i className="bi bi-calendar-date text-primary me-2"></i>
                     <span className="fw-medium">
                       {new Date(event.date).toLocaleDateString('en-US', {
@@ -347,11 +337,24 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                   </div>
                   <div className="d-flex align-items-center mb-2">
                     <i className="bi bi-clock text-primary me-2"></i>
-                    <span>{event.time}</span>
-                  </div>
-                  <div className="d-flex align-items-center">
+                    <span>
+                      {new Date(event.date).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
+                  </div>                  <div className="d-flex align-items-center">
                     <i className="bi bi-geo-alt text-primary me-2"></i>
-                    <span className="text-truncate">{event.location}</span>
+                    <span className="text-truncate">
+                      {event.location || 
+                       (event.availableBranches?.length > 0 
+                         ? event.availableBranches.map(branch => branch?.location || branch?.name || branch).filter(Boolean).join(', ')
+                         : event.availableZones?.length > 0
+                           ? event.availableZones.map(zone => zone?.name || zone).filter(Boolean).join(', ')
+                           : 'Location TBD'
+                       )}
+                    </span>
                   </div>
                 </div>
 
