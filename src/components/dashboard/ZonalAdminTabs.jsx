@@ -13,7 +13,6 @@ const ZonalAdminTabs = ({ dashboardData }) => {
   
   // Debug log for tab changes
   useEffect(() => {
-    console.log('🔍 [DEBUG] Active tab changed to:', activeTab);
   }, [activeTab]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,14 +31,9 @@ const ZonalAdminTabs = ({ dashboardData }) => {
   }, [activeTab]);  const loadZoneStatistics = async () => {
     setLoading(true);
     setError(null);
-    try {
-      console.log('ZonalAdminTabs: Loading zone statistics...');
-      
+    try {      
       // Call the real dashboard stats service for zonal admin
       const dashboardStats = await dashboardStatsService.getDashboardStatsByRole('zonal_admin');
-      
-      console.log('ZonalAdminTabs: Received dashboard stats:', dashboardStats);
-      
       const zoneData = {
         totalRegistrars: dashboardStats.totalRegistrars || 0,
         activeEvents: dashboardStats.activeEvents || 0,
@@ -53,7 +47,6 @@ const ZonalAdminTabs = ({ dashboardData }) => {
         zoneId: user?.zone?._id,
         assignedZonesCount: user?.assignedZones?.length || 0
       };      
-      console.log('ZonalAdminTabs: Processed zone data for', zoneData.zoneName);
       setZoneStats(zoneData);
       
       if (zoneData.totalRegistrars === 0) {

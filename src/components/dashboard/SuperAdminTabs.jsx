@@ -37,7 +37,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
     { immediate: activeTab === 'events' }
   );  // Load pending admins when Admin Management tab is active
   useEffect(() => {
-    console.log('SuperAdminTabs: Tab changed to', activeTab);
     if (activeTab === 'admin-management') {
       loadPendingAdmins();
       loadApprovedAdmins();
@@ -56,13 +55,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
     setError(null);
     try {
       const data = await analyticsService.getPendingAdmins();
-      console.log('SuperAdminTabs: Loaded pending admins:', data);
-      console.log('SuperAdminTabs: Admin objects:', data?.map(admin => ({ 
-        _id: admin._id, 
-        id: admin.id, 
-        name: admin.name, 
-        email: admin.email 
-      })));
+
       setPendingAdmins(data || []);
     } catch (err) {
       console.error('Error loading pending admins:', err);
@@ -77,7 +70,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
     setApprovedError(null);
     try {
       const data = await analyticsService.getApprovedAdmins();
-      console.log('SuperAdminTabs: Loaded approved admins:', data);
       setApprovedAdmins(data || []);
     } catch (err) {
       console.error('Error loading approved admins:', err);
@@ -309,7 +301,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 </button>                <button 
                   className="btn btn-success"
                   onClick={() => {
-                    console.log('SuperAdminTabs: Manage Events button clicked');
                     setActiveTab('events');
                   }}
                 >
@@ -530,7 +521,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
             tabs={eventTabs}
             activeTab={eventActiveTab}
             onTabChange={(tab) => {
-              console.log('SuperAdminTabs: Event tab changed to', tab);
               setEventActiveTab(tab);
             }}
           >            <TabPane tabId="list" title="All Events">
@@ -547,7 +537,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
                     refetchHierarchicalEvents();
                   }}
                   onCreateEvent={() => {
-                    console.log('SuperAdminTabs: Switching to create tab');
                     setEventActiveTab('create');
                   }}
                 />
@@ -578,7 +567,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
                   showHierarchy={true}
                   onRefresh={refetchHierarchicalEvents}
                   onCreateEvent={() => {
-                    console.log('SuperAdminTabs: Switching to create tab from hierarchical');
                     setEventActiveTab('create');
                   }}
                 />

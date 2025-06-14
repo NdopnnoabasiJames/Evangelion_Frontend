@@ -217,7 +217,6 @@ export const dashboardStatsService = {
       const activeEventsCount = Array.isArray(eventsData) 
         ? eventsData.filter(event => {
             const isNotCancelled = event.status !== 'cancelled';
-            console.log(`🔍 [DEBUG] Event "${event.name}": status=${event.status}, isNotCancelled=${isNotCancelled}`);
             return isNotCancelled;
           }).length 
         : 0;
@@ -243,13 +242,6 @@ export const dashboardStatsService = {
         assignedRegistrars: registrarData?.assignedRegistrars || 0,
         unassignedRegistrars: registrarData?.unassignedRegistrars || 0,
       };
-
-      console.log('🔍 [DEBUG] Zonal admin dashboard stats calculated:', {
-        totalEventsFound: Array.isArray(eventsData) ? eventsData.length : 0,
-        activeEventsCount: activeEventsCount,
-        zoneName: userProfile?.zone?.name || "No zone assigned"
-      });
-
       // Info for zero registrars (normal for new system)
       if (stats.totalRegistrars === 0) {
         console.info(
