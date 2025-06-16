@@ -7,6 +7,7 @@ import EventsList from '../events/EventsList';
 import EventDelegation from '../events/EventDelegation';
 import HierarchicalEventCreation from '../events/HierarchicalEventCreation';
 import PickupStationAssignment from '../events/PickupStationAssignment';
+import StatesManagement from '../admin/StatesManagement';
 import analyticsService from '../../services/analyticsService';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
@@ -479,8 +480,12 @@ const SuperAdminTabs = ({ dashboardData }) => {
           <small className="text-muted">Feature coming soon...</small>
         </div>
       </div>
-    </div>
-  );
+    </div>  );
+
+  const renderStatesManagement = () => {
+    return <StatesManagement />;
+  };
+
   const renderEventManagement = () => {
     const eventTabs = [
       {
@@ -632,6 +637,15 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 {dashboardData.activeEvents}
               </span>
             )}
+          </button>        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'states' ? 'active' : ''}`}
+            onClick={() => setActiveTab('states')}
+            type="button"
+          >
+            <i className="bi bi-map me-2"></i>
+            States
           </button>
         </li>
         <li className="nav-item" role="presentation">
@@ -657,6 +671,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'admin-management' && renderAdminManagement()}
         {activeTab === 'events' && renderEventManagement()}
+        {activeTab === 'states' && renderStatesManagement()}
         {activeTab === 'audit-trail' && renderAuditTrail()}
         {activeTab === 'system-management' && renderSystemManagement()}
       </div>
