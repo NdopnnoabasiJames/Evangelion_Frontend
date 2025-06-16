@@ -65,7 +65,7 @@ export const API_ENDPOINTS = {  AUTH: {
     NEEDING_ZONE_SELECTION: '/api/admin-hierarchy/events/needing-zone-selection',
     SELECT_BRANCHES: '/api/admin-hierarchy/events',
     SELECT_ZONES: '/api/admin-hierarchy/events',
-    ASSIGN_PICKUP_STATIONS: '/api/events'
+    ASSIGN_PICKUP_STATIONS: '/api/events/assign-pickup-stations'
   },GUESTS: {
     BASE: '/api/guests',
     ADMIN: '/api/admin/guests',

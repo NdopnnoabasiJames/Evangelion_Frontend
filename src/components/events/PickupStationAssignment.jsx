@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { EmptyState } from '../common/Loading';
 import { API_ENDPOINTS } from '../../utils/constants';
-import PickupStationSelector from './PickupStationSelector';
+import PickupStationSelectorEnhanced from './PickupStationSelectorEnhanced';
 import PickupStationsViewer from './PickupStationsViewer';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -51,10 +51,9 @@ const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete 
       setEventsForAssignment([]);
     }
   };
-
   const fetchZonePickupStations = async () => {
     try {
-      const stations = await fetchStations(API_ENDPOINTS.PICKUP_STATIONS.ZONE_STATIONS);
+      const stations = await fetchStations('/api/events/available-pickup-stations');
       // Ensure we have an array
       const stationsArray = Array.isArray(stations) ? stations : (stations?.data || []);
       setPickupStations(stationsArray);
@@ -103,11 +102,13 @@ const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete 
               />
             ) : (
               <div className="list-group list-group-flush">
-                {eventsForAssignment.map(event => (
-                  <div 
+                {eventsForAssignment.map(event => (                  <div 
                     key={event._id}
                     className={`list-group-item list-group-item-action ${selectedEvent?._id === event._id ? 'active' : ''}`}
-                    onClick={() => setSelectedEvent(event)}
+                    onClick={() => {
+                      console.log('Event selected:', event);
+                      setSelectedEvent(event);
+                    }}
                   >
                     <div className="d-flex w-100 justify-content-between">
                       <h6 className="mb-1">{event.name}</h6>
@@ -129,14 +130,20 @@ const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete 
               <i className="bi bi-geo-alt me-2"></i>
               Available Pickup Stations
             </h5>
-          </div>
-          <div className="card-body">
+          </div>          <div className="card-body">
             {selectedEvent ? (
-              <PickupStationSelector 
-                event={selectedEvent}
-                pickupStations={pickupStations}
-                onAssignmentComplete={onAssignmentComplete}
-              />
+              <>
+                <div className="mb-2">
+                  <small className="text-muted">Debug: Selected event: {selectedEvent.name}</small>
+                  <br />
+                  <small className="text-muted">Debug: Available stations: {pickupStations.length}</small>
+                </div>                <PickupStationSelectorEnhanced 
+                  event={selectedEvent}
+                  pickupStations={pickupStations}
+                  onAssignmentComplete={onAssignmentComplete}
+                  onStationsUpdate={fetchZonePickupStations}
+                />
+              </>
             ) : (
               <div className="text-center text-muted py-4">
                 <i className="bi bi-arrow-left-circle fs-1 mb-3"></i>
