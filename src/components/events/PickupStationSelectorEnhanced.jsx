@@ -4,10 +4,9 @@ import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 // Create Pickup Station Modal Component
-const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) => {
-  const [formData, setFormData] = useState({
+const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) => {  const [formData, setFormData] = useState({
     location: '',
-    capacity: 50,
+    capacity: '',
     departureTime: '08:00',
     contactPhone: '',
     contactEmail: '',
@@ -24,10 +23,9 @@ const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) 
     setCreating(true);
     setError(null);
 
-    try {
-      const createDto = {
+    try {      const createDto = {
         location: formData.location.trim(),
-        capacity: parseInt(formData.capacity),
+        capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
         departureTime: formData.departureTime,
         contactInfo: {
           phone: formData.contactPhone,
@@ -35,7 +33,7 @@ const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) 
         },
         facilities: formData.facilities.split(',').map(f => f.trim()).filter(f => f),
         notes: formData.notes
-      };      // Extract zone ID properly - handle both string and object formats      const zoneId = typeof userZone === 'string' ? userZone : (userZone?._id || userZone?.id);
+      };// Extract zone ID properly - handle both string and object formats      const zoneId = typeof userZone === 'string' ? userZone : (userZone?._id || userZone?.id);
       
       if (!zoneId) {
         throw new Error('Zone ID not found. Please ensure you are logged in as a zonal admin.');
@@ -47,11 +45,10 @@ const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) 
       });
 
       if (result) {
-        onStationCreated(result);
-        // Reset form
+        onStationCreated(result);        // Reset form
         setFormData({
           location: '',
-          capacity: 50,
+          capacity: '',
           departureTime: '08:00',
           contactPhone: '',
           contactEmail: '',
@@ -114,12 +111,10 @@ const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) 
                     required
                   />
                   <div className="form-text">Enter a descriptive name for the pickup location</div>
-                </div>
-
-                <div className="col-md-4 mb-3">
+                </div>                <div className="col-md-4 mb-3">
                   <label className="form-label">
                     <i className="bi bi-people me-1"></i>
-                    Default Capacity *
+                    Default Capacity
                   </label>
                   <input
                     type="number"
@@ -129,8 +124,9 @@ const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) 
                     onChange={handleChange}
                     min="1"
                     max="200"
-                    required
+                    placeholder="Optional"
                   />
+                  <div className="form-text">Leave empty if not applicable</div>
                 </div>
               </div>
 
@@ -255,18 +251,23 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
   const getAssignedStationDetails = (stationId) => {
     return event.pickupStations?.find(ps => ps.pickupStationId === stationId);
   };
-
   const handleStationToggle = (stationId) => {
+    console.log('🔄 handleStationToggle called with stationId:', stationId);
+    console.log('📝 Current selectedStations before toggle:', selectedStations);
+    
     // Don't allow toggling if station is already assigned
     if (isStationAssigned(stationId)) {
+      console.log('❌ Station is already assigned, ignoring toggle');
       return;
     }
     
-    setSelectedStations(prev => 
-      prev.includes(stationId) 
+    setSelectedStations(prev => {
+      const newSelection = prev.includes(stationId) 
         ? prev.filter(id => id !== stationId)
-        : [...prev, stationId]
-    );
+        : [...prev, stationId];
+      console.log('✅ New selectedStations after toggle:', newSelection);
+      return newSelection;
+    });
   };
   const handleStationCreated = (newStation) => {
     // Refresh the pickup stations list
@@ -330,10 +331,12 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
           const [hours, minutes] = station.departureTime.split(':');
           eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
           assignmentData.departureTime = eventDate.toISOString();
-        }
-
-        if (station.capacity || station.defaultCapacity) {
+        }        if (station.capacity || station.defaultCapacity) {
           assignmentData.maxCapacity = station.capacity || station.defaultCapacity;
+          console.log('📊 Setting maxCapacity:', assignmentData.maxCapacity, 'from station:', {
+            capacity: station.capacity,
+            defaultCapacity: station.defaultCapacity
+          });
         }
 
         if (station.notes) {
@@ -408,19 +411,17 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
             const isAssigned = isStationAssigned(station._id);
             const assignedDetails = getAssignedStationDetails(station._id);
             
-            return (
-              <div key={station._id} className="mb-2">
+            return (              <div key={station._id} className="mb-2">
                 <div 
                   className={`card ${
                     isAssigned 
                       ? 'border-secondary bg-light' 
                       : selectedStations.includes(station._id) 
-                        ? 'border-primary bg-primary bg-opacity-10 cursor-pointer' 
-                        : 'border-secondary cursor-pointer'
+                        ? 'border-primary bg-primary bg-opacity-10' 
+                        : 'border-secondary'
                   }`}
-                  onClick={() => !isAssigned && handleStationToggle(station._id)}
                   style={{ 
-                    cursor: isAssigned ? 'not-allowed' : 'pointer',
+                    cursor: isAssigned ? 'not-allowed' : 'default',
                     transition: 'all 0.2s ease-in-out'
                   }}
                 >
@@ -462,14 +463,23 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
                             >
                               <i className="bi bi-x"></i>
                             </button>
-                          </div>
-                        ) : (
+                          </div>                        ) : (
                           <div className="form-check">
                             <input
                               className="form-check-input"
                               type="checkbox"
                               checked={selectedStations.includes(station._id)}
-                              onChange={() => handleStationToggle(station._id)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                console.log('📋 Checkbox onChange triggered for station:', station._id);
+                                console.log('📋 Current checked state:', e.target.checked);
+                                console.log('📋 Current selectedStations:', selectedStations);
+                                handleStationToggle(station._id);
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('📋 Checkbox onClick triggered for station:', station._id);
+                              }}
                             />
                           </div>
                         )}

@@ -6,11 +6,13 @@ import dashboardStatsService from '../../services/dashboardStatsService';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 import { StatusBadge } from '../../utils/statusUtils';
-import PickupStationAssignment from '../events/PickupStationAssignment';
+import PickupStationManagement from '../events/PickupStationManagement';
+import PickupStationAssignmentModal from '../events/PickupStationAssignmentModal';
 
 const ZonalAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedEventForAssignment, setSelectedEventForAssignment] = useState(null);
   
   // Debug log for tab changes
   useEffect(() => {
@@ -367,15 +369,16 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                      }}>
                     {event.description}
                   </p>
-                )}
-
-                <div className="d-flex justify-content-between align-items-center">
+                )}                <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex gap-2">
                     <button className="btn btn-sm btn-outline-primary">
                       <i className="bi bi-eye me-1"></i>
                       View Details
                     </button>
-                    <button className="btn btn-sm btn-primary">
+                    <button 
+                      className="btn btn-sm btn-primary"
+                      onClick={() => setSelectedEventForAssignment(event)}
+                    >
                       <i className="bi bi-geo-alt me-1"></i>
                       Assign Pickup
                     </button>
@@ -402,18 +405,9 @@ const ZonalAdminTabs = ({ dashboardData }) => {
         </div>
       </div>
     );
-  };
-  const renderPickupStations = () => {
+  };  const renderPickupStations = () => {
     return (
-      <PickupStationAssignment 
-        zonalAdminId={user?.id}
-        userRole={user?.role}
-        onAssignmentComplete={() => {
-          // Refresh data after assignment
-          loadZoneStatistics();
-          refetchEvents();
-        }}
-      />
+      <PickupStationManagement />
     );
   };
   const renderRegistrars = () => {
@@ -479,15 +473,25 @@ const ZonalAdminTabs = ({ dashboardData }) => {
             Registrars
           </button>
         </li>
-      </ul>
-
-      {/* Tab Content */}
+      </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'events' && renderEvents()}
         {activeTab === 'pickup-stations' && renderPickupStations()}
         {activeTab === 'registrars' && renderRegistrars()}
       </div>
+
+      {/* Pickup Station Assignment Modal */}
+      {selectedEventForAssignment && (
+        <PickupStationAssignmentModal
+          event={selectedEventForAssignment}
+          onClose={() => setSelectedEventForAssignment(null)}
+          onComplete={() => {
+            setSelectedEventForAssignment(null);
+            refetchEvents(); // Refresh events to show updated assignment status
+          }}
+        />
+      )}
     </div>
   );
 };
