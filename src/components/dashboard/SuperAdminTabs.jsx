@@ -176,17 +176,16 @@ const SuperAdminTabs = ({ dashboardData }) => {
               </div>
             </div>
           </div>
-        </div>        <div className="col-lg-3 col-md-6">
-          <div className="card border-0 shadow-sm bg-warning bg-gradient text-white">
+        </div>        <div className="col-lg-3 col-md-6">          <div className="card border-0 shadow-sm bg-info bg-gradient text-white">
             <div className="card-body">
               <div className="d-flex align-items-center">                <div className="flex-shrink-0">
                   <div className="bg-opacity-25 backdrop-blur p-3 rounded">
-                    <i className="bi bi-pin-map-fill fs-2 text-white fw-bold"></i>
+                    <i className="bi bi-geo-alt-fill fs-2 text-white fw-bold"></i>
                   </div>
                 </div>
                 <div className="flex-grow-1 ms-3">
-                  <h6 className="mb-1">Pickup Stations</h6>
-                  <h3 className="mb-0 text-white">{dashboardData?.totalPickupStations || 0}</h3>
+                  <h6 className="mb-1">Zones</h6>
+                  <h3 className="mb-0 text-white">{dashboardData?.totalZones || 0}</h3>
                 </div>
               </div>
             </div>

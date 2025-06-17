@@ -33,16 +33,18 @@ export const dashboardService = {
   // Super Admin Dashboard Stats
   getSuperAdminDashboardStats: async () => {
     try {
-      const [basicAnalytics, statesResponse, eventsResponse] =
+      const [basicAnalytics, statesResponse, eventsResponse, zoneStats] =
         await Promise.all([
           api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
           api.get("/api/states"),
           api.get("/api/events"),
+          api.get("/api/zones/statistics"),
         ]);
 
       const statesData = statesResponse.data?.data || statesResponse.data || [];
       const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
       const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
+      const zoneStatsData = zoneStats.data?.data || zoneStats.data || {};
 
       const totalUsers = analyticsData?.totalUsers || 0;
 
@@ -53,6 +55,10 @@ export const dashboardService = {
         totalGuests: analyticsData?.totalGuests || 0,
         checkedInGuests: analyticsData?.checkedInGuests || 0,
         checkInRate: analyticsData?.checkInRate || 0,
+        // Zone statistics
+        totalZones: zoneStatsData?.totalZones || 0,
+        activeZones: zoneStatsData?.activeZones || 0,
+        inactiveZones: zoneStatsData?.inactiveZones || 0,
       };
 
       return stats;
@@ -65,6 +71,9 @@ export const dashboardService = {
         totalGuests: 0,
         checkedInGuests: 0,
         checkInRate: 0,
+        totalZones: 0,
+        activeZones: 0,
+        inactiveZones: 0,
       };
     }
   },
