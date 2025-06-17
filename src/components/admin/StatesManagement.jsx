@@ -8,10 +8,9 @@ const StatesManagement = () => {
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingState, setEditingState] = useState(null);
-
   const { execute: fetchStates } = useApi(null, { immediate: false });
-  const { execute: createState } = useApi(null, { immediate: false });
-  const { execute: updateState } = useApi(null, { immediate: false });
+  const { execute: createState, error: createError } = useApi(null, { immediate: false });
+  const { execute: updateState, error: updateError } = useApi(null, { immediate: false });
 
   useEffect(() => {
     loadStates();
@@ -29,14 +28,23 @@ const StatesManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCreateState = async (formData) => {
+  };  const handleCreateState = async (formData) => {
     try {
-      await createState(API_ENDPOINTS.STATES.CREATE, {
+      const result = await createState(API_ENDPOINTS.STATES.CREATE, {
         method: 'POST',
         body: formData
       });
+
+      // If result is null/undefined, it means there was an error
+      if (!result) {
+        // Wait a bit for error state to update, then check
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (createError) {
+          throw new Error(createError);
+        } else {
+          throw new Error('Failed to create state');
+        }
+      }
 
       if (window.showNotification) {
         window.showNotification('State created successfully!', 'success');
@@ -47,14 +55,23 @@ const StatesManagement = () => {
     } catch (error) {
       throw error; // Let the modal handle the error display
     }
-  };
-
-  const handleUpdateState = async (formData) => {
+  };  const handleUpdateState = async (formData) => {
     try {
-      await updateState(`${API_ENDPOINTS.STATES.UPDATE}/${editingState._id}`, {
+      const result = await updateState(`${API_ENDPOINTS.STATES.UPDATE}/${editingState._id}`, {
         method: 'PATCH',
         body: formData
       });
+
+      // If result is null/undefined, it means there was an error
+      if (!result) {
+        // Wait a bit for error state to update, then check
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (updateError) {
+          throw new Error(updateError);
+        } else {
+          throw new Error('Failed to update state');
+        }
+      }
 
       if (window.showNotification) {
         window.showNotification('State updated successfully!', 'success');
@@ -129,8 +146,7 @@ const StatesManagement = () => {
                 Create First State
               </button>
             </div>
-          ) : (
-            <div className="table-responsive">
+          ) : (            <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
@@ -152,9 +168,6 @@ const StatesManagement = () => {
                           <i className="bi bi-geo-alt text-primary me-2"></i>
                           <div>
                             <strong>{state.name}</strong>
-                            {state.description && (
-                              <div className="text-muted small">{state.description}</div>
-                            )}
                           </div>
                         </div>
                       </td>
@@ -228,16 +241,31 @@ const StatesManagement = () => {
 // State Form Modal Component
 const StateFormModal = ({ state, onHide, onSubmit }) => {
   const [formData, setFormData] = useState({
-    name: state?.name || '',
-    code: state?.code || '',
-    description: state?.description || '',
-    isActive: state?.isActive ?? true
+    name: '',
+    code: '',
+    isActive: true
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   const isEditing = !!state;
 
+  // Reset form data when state changes (for editing)
+  useEffect(() => {
+    if (state) {
+      setFormData({
+        name: state.name || '',
+        code: state.code || '',
+        isActive: state.isActive ?? true
+      });
+    } else {
+      setFormData({
+        name: '',
+        code: '',
+        isActive: true
+      });
+    }
+  }, [state]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -252,11 +280,6 @@ const StateFormModal = ({ state, onHide, onSubmit }) => {
       // Only include code if it's provided
       if (formData.code.trim()) {
         submitData.code = formData.code.trim().toUpperCase();
-      }
-
-      // Only include description if it's provided
-      if (formData.description.trim()) {
-        submitData.description = formData.description.trim();
       }
 
       await onSubmit(submitData);
@@ -331,23 +354,7 @@ const StateFormModal = ({ state, onHide, onSubmit }) => {
                     style={{ textTransform: 'uppercase' }}
                   />
                   <div className="form-text">3-character abbreviation (optional)</div>
-                </div>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">
-                  <i className="bi bi-text-paragraph me-1"></i>
-                  Description
-                </label>
-                <textarea
-                  className="form-control"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="2"
-                  placeholder="Brief description of the state (optional)"
-                ></textarea>
-              </div>
+                </div>              </div>
 
               <div className="mb-3">
                 <div className="form-check">

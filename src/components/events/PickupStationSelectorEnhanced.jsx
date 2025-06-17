@@ -471,14 +471,11 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
                               checked={selectedStations.includes(station._id)}
                               onChange={(e) => {
                                 e.stopPropagation();
-                                console.log('📋 Checkbox onChange triggered for station:', station._id);
-                                console.log('📋 Current checked state:', e.target.checked);
-                                console.log('📋 Current selectedStations:', selectedStations);
+                                console.log('📋 Checkbox clicked for station:', station._id);
                                 handleStationToggle(station._id);
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                console.log('📋 Checkbox onClick triggered for station:', station._id);
                               }}
                             />
                           </div>
