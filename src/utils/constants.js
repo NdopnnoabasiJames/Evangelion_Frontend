@@ -123,8 +123,7 @@ export const API_ENDPOINTS = {  AUTH: {
     UPDATE: '/api/states',
     DETAILS: '/api/states'
   },
-  
-  BRANCHES: {
+    BRANCHES: {
     BASE: '/api/branches',
     LIST: '/api/branches',
     CREATE: '/api/branches',
@@ -136,6 +135,20 @@ export const API_ENDPOINTS = {  AUTH: {
     STATE_ADMIN_LIST: '/api/branches/state-admin/my-branches',
     STATE_ADMIN_UPDATE: '/api/branches/state-admin',
     STATE_ADMIN_DELETE: '/api/branches/state-admin'
+  },
+  
+  ZONES: {
+    BASE: '/api/zones',
+    LIST: '/api/zones',
+    CREATE: '/api/zones',
+    UPDATE: '/api/zones',
+    DELETE: '/api/zones',
+    BY_BRANCH: '/api/zones/by-branch',
+    // Branch Admin specific endpoints
+    BRANCH_ADMIN_CREATE: '/api/zones/branch-admin/create',
+    BRANCH_ADMIN_LIST: '/api/zones/branch-admin/list',
+    BRANCH_ADMIN_UPDATE: '/api/zones/branch-admin',
+    BRANCH_ADMIN_DELETE: '/api/zones/branch-admin'
   },
   
   PICKUP_STATIONS: {

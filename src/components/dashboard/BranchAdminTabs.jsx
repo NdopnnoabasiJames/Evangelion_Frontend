@@ -4,6 +4,7 @@ import AdminApprovalCard from './AdminApprovalCard';
 import ApprovedAdminCard from './ApprovedAdminCard';
 import BranchAdminEvents from './BranchAdminEvents';
 import ZoneAdminManagement from './ZoneAdminManagement';
+import ZonesManagement from '../admin/ZonesManagement';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 
@@ -431,6 +432,16 @@ const BranchAdminTabs = ({ dashboardData }) => {
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
+            className={`nav-link ${activeTab === 'zones' ? 'active' : ''}`}
+            onClick={() => setActiveTab('zones')}
+            type="button"
+          >
+            <i className="bi bi-geo-alt me-2"></i>
+            Zones
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
             className={`nav-link ${activeTab === 'zonal-admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('zonal-admin-management')}
             type="button"          >
@@ -455,6 +466,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
+        {activeTab === 'zones' && <ZonesManagement />}
         {activeTab === 'zonal-admin-management' && (
           <ZoneAdminManagement 
             onPendingCountChange={(count) => setPendingZonalAdmins(Array(count).fill({}))}
