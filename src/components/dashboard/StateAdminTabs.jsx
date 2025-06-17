@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import StateAdminOverview from './StateAdminOverview';
 import BranchAdminManagement from './BranchAdminManagement';
 import StateAdminEvents from './StateAdminEvents';
+import BranchesManagement from '../admin/BranchesManagement';
 import analyticsService from '../../services/analyticsService';
 
 const StateAdminTabs = ({ dashboardData }) => {
@@ -95,6 +96,15 @@ const StateAdminTabs = ({ dashboardData }) => {
           >            <i className="bi bi-graph-up me-2"></i>
             Overview
           </button>
+        </li>        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
+            onClick={() => setActiveTab('branches')}
+            type="button"
+          >
+            <i className="bi bi-building me-2"></i>
+            Branches
+          </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
@@ -129,7 +139,8 @@ const StateAdminTabs = ({ dashboardData }) => {
             pendingBranchAdmins={pendingBranchAdmins}
             onManageBranchAdmins={() => setActiveTab('branch-admin-management')}
           />
-        )}        {activeTab === 'branch-admin-management' && (
+        )}        {activeTab === 'branches' && <BranchesManagement />}
+        {activeTab === 'branch-admin-management' && (
           <BranchAdminManagement 
             pendingBranchAdmins={pendingBranchAdmins}
             approvedBranchAdmins={approvedBranchAdmins}
