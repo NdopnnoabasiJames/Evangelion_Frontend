@@ -62,9 +62,8 @@ export const API_ENDPOINTS = {  AUTH: {
     ACTIVE: '/api/events/active',
     UPCOMING: '/api/events/upcoming',
     NEEDING_BRANCH_SELECTION: '/api/admin-hierarchy/events/needing-branch-selection',
-    NEEDING_ZONE_SELECTION: '/api/admin-hierarchy/events/needing-zone-selection',
-    SELECT_BRANCHES: '/api/admin-hierarchy/events',
-    SELECT_ZONES: '/api/admin-hierarchy/events',
+    NEEDING_ZONE_SELECTION: '/api/admin-hierarchy/events/needing-zone-selection',    SELECT_BRANCHES: '/api/admin-hierarchy/events/:eventId/select-branches',
+    SELECT_ZONES: '/api/admin-hierarchy/events/:eventId/select-zones',
     ASSIGN_PICKUP_STATIONS: '/api/events/assign-pickup-stations'
   },GUESTS: {
     BASE: '/api/guests',

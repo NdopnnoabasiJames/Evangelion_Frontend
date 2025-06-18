@@ -115,14 +115,12 @@ const StateAdminEvents = () => {
                 onCreateEvent={() => setEventActiveTab('create')}
               />
             </div>
-          </TabPane>
-
-          <TabPane tabId="pending" title="Branch Selection">
+          </TabPane>          <TabPane tabId="pending" title="Branch Selection">
             <div className="mb-3">
-              <h6>Super Admin Events Needing Branch Selection</h6>
+              <h6>Events Available for Delegation</h6>
               <p className="text-muted">
-                These events have been created by super admins and are available in your state. 
-                Please select which branches should participate in each event.
+                Events that are available for branch selection and delegation. This includes super admin events 
+                available in your state and your own events that can be further delegated to zones.
               </p>
             </div>
             <div className="events-container">

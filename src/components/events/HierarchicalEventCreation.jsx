@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 
-const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
-  const [formData, setFormData] = useState({
+const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [formData, setFormData] = useState({
     name: '',
     description: '',
     date: '',
     location: '',
     selectedStates: [], // For super admin state selection
-    selectedBranches: [] // For state admin branch selection
+    selectedBranches: [], // For state admin branch selection
+    selectedZones: [] // For branch admin zone selection
   });const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
 
@@ -17,10 +17,13 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
   const { data: states, loading: statesLoading, error: statesError } = useApi('/api/states', { 
     immediate: userRole === 'super_admin' 
   });
-
   // Load branches for state admin
   const { data: branches, loading: branchesLoading, error: branchesError } = useApi('/api/branches/state-admin/my-branches', { 
     immediate: userRole === 'state_admin' 
+  });
+  // Load zones for branch admin
+  const { data: zones, loading: zonesLoading, error: zonesError } = useApi('/api/zones/branch-admin/list', { 
+    immediate: userRole === 'branch_admin' 
   });
 
   const getEventEndpoint = () => {
@@ -59,11 +62,15 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
     if (userRole === 'super_admin' && formData.selectedStates.length === 0) {
       setError('Please select at least one state');
       return;
-    }
-
-    // Validate branch selection for state admin
+    }    // Validate branch selection for state admin
     if (userRole === 'state_admin' && formData.selectedBranches.length === 0) {
       setError('Please select at least one branch');
+      return;
+    }
+
+    // Validate zone selection for branch admin
+    if (userRole === 'branch_admin' && formData.selectedZones.length === 0) {
+      setError('Please select at least one zone');
       return;
     }
     
@@ -88,6 +95,15 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
             states: [], // Required by base DTO even if empty
             branches: formData.selectedBranches, // Base DTO expects 'branches'
             selectedBranches: formData.selectedBranches // For hierarchical service
+          }
+        : userRole === 'branch_admin'
+        ? {
+            name: formData.name,
+            description: formData.description,
+            date: formData.date,
+            location: formData.location,
+            zones: formData.selectedZones, // Base DTO expects 'zones'
+            selectedZones: formData.selectedZones // For hierarchical service
           }
         : formData;
 
@@ -142,13 +158,33 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
         : prev.selectedBranches.filter(branch => branch !== value)
     }));
   };
-
   const handleSelectAllBranches = (e) => {
     const isChecked = e.target.checked;
     
     setFormData(prev => ({
       ...prev,
       selectedBranches: isChecked ? branches?.data?.map(branch => branch._id) || [] : []
+    }));
+  };
+
+  const handleZoneSelection = (e) => {
+    const value = e.target.value;
+    const isChecked = e.target.checked;
+    
+    setFormData(prev => ({
+      ...prev,
+      selectedZones: isChecked 
+        ? [...prev.selectedZones, value]
+        : prev.selectedZones.filter(zone => zone !== value)
+    }));
+  };
+
+  const handleSelectAllZones = (e) => {
+    const isChecked = e.target.checked;
+    
+    setFormData(prev => ({
+      ...prev,
+      selectedZones: isChecked ? zones?.data?.map(zone => zone._id) || [] : []
     }));
   };
 
@@ -321,8 +357,27 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
                       </div>
                       <div className="form-text">
                         Select the branches in your state that will participate in this event.
+                      </div>                    </div>
+                  ) : userRole === 'branch_admin' ? (
+                    <>
+                      {/* Location field for branch admin */}
+                      <div className="mb-3">
+                        <label htmlFor="location" className="form-label">Event Location *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="location"
+                          name="location"
+                          value={formData.location}
+                          onChange={handleChange}
+                          placeholder="Where zones will gather for the event"
+                          required
+                        />
+                        <div className="form-text">
+                          Specify the central location where selected zones will attend the event.
+                        </div>
                       </div>
-                    </div>
+                    </>
                   ) : (
                     <div className="mb-3">
                       <label htmlFor="location" className="form-label">Location</label>
@@ -338,8 +393,71 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
                     </div>
                   )}
                 </div>
-              </div>              {/* Event Scope - only for branch and zonal admins */}
-              {(userRole === 'branch_admin' || userRole === 'zonal_admin') && (
+              </div>              {/* Zone Selection for Branch Admin */}
+              {userRole === 'branch_admin' && (
+                <div className="mb-3">
+                  <label className="form-label">Zone Selection *</label>
+                  <div className="border rounded p-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    <div className="mb-2">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="selectAllZones"
+                          checked={zones?.data?.length > 0 && formData.selectedZones.length === zones.data.length}
+                          onChange={handleSelectAllZones}
+                        />
+                        <label className="form-check-label fw-bold" htmlFor="selectAllZones">
+                          Select All Zones
+                        </label>
+                      </div>
+                      <hr className="my-2" />
+                    </div>
+                    
+                    {zonesLoading ? (
+                      <div className="text-center py-3">
+                        <div className="spinner-border spinner-border-sm" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                        <span className="ms-2">Loading zones...</span>
+                      </div>
+                    ) : zonesError ? (
+                      <div className="text-danger">
+                        <i className="bi bi-exclamation-triangle me-2"></i>
+                        Error loading zones: {zonesError}
+                      </div>
+                    ) : zones?.data?.length > 0 ? (
+                      <div className="row">
+                        {zones.data.map((zone) => (
+                          <div key={zone._id} className="col-md-6 mb-2">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                value={zone._id}
+                                id={`zone-${zone._id}`}
+                                checked={formData.selectedZones.includes(zone._id)}
+                                onChange={handleZoneSelection}
+                              />
+                              <label className="form-check-label" htmlFor={`zone-${zone._id}`}>
+                                {zone.name}
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-muted">No zones available in your branch</div>
+                    )}
+                  </div>
+                  <div className="form-text">
+                    Select the zones in your branch that will participate in this event.
+                  </div>
+                </div>
+              )}
+
+              {/* Event Scope - only for zonal admins */}
+              {userRole === 'zonal_admin' && (
                 <div className="mb-3">
                   <label htmlFor="scope" className="form-label">Event Scope *</label>
                   <select
@@ -358,7 +476,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
                     ))}
                   </select>
                   <div className="form-text">
-                    {userRole === 'branch_admin' && 'Branch-wide events will be delegated to Zonal Admins for pickup station assignment.'}                    {userRole === 'zonal_admin' && 'Zone events are managed within your zone.'}
+                    Zone events are managed within your zone.
                   </div>
                 </div>
               )}

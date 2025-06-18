@@ -12,7 +12,34 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
   const { execute: fetchOptions } = useApi(null, { immediate: false });
   const { execute: submitSelection } = useApi(null, { immediate: false });  useEffect(() => {
     fetchAvailableOptions();
-  }, [event._id]);const fetchAvailableOptions = async () => {
+  }, [event._id]);
+  // Pre-select items that were originally selected for the creator's own events
+  // but only if they're not already delegated
+  useEffect(() => {
+    if (availableItems.length > 0) {
+      const preSelectedItems = [];
+      
+      if (userRole === 'state_admin' && event.creatorLevel === 'state_admin' && event.selectedBranches) {
+        // Pre-select branches that were originally selected but are not yet delegated
+        event.selectedBranches.forEach(branch => {
+          const branchId = typeof branch === 'object' ? branch._id : branch;
+          if (branchId && !isItemDelegated(branchId.toString())) {
+            preSelectedItems.push(branchId.toString());
+          }
+        });
+      } else if (userRole === 'branch_admin' && event.creatorLevel === 'branch_admin' && event.selectedZones) {
+        // Pre-select zones that were originally selected but are not yet delegated
+        event.selectedZones.forEach(zone => {
+          const zoneId = typeof zone === 'object' ? zone._id : zone;
+          if (zoneId && !isItemDelegated(zoneId.toString())) {
+            preSelectedItems.push(zoneId.toString());
+          }
+        });
+      }
+      
+      setSelectedItems(preSelectedItems);
+    }
+  }, [availableItems, event, userRole]);const fetchAvailableOptions = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -49,7 +76,7 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
   };  // Check if item is already delegated to this event
   const isItemDelegated = (itemId) => {
     if (userRole === 'state_admin') {
-      // Handle both object and string formats for availableBranches
+      // Check if branch is already in availableBranches (delegated/selected)
       return event.availableBranches?.some(branch => {
         if (typeof branch === 'object' && branch._id) {
           return branch._id === itemId || branch._id.toString() === itemId.toString();
@@ -57,7 +84,7 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
         return branch === itemId || branch.toString() === itemId.toString();
       }) || false;
     } else if (userRole === 'branch_admin') {
-      // Handle both object and string formats for availableZones
+      // Check if zone is already in availableZones (delegated/selected)
       return event.availableZones?.some(zone => {
         if (typeof zone === 'object' && zone._id) {
           return zone._id === itemId || zone._id.toString() === itemId.toString();
@@ -84,12 +111,10 @@ const SelectionModal = ({ event, userRole, onClose, onComplete }) => {
     }
 
     setSubmitting(true);
-    setError(null);
-
-    try {
+    setError(null);    try {
       const endpoint = userRole === 'state_admin' 
-        ? `${API_ENDPOINTS.EVENTS.SELECT_BRANCHES}/${event._id}/select-branches`
-        : `${API_ENDPOINTS.EVENTS.SELECT_ZONES}/${event._id}/select-zones`;
+        ? `${API_ENDPOINTS.EVENTS.SELECT_BRANCHES.replace(':eventId', event._id)}`
+        : `${API_ENDPOINTS.EVENTS.SELECT_ZONES.replace(':eventId', event._id)}`;
 
       const body = userRole === 'state_admin'
         ? { selectedBranches: selectedItems }
