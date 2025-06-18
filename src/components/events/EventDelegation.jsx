@@ -91,8 +91,7 @@ const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
                       <i className="bi bi-calendar me-1"></i>
                       {new Date(event.date).toLocaleDateString()}
                     </small>
-                  </div>                  <div className="col-md-6">
-                    <small className="text-muted">
+                  </div>                  <div className="col-md-6">                    <small className="text-muted">
                       <i className="bi bi-geo-alt me-1"></i>
                       {event.creatorLevel === 'super_admin' && event.availableStates?.length > 0
                         ? event.availableStates.length === 1 
@@ -100,6 +99,12 @@ const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
                           : event.availableStates.length <= 6
                           ? event.availableStates.map(state => state?.name).filter(Boolean).join(', ')
                           : `${event.availableStates.map(state => state?.name).filter(Boolean).slice(0, 3).join(', ')} and ${event.availableStates.length - 3} more states`
+                        : event.creatorLevel === 'state_admin' && event.availableBranches?.length > 0
+                        ? event.availableBranches.length === 1 
+                          ? event.availableBranches[0]?.name || `${event.availableBranches.length} branch selected`
+                          : event.availableBranches.length <= 4
+                          ? event.availableBranches.map(branch => branch?.name).filter(Boolean).join(', ')
+                          : `${event.availableBranches.map(branch => branch?.name).filter(Boolean).slice(0, 2).join(', ')} and ${event.availableBranches.length - 2} more branches`
                         : event.location || 'Location TBD'
                       }
                     </small>

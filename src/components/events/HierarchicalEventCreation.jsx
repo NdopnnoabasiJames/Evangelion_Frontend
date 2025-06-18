@@ -85,7 +85,9 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {
             name: formData.name,
             description: formData.description,
             date: formData.date,
-            selectedBranches: formData.selectedBranches
+            states: [], // Required by base DTO even if empty
+            branches: formData.selectedBranches, // Base DTO expects 'branches'
+            selectedBranches: formData.selectedBranches // For hierarchical service
           }
         : formData;
 

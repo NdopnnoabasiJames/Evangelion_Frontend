@@ -56,14 +56,19 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                   {new Date(event.date).toLocaleDateString()}
                 </small>
               </div>              <div className="mb-2">
-                <i className="bi bi-geo-alt me-2 text-muted"></i>
-                <small className="text-muted text-truncate d-block">
+                <i className="bi bi-geo-alt me-2 text-muted"></i>                <small className="text-muted text-truncate d-block">
                   {event.creatorLevel === 'super_admin' && event.availableStates?.length > 0
                     ? event.availableStates.length === 1 
                       ? event.availableStates[0]?.name || `${event.availableStates.length} state selected`
                       : event.availableStates.length <= 6
                       ? event.availableStates.map(state => state?.name).filter(Boolean).join(', ')
                       : `${event.availableStates.map(state => state?.name).filter(Boolean).slice(0, 3).join(', ')} and ${event.availableStates.length - 3} more states`
+                    : event.creatorLevel === 'state_admin' && event.availableBranches?.length > 0
+                    ? event.availableBranches.length === 1 
+                      ? event.availableBranches[0]?.name || `${event.availableBranches.length} branch selected`
+                      : event.availableBranches.length <= 4
+                      ? event.availableBranches.map(branch => branch?.name).filter(Boolean).join(', ')
+                      : `${event.availableBranches.map(branch => branch?.name).filter(Boolean).slice(0, 2).join(', ')} and ${event.availableBranches.length - 2} more branches`
                     : event.location || 'Location TBD'
                   }
                 </small>
