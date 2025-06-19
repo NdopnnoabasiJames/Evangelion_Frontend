@@ -5,14 +5,16 @@ import ApprovedAdminCard from './ApprovedAdminCard';
 import BranchAdminEvents from './BranchAdminEvents';
 import ZoneAdminManagement from './ZoneAdminManagement';
 import ZonesManagement from '../admin/ZonesManagement';
+import WorkerManagement from '../admin/WorkerManagement';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
+import workerService from '../../services/workerService';
 
 const BranchAdminTabs = ({ dashboardData }) => {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { user } = useAuth();  const [activeTab, setActiveTab] = useState('overview');
   const [pendingZonalAdmins, setPendingZonalAdmins] = useState([]);
   const [approvedZonalAdmins, setApprovedZonalAdmins] = useState([]);
+  const [pendingWorkers, setPendingWorkers] = useState([]);
   const [branchStatistics, setBranchStatistics] = useState({
     totalZones: 0,
     activeEvents: 0,
@@ -22,15 +24,16 @@ const BranchAdminTabs = ({ dashboardData }) => {
   const [loading, setLoading] = useState(false);
   const [approvedLoading, setApprovedLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [approvedError, setApprovedError] = useState(null);
-
-  // Load data when tab changes
+  const [approvedError, setApprovedError] = useState(null);  // Load data when tab changes
   useEffect(() => {
     if (activeTab === 'zonal-admin-management') {
       loadPendingZonalAdmins();
       loadApprovedZonalAdmins();
+    } else if (activeTab === 'worker-management') {
+      loadPendingWorkers();
     } else if (activeTab === 'overview') {
       loadBranchStatistics();
+      loadPendingWorkers(); // Also load workers for overview stats
     }
   }, [activeTab]);
   const loadBranchStatistics = async () => {
@@ -65,7 +68,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
       setLoading(false);
     }
   };
-
   const loadApprovedZonalAdmins = async () => {
     setApprovedLoading(true);
     setApprovedError(null);
@@ -77,6 +79,19 @@ const BranchAdminTabs = ({ dashboardData }) => {
       setApprovedError(err.message || 'Failed to load approved zonal admins');
     } finally {
       setApprovedLoading(false);
+    }
+  };
+  const loadPendingWorkers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await workerService.getPendingWorkers();
+      setPendingWorkers(data);
+    } catch (err) {
+      console.error('Error loading pending workers:', err);
+      setError(err.message || 'Failed to load pending workers');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,17 +216,28 @@ const BranchAdminTabs = ({ dashboardData }) => {
                 Branch Management Overview
               </h5>
             </div>
-            <div className="card-body">
-              <div className="row text-center">
-                <div className="col-md-6">
+            <div className="card-body">              <div className="row text-center">
+                <div className="col-md-3 col-6">
                   <div className="border-end">
                     <h3 className="text-primary">{pendingZonalAdmins.length}</h3>
-                    <p className="text-muted mb-0">Pending Zonal Admin Approvals</p>
+                    <p className="text-muted mb-0">Pending Zonal Admins</p>
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <h3 className="text-success">{approvedZonalAdmins.length}</h3>
-                  <p className="text-muted mb-0">Active Zonal Admins</p>
+                <div className="col-md-3 col-6">
+                  <div className="border-end">
+                    <h3 className="text-success">{approvedZonalAdmins.length}</h3>
+                    <p className="text-muted mb-0">Active Zonal Admins</p>
+                  </div>
+                </div>
+                <div className="col-md-3 col-6">
+                  <div className="border-end">
+                    <h3 className="text-warning">{pendingWorkers.length}</h3>
+                    <p className="text-muted mb-0">Pending Workers</p>
+                  </div>
+                </div>
+                <div className="col-md-3 col-6">
+                  <h3 className="text-info">0</h3>
+                  <p className="text-muted mb-0">Active Workers</p>
                 </div>
               </div>
               <hr />
@@ -439,8 +465,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
             <i className="bi bi-geo-alt me-2"></i>
             Zones
           </button>
-        </li>
-        <li className="nav-item" role="presentation">
+        </li>        <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'zonal-admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('zonal-admin-management')}
@@ -450,6 +475,21 @@ const BranchAdminTabs = ({ dashboardData }) => {
             {pendingZonalAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingZonalAdmins.length}
+              </span>
+            )}
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'worker-management' ? 'active' : ''}`}
+            onClick={() => setActiveTab('worker-management')}
+            type="button"
+          >
+            <i className="bi bi-people me-2"></i>
+            Worker Management
+            {pendingWorkers.length > 0 && (
+              <span className="badge bg-warning text-dark ms-2">
+                {pendingWorkers.length}
               </span>
             )}
           </button>
@@ -472,6 +512,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
             onPendingCountChange={(count) => setPendingZonalAdmins(Array(count).fill({}))}
           />
         )}
+        {activeTab === 'worker-management' && <WorkerManagement />}
         {activeTab === 'events' && <BranchAdminEvents />}
       </div>
     </div>
