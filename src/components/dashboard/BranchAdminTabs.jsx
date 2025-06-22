@@ -79,9 +79,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
       setApprovedError(err.message || 'Failed to load approved zonal admins');
     } finally {
       setApprovedLoading(false);
-    }
-  };
-  const loadPendingWorkers = async () => {
+    }  };  const loadPendingWorkers = async () => {
     setLoading(true);
     setError(null);
     try {

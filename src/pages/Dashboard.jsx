@@ -8,6 +8,7 @@ import SuperAdminTabs from '../components/dashboard/SuperAdminTabs';
 import StateAdminTabs from '../components/dashboard/StateAdminTabs';
 import BranchAdminTabs from '../components/dashboard/BranchAdminTabs';
 import ZonalAdminTabs from '../components/dashboard/ZonalAdminTabs';
+import WorkerTabs from '../components/dashboard/WorkerTabs';
 import { ROLES } from '../utils/constants';
 import analyticsService from '../services/analyticsService';
 
@@ -148,17 +149,8 @@ const Dashboard = () => {  const { user } = useAuth();
       
       case ROLES.ZONAL_ADMIN:
         return <ZonalAdminTabs dashboardData={dashboardData} />;
-      
-      case ROLES.WORKER:
-        return (
-          <StatisticsGrid
-            cards={[
-              StatisticsCardTypes.guestsRegistered(dashboardData.guestsRegistered),
-              StatisticsCardTypes.thisWeekRegistrations(dashboardData.thisWeek)
-            ]}
-            columns={2}
-          />
-        );
+        case ROLES.WORKER:
+        return <WorkerTabs dashboardData={dashboardData} />;
       
       case ROLES.REGISTRAR:
         return (

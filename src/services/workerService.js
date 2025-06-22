@@ -3,10 +3,13 @@ import { API_ENDPOINTS } from '../utils/constants';
 class WorkerService {
   async getPendingWorkers() {
     try {
+      const token = localStorage.getItem('authToken');
+      console.log('Fetching pending workers...');
+      
       const response = await fetch(API_ENDPOINTS.WORKERS.PENDING, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -22,13 +25,38 @@ class WorkerService {
     }
   }
 
+  async getApprovedWorkers() {
+    try {
+      const token = localStorage.getItem('authToken');
+      console.log('Fetching approved workers...');
+      
+      const response = await fetch(API_ENDPOINTS.WORKERS.APPROVED, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.data || [];
+    } catch (error) {
+      console.error('Error fetching approved workers:', error);
+      throw error;
+    }
+  }
+
   async approveWorker(workerId) {
     try {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/approve/${workerId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -46,11 +74,12 @@ class WorkerService {
 
   async rejectWorker(workerId) {
     try {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/reject/${workerId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -62,27 +91,6 @@ class WorkerService {
       return await response.json();
     } catch (error) {
       console.error('Error rejecting worker:', error);
-      throw error;
-    }
-  }
-
-  async getApprovedWorkers() {
-    try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/approved`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return Array.isArray(data) ? data : data.data || [];
-    } catch (error) {
-      console.error('Error fetching approved workers:', error);
       throw error;
     }
   }

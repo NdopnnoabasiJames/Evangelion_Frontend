@@ -72,14 +72,15 @@ export const API_ENDPOINTS = {  AUTH: {
     SEARCH: '/api/admin/guests/search',
     QUICK_SEARCH: '/api/admin/guests/quick-search',
     STATISTICS: '/api/admin/guests/statistics',
-    EXPORT: '/api/admin/guests/export'
-  },  WORKERS: {
+    EXPORT: '/api/admin/guests/export'  },  WORKERS: {
     BASE: '/api/workers',
     REGISTER: '/api/workers/register',
     PENDING: '/api/workers/pending',
+    APPROVED: '/api/workers/approved',
+    STATS: '/api/workers/stats',
     REGISTER_GUEST: '/api/workers/events',
     MY_GUESTS: '/api/workers/guests'
-  },  REGISTRARS: {
+  },REGISTRARS: {
     BASE: '/api/registrars',
     REGISTER: '/api/registrars/register',
     PENDING: '/api/registrars/pending',

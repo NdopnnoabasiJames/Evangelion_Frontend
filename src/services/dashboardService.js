@@ -144,33 +144,28 @@ export const dashboardService = {
       throw new Error(error.response?.data?.message || 'Failed to fetch branch admin dashboard statistics');
     }
   },
-
   // Worker Dashboard Stats
   getWorkerDashboardStats: async () => {
     try {
-      const [trendsResponse] = await Promise.all([
-        api.get(API_ENDPOINTS.ANALYTICS.TRENDS, { params: { days: 7 } }),
-      ]);
+      // Use worker-specific stats endpoint instead of admin analytics
+      const response = await api.get(API_ENDPOINTS.WORKERS.STATS);
+      const stats = response.data || {};
 
-      const thisWeekRegistrations =
-        trendsResponse.data?.reduce(
-          (sum, day) => sum + (day.registrations || 0),
-          0
-        ) || 0;
-
-      const stats = {
-        guestsRegistered: 0,
-        thisWeek: thisWeekRegistrations,
-        recentActivity: "Guest registration activity",
+      return {
+        guestsRegistered: stats.totalRegisteredGuests || 0,
+        totalEvents: stats.totalEvents || 0,
+        checkedInGuests: stats.totalCheckedInGuests || 0,
+        thisWeek: 0, // We can add weekly stats later if needed
+        recentActivity: "Worker dashboard activity",
       };
-
-      return stats;
     } catch (error) {
       console.error("Error fetching worker stats:", error);
       return {
         guestsRegistered: 0,
+        totalEvents: 0,
+        checkedInGuests: 0,
         thisWeek: 0,
-        recentActivity: "Guest registration activity",
+        recentActivity: "Worker dashboard activity",
       };
     }
   },

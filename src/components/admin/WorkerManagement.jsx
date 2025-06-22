@@ -10,20 +10,32 @@ const WorkerManagement = () => {
   const [approvedWorkers, setApprovedWorkers] = useState([]);
   const [activeTab, setActiveTab] = useState('pending');
   const [actionLoading, setActionLoading] = useState({});
-
   // Fetch pending workers
   const { data: pendingData, loading: pendingLoading, error: pendingError, refetch: refetchPending } = useApi(
     API_ENDPOINTS.WORKERS.PENDING,
     { immediate: true }
   );
 
+  // Fetch approved workers
+  const { data: approvedData, loading: approvedLoading, error: approvedError, refetch: refetchApproved } = useApi(
+    API_ENDPOINTS.WORKERS.APPROVED,
+    { immediate: true }
+  );
   // Update pending workers when data changes
   useEffect(() => {
     if (pendingData) {
+      console.log('📋 Updating pending workers from API data:', pendingData);
       setPendingWorkers(Array.isArray(pendingData) ? pendingData : pendingData.data || []);
     }
   }, [pendingData]);
-  const handleApproveWorker = async (workerId) => {
+
+  // Update approved workers when data changes
+  useEffect(() => {
+    if (approvedData) {
+      console.log('📋 Updating approved workers from API data:', approvedData);
+      setApprovedWorkers(Array.isArray(approvedData) ? approvedData : approvedData.data || []);
+    }
+  }, [approvedData]);  const handleApproveWorker = async (workerId) => {
     setActionLoading(prev => ({ ...prev, [workerId]: 'approving' }));
     
     try {
@@ -32,9 +44,10 @@ const WorkerManagement = () => {
       // Remove from pending list
       setPendingWorkers(prev => prev.filter(worker => worker._id !== workerId));
       
-      // Refetch data to ensure consistency
+      // Refetch both lists to ensure consistency
       setTimeout(() => {
         refetchPending();
+        refetchApproved();
       }, 500);
 
     } catch (error) {
@@ -43,28 +56,29 @@ const WorkerManagement = () => {
     } finally {
       setActionLoading(prev => ({ ...prev, [workerId]: null }));
     }
-  };
-
-  const handleRejectWorker = async (workerId) => {
+  };const handleRejectWorker = async (workerId) => {
     if (!confirm('Are you sure you want to reject this worker application?')) {
       return;
     }
 
+    console.log('🔄 Rejecting worker:', workerId);
     setActionLoading(prev => ({ ...prev, [workerId]: 'rejecting' }));
     
     try {
-      await workerService.rejectWorker(workerId);
+      const result = await workerService.rejectWorker(workerId);
+      console.log('✅ Worker rejected, result:', result);
       
       // Remove from pending list
       setPendingWorkers(prev => prev.filter(worker => worker._id !== workerId));
       
-      // Refetch data to ensure consistency
+      // Refetch pending list to ensure consistency
+      console.log('🔄 Refetching pending workers...');
       setTimeout(() => {
         refetchPending();
       }, 500);
 
     } catch (error) {
-      console.error('Error rejecting worker:', error);
+      console.error('❌ Error rejecting worker:', error);
       alert(`Failed to reject worker: ${error.message}`);
     } finally {
       setActionLoading(prev => ({ ...prev, [workerId]: null }));
@@ -86,8 +100,7 @@ const WorkerManagement = () => {
             <StatusBadge status={worker.status} />
           </div>
 
-          <div className="mb-3">
-            <div className="row g-2 text-sm">
+          <div className="mb-3">            <div className="row g-2 text-sm">
               <div className="col-6">
                 <strong>Phone:</strong>
                 <div className="text-muted">{worker.phone || 'N/A'}</div>
@@ -101,9 +114,20 @@ const WorkerManagement = () => {
                 <div className="text-muted">{worker.state?.name || 'N/A'}</div>
               </div>
               <div className="col-6">
-                <strong>Applied:</strong>
-                <div className="text-muted">{new Date(worker.createdAt).toLocaleDateString()}</div>
+                <strong>{isPending ? 'Applied' : 'Approved'}:</strong>
+                <div className="text-muted">
+                  {isPending 
+                    ? new Date(worker.createdAt).toLocaleDateString()
+                    : new Date(worker.approvedAt || worker.createdAt).toLocaleDateString()
+                  }
+                </div>
               </div>
+              {!isPending && worker.approvedBy && (
+                <div className="col-12">
+                  <strong>Approved by:</strong>
+                  <div className="text-muted">{worker.approvedBy.name || worker.approvedBy.email}</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -229,24 +253,41 @@ const WorkerManagement = () => {
               </div>
             )}
           </div>
-        )}
-
-        {activeTab === 'approved' && (
+        )}        {activeTab === 'approved' && (
           <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
               <div>
-                <h5 className="mb-1">Approved Workers</h5>
+                <h5 className="mb-1">Approved Workers ({approvedWorkers.length})</h5>
                 <p className="text-muted mb-0">
                   Workers who have been approved and can access the system
                 </p>
               </div>
             </div>
 
-            <EmptyState 
-              icon="bi-tools"
-              title="Coming Soon"
-              description="Approved workers list will be displayed here."
-            />
+            {approvedLoading ? (
+              <div className="row g-4">
+                {[...Array(3)].map((_, index) => (
+                  <div key={index} className="col-12 col-md-6 col-lg-4">
+                    <LoadingCard height="200px" />
+                  </div>
+                ))}
+              </div>
+            ) : approvedError ? (
+              <ErrorDisplay 
+                message={approvedError}
+                onRetry={refetchApproved}
+              />
+            ) : approvedWorkers.length === 0 ? (
+              <EmptyState 
+                icon="bi-check-circle"
+                title="No Approved Workers"
+                description="Workers will appear here after they have been approved."
+              />
+            ) : (
+              <div className="row g-4">
+                {approvedWorkers.map(worker => renderWorkerCard(worker, false))}
+              </div>
+            )}
           </div>
         )}
       </div>
