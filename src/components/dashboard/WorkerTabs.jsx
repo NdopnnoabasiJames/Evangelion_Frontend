@@ -464,74 +464,90 @@ const WorkerTabs = ({ dashboardData }) => {
           Register New Guest
         </button>
       </div>
-      
-      {loading ? (
+        {loading ? (
         <LoadingCard />
       ) : error ? (
-        <ErrorDisplay message={error} />      ) : !Array.isArray(registeredGuests) ? (
+        <ErrorDisplay message={error} />
+      ) : !Array.isArray(registeredGuests) ? (
         <ErrorDisplay message="Error loading guests data" />
       ) : registeredGuests.length === 0 ? (
         <EmptyState message="No guests registered yet" />
       ) : (
-        <div className="row g-3">
-          {registeredGuests.map(guest => {
-            const eventLocation = guest.event ? formatEventLocation(guest.event) : 'No Event';
-            const eventDateTime = guest.event ? formatEventDateTime(guest.event) : { date: 'N/A', time: 'N/A' };
-            
-            return (
-              <div key={guest._id} className="col-12 col-md-6 col-lg-4">
-                <div className="card h-100 border-0 shadow-sm">
-                  <div className="card-body">
-                    <div className="d-flex align-items-center mb-3">
-                      <div className="rounded-circle bg-success bg-opacity-10 p-2 me-3">
-                        <i className="bi bi-person text-success"></i>
-                      </div>
-                      <div className="flex-grow-1">
-                        <h6 className="mb-1 fw-semibold">{guest.name}</h6>
-                        <small className="text-muted">{guest.email}</small>
-                      </div>
-                    </div>
+        <div className="card border-0 shadow-sm">
+          <div className="card-body p-0">
+            <div className="table-responsive">
+              <table className="table table-hover mb-0">
+                <thead className="table-light">
+                  <tr>
+                    <th scope="col">Guest Name</th>
+                    <th scope="col">Contact</th>
+                    <th scope="col">Event</th>
+                    <th scope="col">Event Date & Time</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Registered</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registeredGuests.map(guest => {
+                    const eventLocation = guest.event ? formatEventLocation(guest.event) : 'No Event';
+                    const eventDateTime = guest.event ? formatEventDateTime(guest.event) : { date: 'N/A', time: 'N/A' };
+                    const registeredAt = guest.createdAt ? new Date(guest.createdAt) : null;
                     
-                    <div className="mb-3">
-                      <div className="row g-2 text-sm">
-                        <div className="col-6">
-                          <strong>Phone:</strong>
-                          <div className="text-muted">{guest.phone}</div>
-                        </div>
-                        <div className="col-6">
-                          <strong>Status:</strong>
-                          <div className="text-muted">
-                            <span className={`badge ${guest.isCheckedIn ? 'bg-success' : 'bg-warning'}`}>
-                              {guest.isCheckedIn ? 'Checked In' : 'Registered'}
-                            </span>
+                    return (
+                      <tr key={guest._id}>
+                        <td>
+                          <div>
+                            <div className="fw-semibold">{guest.name}</div>
+                            <small className="text-muted">{guest.email}</small>
                           </div>
-                        </div>
-                        <div className="col-12">
-                          <strong>Event:</strong>
-                          <div className="text-muted">{guest.event?.name || guest.event?.title || 'N/A'}</div>
-                        </div>
-                        <div className="col-6">
-                          <strong>Date:</strong>
-                          <div className="text-muted small">{eventDateTime.date}</div>
-                        </div>
-                        <div className="col-6">
-                          <strong>Time:</strong>
-                          <div className="text-muted small">{eventDateTime.time}</div>
-                        </div>
-                        <div className="col-12">
-                          <strong>Location:</strong>
-                          <div className="text-muted small">
-                            <i className="bi bi-geo-alt me-1"></i>
-                            {eventLocation}
+                        </td>
+                        <td>
+                          <div>
+                            <div>{guest.phone}</div>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                        </td>
+                        <td>
+                          <div>
+                            <div className="fw-medium">{guest.event?.name || guest.event?.title || 'N/A'}</div>
+                            <small className="text-muted">
+                              <i className="bi bi-geo-alt me-1"></i>
+                              {eventLocation}
+                            </small>
+                          </div>
+                        </td>
+                        <td>
+                          <div>
+                            <div>{eventDateTime.date}</div>
+                            <small className="text-muted">{eventDateTime.time}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`badge ${guest.isCheckedIn ? 'bg-success' : 'bg-warning'}`}>
+                            {guest.isCheckedIn ? 'Checked In' : 'Registered'}
+                          </span>
+                        </td>
+                        <td>
+                          <div>
+                            {registeredAt ? (
+                              <>
+                                <div>{registeredAt.toLocaleDateString()}</div>
+                                <small className="text-muted">{registeredAt.toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}</small>
+                              </>
+                            ) : (
+                              <small className="text-muted">Unknown</small>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -611,12 +627,11 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
   });
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
-    // Load available events for guest registration
+    // Load worker's approved events for guest registration
     const loadEvents = async () => {
       try {
-        const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/events/available`, {
+        const response = await fetch(API_ENDPOINTS.WORKERS.MY_EVENTS, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
           }
@@ -624,7 +639,11 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
         
         if (response.ok) {
           const eventsData = await response.json();
-          setEvents(Array.isArray(eventsData) ? eventsData : eventsData.data || []);
+          const eventsArray = Array.isArray(eventsData) ? eventsData : eventsData.data || [];
+          console.log('Loading events for guest registration:', eventsArray);
+          setEvents(eventsArray);
+        } else {
+          console.error('Failed to load events for guest registration:', response.status);
         }
       } catch (err) {
         console.error('Error loading events:', err);
@@ -710,11 +729,10 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
                   value={formData.eventId}
                   onChange={(e) => setFormData({ ...formData, eventId: e.target.value })}
                   required
-                >
-                  <option value="">Select an event</option>
+                >                  <option value="">Select an event</option>
                   {events.map(event => (
                     <option key={event._id} value={event._id}>
-                      {event.title} - {new Date(event.date).toLocaleDateString()}
+                      {event.name || event.title || 'Unnamed Event'} - {new Date(event.date).toLocaleDateString()}
                     </option>
                   ))}
                 </select>
