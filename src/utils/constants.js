@@ -79,7 +79,12 @@ export const API_ENDPOINTS = {  AUTH: {
     APPROVED: '/api/workers/approved',
     STATS: '/api/workers/stats',
     REGISTER_GUEST: '/api/workers/events',
-    MY_GUESTS: '/api/workers/guests'
+    MY_GUESTS: '/api/workers/guests',
+    ALL_EVENTS: '/api/workers/events/all',
+    MY_EVENTS: '/api/workers/events/my',
+    VOLUNTEER: '/api/workers/events',
+    PENDING_VOLUNTEERS: '/api/workers/volunteer-requests/pending',
+    APPROVE_VOLUNTEER: '/api/workers/volunteer-requests'
   },REGISTRARS: {
     BASE: '/api/registrars',
     REGISTER: '/api/registrars/register',

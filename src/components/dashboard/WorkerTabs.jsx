@@ -37,11 +37,11 @@ const WorkerTabs = ({ dashboardData }) => {
       default:
         break;
     }
-  }, [activeTab]);
-  const loadOverviewStats = async () => {
+  }, [activeTab]);  const loadOverviewStats = async () => {
     setLoading(true);
     setError(null);
     try {
+      console.log('Loading overview stats...');
       // Fetch worker statistics
       const response = await fetch(API_ENDPOINTS.WORKERS.STATS, {
         headers: {
@@ -50,9 +50,21 @@ const WorkerTabs = ({ dashboardData }) => {
         }
       });
       
+      console.log('Stats response status:', response.status);
+      
       if (response.ok) {
         const stats = await response.json();
-        setOverviewStats(stats);
+        console.log('Received stats:', stats);
+        
+        // Ensure stats has the expected structure
+        const normalizedStats = {
+          totalEvents: stats.totalEvents || stats.data?.totalEvents || 0,
+          totalRegisteredGuests: stats.totalRegisteredGuests || stats.data?.totalRegisteredGuests || 0,
+          totalCheckedInGuests: stats.totalCheckedInGuests || stats.data?.totalCheckedInGuests || 0
+        };
+        
+        console.log('Normalized stats:', normalizedStats);
+        setOverviewStats(normalizedStats);
       } else {
         console.error('Failed to fetch worker stats, status:', response.status);
         setError(`Failed to load statistics: ${response.status}`);
@@ -64,12 +76,11 @@ const WorkerTabs = ({ dashboardData }) => {
       setLoading(false);
     }
   };
-
   const loadAllEvents = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_ENDPOINTS.EVENTS.BASE}`, {
+      const response = await fetch(`${API_ENDPOINTS.WORKERS.ALL_EVENTS}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -91,7 +102,7 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/events/available`, {
+      const response = await fetch(`${API_ENDPOINTS.WORKERS.MY_EVENTS}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -108,29 +119,48 @@ const WorkerTabs = ({ dashboardData }) => {
       setLoading(false);
     }
   };
-
   const loadRegisteredGuests = async () => {
     setLoading(true);
     setError(null);
     try {
+      console.log('Loading registered guests...');
       const response = await fetch(`${API_ENDPOINTS.WORKERS.MY_GUESTS}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       
+      console.log('Guests response status:', response.status);
+      
       if (response.ok) {
         const guests = await response.json();
-        setRegisteredGuests(Array.isArray(guests) ? guests : guests.data || []);
+        console.log('Received guests data:', guests);
+        
+        // Ensure we always set an array
+        let guestsArray = [];
+        if (Array.isArray(guests)) {
+          guestsArray = guests;
+        } else if (guests && Array.isArray(guests.data)) {
+          guestsArray = guests.data;
+        } else if (guests && guests.guests && Array.isArray(guests.guests)) {
+          guestsArray = guests.guests;
+        }
+        
+        console.log('Setting guests array:', guestsArray);
+        setRegisteredGuests(guestsArray);
+      } else {
+        console.error('Failed to fetch guests, status:', response.status);
+        setError(`Failed to load guests: ${response.status}`);
+        setRegisteredGuests([]); // Ensure it's still an array
       }
     } catch (err) {
       console.error('Error loading registered guests:', err);
       setError('Failed to load registered guests');
+      setRegisteredGuests([]); // Ensure it's still an array
     } finally {
       setLoading(false);
     }
   };
-
   const handleVolunteerForEvent = async (eventId) => {
     try {
       const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/events/${eventId}/volunteer`, {
@@ -141,8 +171,14 @@ const WorkerTabs = ({ dashboardData }) => {
       });
       
       if (response.ok) {
-        alert('Successfully volunteered for event!');
-        loadMyEvents(); // Refresh the events list
+        const result = await response.json();
+        if (result.message.includes('approved')) {
+          alert('Successfully volunteered! You can now register guests for this event.');
+          loadMyEvents(); // Refresh My Events tab
+        } else {
+          alert('Volunteer request submitted! Waiting for branch admin approval.');
+        }
+        loadAllEvents(); // Refresh All Events to update button states
       } else {
         const error = await response.json();
         alert(`Failed to volunteer: ${error.message}`);
@@ -151,6 +187,40 @@ const WorkerTabs = ({ dashboardData }) => {
       console.error('Error volunteering for event:', err);
       alert('Failed to volunteer for event');
     }
+  };
+
+  // Helper function to get volunteer button state
+  const getVolunteerButtonState = (event) => {
+    if (!user || !event) return { text: 'Volunteer', disabled: false, variant: 'primary' };
+
+    // Check if worker is already approved (in workers array)
+    if (event.workers && event.workers.some(worker => 
+      (typeof worker === 'object' ? worker._id : worker) === user._id
+    )) {
+      return { text: 'Volunteered', disabled: true, variant: 'success' };
+    }
+
+    // Check volunteer requests
+    if (event.volunteerRequests && event.volunteerRequests.length > 0) {
+      const userRequest = event.volunteerRequests.find(req => 
+        (typeof req.workerId === 'object' ? req.workerId._id : req.workerId) === user._id
+      );
+      
+      if (userRequest) {
+        switch (userRequest.status) {
+          case 'pending':
+            return { text: 'Pending', disabled: true, variant: 'warning' };
+          case 'approved':
+            return { text: 'Volunteered', disabled: true, variant: 'success' };
+          case 'rejected':
+            return { text: 'Rejected', disabled: true, variant: 'danger' };
+          default:
+            return { text: 'Volunteer', disabled: false, variant: 'primary' };
+        }
+      }
+    }
+
+    return { text: 'Volunteer', disabled: false, variant: 'primary' };
   };
   const renderOverviewTab = () => (
     <div>
@@ -186,9 +256,7 @@ const WorkerTabs = ({ dashboardData }) => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Stats Cards */}
+      </div>      {/* Stats Cards */}
       <div className="row">
         <div className="col-md-4">
           <div className="card border-0 shadow-sm">
@@ -196,7 +264,9 @@ const WorkerTabs = ({ dashboardData }) => {
               <div className="display-6 text-primary mb-2">
                 <i className="bi bi-calendar-event"></i>
               </div>
-              <h3 className="mb-1">{overviewStats.totalEvents}</h3>
+              <h3 className="mb-1">
+                {console.log('Rendering totalEvents:', overviewStats.totalEvents) || overviewStats.totalEvents}
+              </h3>
               <p className="text-muted mb-0">Total Events Participated</p>
             </div>
           </div>
@@ -207,7 +277,9 @@ const WorkerTabs = ({ dashboardData }) => {
               <div className="display-6 text-success mb-2">
                 <i className="bi bi-person-plus"></i>
               </div>
-              <h3 className="mb-1">{overviewStats.totalRegisteredGuests}</h3>
+              <h3 className="mb-1">
+                {console.log('Rendering totalRegisteredGuests:', overviewStats.totalRegisteredGuests) || overviewStats.totalRegisteredGuests}
+              </h3>
               <p className="text-muted mb-0">Total Registered Guests</p>
             </div>
           </div>
@@ -218,16 +290,18 @@ const WorkerTabs = ({ dashboardData }) => {
               <div className="display-6 text-info mb-2">
                 <i className="bi bi-check-circle"></i>
               </div>
-              <h3 className="mb-1">{overviewStats.totalCheckedInGuests}</h3>
+              <h3 className="mb-1">
+                {console.log('Rendering totalCheckedInGuests:', overviewStats.totalCheckedInGuests) || overviewStats.totalCheckedInGuests}
+              </h3>
               <p className="text-muted mb-0">Total Checked-in Guests</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );// Helper function to format event location
+  );  // Helper function to format event location
   const formatEventLocation = (event) => {
-    // Check selectedBranches first
+    // Priority 1: selectedBranches (specific branch events)
     if (event.selectedBranches && event.selectedBranches.length > 0) {
       const branch = event.selectedBranches[0];
       if (branch.stateId && branch.stateId.name && branch.name) {
@@ -238,16 +312,27 @@ const WorkerTabs = ({ dashboardData }) => {
       }
     }
     
-    // Check availableStates for national events
-    if (event.scope === 'national' && event.availableStates && event.availableStates.length > 0) {
-      if (event.availableStates.length === 1 && event.availableStates[0].name) {
-        return `${event.availableStates[0].name} State`;
-      }
-      return 'Multiple States';
+    // Priority 2: Check for event scope and handle accordingly
+    if (event.scope === 'national') {
+      return 'National Event';
     }
     
-    // Fallback to basic location or description
-    return event.location || event.description || 'National Event';
+    if (event.scope === 'state' && event.availableStates && event.availableStates.length > 0) {
+      const state = event.availableStates[0];
+      return state.name ? `${state.name} State` : 'State Event';
+    }
+    
+    // Priority 3: availableStates for other events
+    if (event.availableStates && event.availableStates.length > 0) {
+      if (event.availableStates.length === 1) {
+        const state = event.availableStates[0];
+        return state.name ? `${state.name} State` : 'State Event';
+      }
+      return 'Multi-State Event';
+    }
+    
+    // Priority 4: Basic location field or fallback
+    return event.location || 'Location TBD';
   };
 
   // Helper function to format date and time
@@ -269,10 +354,10 @@ const WorkerTabs = ({ dashboardData }) => {
       time: 'Time TBD' 
     };
   };
-
   const renderEventCard = (event, showVolunteerButton = false) => {
     const location = formatEventLocation(event);
     const { date, time } = formatEventDateTime(event);
+    const buttonState = getVolunteerButtonState(event);
     
     return (
       <div key={event._id} className="col-12 col-md-6 col-lg-4">
@@ -310,11 +395,14 @@ const WorkerTabs = ({ dashboardData }) => {
 
             {showVolunteerButton && (
               <button
-                className="btn btn-primary btn-sm w-100"
-                onClick={() => handleVolunteerForEvent(event._id)}
+                className={`btn btn-${buttonState.variant} btn-sm w-100`}
+                onClick={() => !buttonState.disabled && handleVolunteerForEvent(event._id)}
+                disabled={buttonState.disabled}
               >
-                <i className="bi bi-hand-thumbs-up me-1"></i>
-                Volunteer
+                <i className={`bi ${buttonState.text === 'Volunteer' ? 'bi-hand-thumbs-up' : 
+                  buttonState.text === 'Pending' ? 'bi-clock' : 
+                  buttonState.text === 'Volunteered' ? 'bi-check-circle' : 'bi-x-circle'} me-1`}></i>
+                {buttonState.text}
               </button>
             )}
           </div>
@@ -322,11 +410,10 @@ const WorkerTabs = ({ dashboardData }) => {
       </div>
     );
   };
-
   const renderAllEventsTab = () => (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h5 className="mb-0">All Events in System</h5>
+        <h5 className="mb-0">All Published Events</h5>
         <span className="badge bg-secondary">{allEvents.length} events</span>
       </div>
       
@@ -335,10 +422,10 @@ const WorkerTabs = ({ dashboardData }) => {
       ) : error ? (
         <ErrorDisplay message={error} />
       ) : allEvents.length === 0 ? (
-        <EmptyState message="No events found" />
+        <EmptyState message="No published events found" />
       ) : (
         <div className="row g-3">
-          {allEvents.map(event => renderEventCard(event, false))}
+          {allEvents.map(event => renderEventCard(event, true))}
         </div>
       )}
     </div>
@@ -347,7 +434,7 @@ const WorkerTabs = ({ dashboardData }) => {
   const renderMyEventsTab = () => (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h5 className="mb-0">Events in My Branch</h5>
+        <h5 className="mb-0">My Approved Events</h5>
         <span className="badge bg-secondary">{myEvents.length} events</span>
       </div>
       
@@ -356,10 +443,10 @@ const WorkerTabs = ({ dashboardData }) => {
       ) : error ? (
         <ErrorDisplay message={error} />
       ) : myEvents.length === 0 ? (
-        <EmptyState message="No events available in your branch" />
+        <EmptyState message="No approved volunteer events. Volunteer for events in the All Events tab!" />
       ) : (
         <div className="row g-3">
-          {myEvents.map(event => renderEventCard(event, true))}
+          {myEvents.map(event => renderEventCard(event, false))}
         </div>
       )}
     </div>
@@ -381,10 +468,12 @@ const WorkerTabs = ({ dashboardData }) => {
       {loading ? (
         <LoadingCard />
       ) : error ? (
-        <ErrorDisplay message={error} />
+        <ErrorDisplay message={error} />      ) : !Array.isArray(registeredGuests) ? (
+        <ErrorDisplay message="Error loading guests data" />
       ) : registeredGuests.length === 0 ? (
         <EmptyState message="No guests registered yet" />
-      ) : (        <div className="row g-3">
+      ) : (
+        <div className="row g-3">
           {registeredGuests.map(guest => {
             const eventLocation = guest.event ? formatEventLocation(guest.event) : 'No Event';
             const eventDateTime = guest.event ? formatEventDateTime(guest.event) : { date: 'N/A', time: 'N/A' };
