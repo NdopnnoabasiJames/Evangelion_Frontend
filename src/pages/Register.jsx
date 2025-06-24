@@ -148,9 +148,7 @@ const Register = () => {
 
     if (!formData.branch && formData.role !== 'state_admin') {
       newErrors.branch = 'Please select a branch';
-    }
-
-    if (!formData.zone && ['zonal_admin', 'registrar'].includes(formData.role)) {
+    }    if (!formData.zone && ['zonal_admin'].includes(formData.role)) {
       newErrors.zone = 'Please select a zone';
     }
 
@@ -178,15 +176,14 @@ const Register = () => {
 
     setIsSubmitting(true);
 
-    try {
-      const registrationData = {
+    try {      const registrationData = {
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         role: formData.role,
         state: formData.state,
         branch: formData.branch || undefined,
-        zone: formData.zone || undefined
+        ...(formData.role !== 'registrar' && { zone: formData.zone || undefined })
       };
 
       const endpoint = getRegistrationEndpoint();
@@ -355,10 +352,8 @@ const Register = () => {
                       </select>
                       {errors.branch && <div className="invalid-feedback">{errors.branch}</div>}
                     </div>
-                  )}
-
-                  {/* Zone Selection */}
-                  {['zonal_admin', 'registrar'].includes(formData.role) && (
+                  )}                  {/* Zone Selection */}
+                  {['zonal_admin'].includes(formData.role) && (
                     <div className="mb-3">
                       <label htmlFor="zone" className="form-label">Zone</label>
                       <select

@@ -85,7 +85,7 @@ export const API_ENDPOINTS = {  AUTH: {
     VOLUNTEER: '/api/workers/events',
     PENDING_VOLUNTEERS: '/api/workers/volunteer-requests/pending',
     APPROVE_VOLUNTEER: '/api/workers/volunteer-requests'
-  },REGISTRARS: {
+  },  REGISTRARS: {
     BASE: '/api/registrars',
     REGISTER: '/api/registrars/register',
     PENDING: '/api/registrars/pending',
@@ -94,7 +94,13 @@ export const API_ENDPOINTS = {  AUTH: {
     CHECK_IN_GUEST: '/api/registrars/guests/check-in',
     DASHBOARD: '/api/registrars/dashboard',
     STATISTICS: '/api/registrars/events',
-    ASSIGNMENTS_SUMMARY: '/api/registrars/assignments-summary'
+    ASSIGNMENTS_SUMMARY: '/api/registrars/assignments-summary',
+    // New volunteer-based endpoints
+    STATS: '/api/registrars/stats',
+    ALL_EVENTS: '/api/registrars/events/all',
+    MY_EVENTS: '/api/registrars/events/my',
+    VOLUNTEER: '/api/registrars/events',
+    CHECK_IN_GUESTS: '/api/registrars/events'
   },ANALYTICS: {
     DASHBOARD: '/api/admin/guests/analytics/basic',
     TRENDS: '/api/admin/guests/analytics/trends',

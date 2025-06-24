@@ -9,6 +9,7 @@ import StateAdminTabs from '../components/dashboard/StateAdminTabs';
 import BranchAdminTabs from '../components/dashboard/BranchAdminTabs';
 import ZonalAdminTabs from '../components/dashboard/ZonalAdminTabs';
 import WorkerTabs from '../components/dashboard/WorkerTabs';
+import RegistrarTabs from '../components/dashboard/RegistrarTabs';
 import { ROLES } from '../utils/constants';
 import analyticsService from '../services/analyticsService';
 
@@ -148,20 +149,11 @@ const Dashboard = () => {  const { user } = useAuth();
         return <BranchAdminTabs dashboardData={dashboardData} />;
       
       case ROLES.ZONAL_ADMIN:
-        return <ZonalAdminTabs dashboardData={dashboardData} />;
-        case ROLES.WORKER:
+        return <ZonalAdminTabs dashboardData={dashboardData} />;        case ROLES.WORKER:
         return <WorkerTabs dashboardData={dashboardData} />;
       
       case ROLES.REGISTRAR:
-        return (
-          <StatisticsGrid
-            cards={[
-              StatisticsCardTypes.checkinsToday(dashboardData.checkinsToday),
-              StatisticsCardTypes.totalCheckins(dashboardData.totalCheckins)
-            ]}
-            columns={2}
-          />
-        );
+        return <RegistrarTabs dashboardData={dashboardData} />;
       
       default:
         return <div className="text-center py-4 text-muted">No data available</div>;
