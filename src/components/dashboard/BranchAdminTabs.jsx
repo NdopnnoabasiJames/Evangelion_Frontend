@@ -6,15 +6,19 @@ import BranchAdminEvents from './BranchAdminEvents';
 import ZoneAdminManagement from './ZoneAdminManagement';
 import ZonesManagement from '../admin/ZonesManagement';
 import WorkerManagement from '../admin/WorkerManagement';
+import RegistrarManagement from '../admin/RegistrarManagement';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 import workerService from '../../services/workerService';
+import { API_ENDPOINTS } from '../../utils/constants';
 
 const BranchAdminTabs = ({ dashboardData }) => {
-  const { user } = useAuth();  const [activeTab, setActiveTab] = useState('overview');
+  const { user } = useAuth();  
+  const [activeTab, setActiveTab] = useState('overview');
   const [pendingZonalAdmins, setPendingZonalAdmins] = useState([]);
   const [approvedZonalAdmins, setApprovedZonalAdmins] = useState([]);
   const [pendingWorkers, setPendingWorkers] = useState([]);
+  const [pendingRegistrars, setPendingRegistrars] = useState([]);
   const [branchStatistics, setBranchStatistics] = useState({
     totalZones: 0,
     activeEvents: 0,
@@ -31,9 +35,12 @@ const BranchAdminTabs = ({ dashboardData }) => {
       loadApprovedZonalAdmins();
     } else if (activeTab === 'worker-management') {
       loadPendingWorkers();
+    } else if (activeTab === 'registrar-management') {
+      loadPendingRegistrars();
     } else if (activeTab === 'overview') {
       loadBranchStatistics();
       loadPendingWorkers(); // Also load workers for overview stats
+      loadPendingRegistrars(); // Also load registrars for overview stats
     }
   }, [activeTab]);
   const loadBranchStatistics = async () => {
@@ -88,6 +95,42 @@ const BranchAdminTabs = ({ dashboardData }) => {
     } catch (err) {
       console.error('Error loading pending workers:', err);
       setError(err.message || 'Failed to load pending workers');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const loadPendingRegistrars = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('DEBUG - BranchAdminTabs: Loading pending registrars...');
+      console.log('DEBUG - BranchAdminTabs: Current user:', user);
+      console.log('DEBUG - BranchAdminTabs: Endpoint:', API_ENDPOINTS.REGISTRARS.PENDING);
+      
+      const response = await fetch(API_ENDPOINTS.REGISTRARS.PENDING, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      
+      console.log('DEBUG - BranchAdminTabs: Response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('DEBUG - BranchAdminTabs: Received data:', data);
+        const registrarsArray = Array.isArray(data) ? data : data.data || [];
+        console.log('DEBUG - BranchAdminTabs: Processed registrars array:', registrarsArray);
+        setPendingRegistrars(registrarsArray);
+      } else {
+        console.error('Failed to load pending registrars');
+        const errorText = await response.text();
+        console.error('DEBUG - BranchAdminTabs: Error response:', errorText);
+        setError('Failed to load pending registrars');
+      }
+    } catch (err) {
+      console.error('Error loading pending registrars:', err);
+      console.error('DEBUG - BranchAdminTabs: Error details:', err.stack || err.toString());
+      setError(err.message || 'Failed to load pending registrars');
     } finally {
       setLoading(false);
     }
@@ -226,16 +269,15 @@ const BranchAdminTabs = ({ dashboardData }) => {
                     <h3 className="text-success">{approvedZonalAdmins.length}</h3>
                     <p className="text-muted mb-0">Active Zonal Admins</p>
                   </div>
-                </div>
-                <div className="col-md-3 col-6">
+                </div>                <div className="col-md-3 col-6">
                   <div className="border-end">
                     <h3 className="text-warning">{pendingWorkers.length}</h3>
                     <p className="text-muted mb-0">Pending Workers</p>
                   </div>
                 </div>
                 <div className="col-md-3 col-6">
-                  <h3 className="text-info">0</h3>
-                  <p className="text-muted mb-0">Active Workers</p>
+                  <h3 className="text-info">{pendingRegistrars.length}</h3>
+                  <p className="text-muted mb-0">Pending Registrars</p>
                 </div>
               </div>
               <hr />
@@ -301,16 +343,30 @@ const BranchAdminTabs = ({ dashboardData }) => {
                 </p>
               </div>
               <small className="text-muted">Just now</small>
-            </div>
-            {pendingZonalAdmins.length > 0 && (
+            </div>            {pendingZonalAdmins.length > 0 && (
               <div className="d-flex align-items-center mb-3">
                 <div className="flex-shrink-0">
                   <i className="fas fa-clock text-warning"></i>
                 </div>
                 <div className="flex-grow-1 ms-3">
-                  <h6 className="mb-1">Pending Approvals</h6>
+                  <h6 className="mb-1">Pending Zonal Admin Approvals</h6>
                   <p className="text-muted mb-0 small">
                     {pendingZonalAdmins.length} zonal admin{pendingZonalAdmins.length !== 1 ? 's' : ''} awaiting approval
+                  </p>
+                </div>
+                <small className="text-muted">Today</small>
+              </div>
+            )}
+            
+            {pendingRegistrars.length > 0 && (
+              <div className="d-flex align-items-center mb-3">
+                <div className="flex-shrink-0">
+                  <i className="fas fa-clipboard-check text-info"></i>
+                </div>
+                <div className="flex-grow-1 ms-3">
+                  <h6 className="mb-1">Pending Registrar Approvals</h6>
+                  <p className="text-muted mb-0 small">
+                    {pendingRegistrars.length} registrar{pendingRegistrars.length !== 1 ? 's' : ''} awaiting approval
                   </p>
                 </div>
                 <small className="text-muted">Today</small>
@@ -375,8 +431,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
                 <h4>No Pending Approvals</h4>
                 <p className="text-muted">All Zonal Admin registrations have been processed.</p>
               </div>
-            </div>
-          ) : (
+            </div>          ) : (
             pendingZonalAdmins.map(admin => (
               <AdminApprovalCard
                 key={admin._id || admin.id}
@@ -444,8 +499,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
 
   return (
     <div>
-      {/* Tab Navigation */}
-      <ul className="nav nav-tabs mb-4" role="tablist">
+      {/* Tab Navigation */}      <ul className="nav nav-tabs mb-4" role="tablist">
         <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
@@ -491,6 +545,20 @@ const BranchAdminTabs = ({ dashboardData }) => {
               </span>
             )}
           </button>
+        </li>        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'registrar-management' ? 'active' : ''}`}
+            onClick={() => setActiveTab('registrar-management')}
+            type="button"
+          >
+            <i className="bi bi-clipboard-check me-2"></i>
+            Manage Registrars
+            {pendingRegistrars.length > 0 && (
+              <span className="badge bg-warning text-dark ms-2">
+                {pendingRegistrars.length}
+              </span>
+            )}
+          </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
@@ -511,6 +579,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
           />
         )}
         {activeTab === 'worker-management' && <WorkerManagement />}
+        {activeTab === 'registrar-management' && <RegistrarManagement />}
         {activeTab === 'events' && <BranchAdminEvents />}
       </div>
     </div>
