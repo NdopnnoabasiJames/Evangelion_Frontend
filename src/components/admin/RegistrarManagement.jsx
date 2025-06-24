@@ -15,37 +15,25 @@ const RegistrarManagement = () => {
     } else {
       loadApprovedRegistrars();
     }
-  }, [activeView]);
-  const loadPendingRegistrars = async () => {
+  }, [activeView]);  const loadPendingRegistrars = async () => {
     setLoading(true);
     setError(null);
-    try {
-      console.log('DEBUG - RegistrarManagement: Loading pending registrars...');
-      console.log('DEBUG - RegistrarManagement: Endpoint:', API_ENDPOINTS.REGISTRARS.PENDING);
-      
+    try {      
       const response = await fetch(API_ENDPOINTS.REGISTRARS.PENDING, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
-
-      console.log('DEBUG - RegistrarManagement: Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('DEBUG - RegistrarManagement: Received data:', data);
         const registrarsArray = Array.isArray(data) ? data : data.data || [];
-        console.log('DEBUG - RegistrarManagement: Processed registrars array:', registrarsArray);
-        console.log('DEBUG - RegistrarManagement: Length of array:', registrarsArray.length);
         setPendingRegistrars(registrarsArray);
       } else {
-        const errorText = await response.text();
-        console.error('DEBUG - RegistrarManagement: Error response:', errorText);
         setError('Failed to load pending registrars');
       }
     } catch (err) {
       console.error('Error loading pending registrars:', err);
-      console.error('DEBUG - RegistrarManagement: Error details:', err.stack || err.toString());
       setError('Failed to load pending registrars');
     } finally {
       setLoading(false);

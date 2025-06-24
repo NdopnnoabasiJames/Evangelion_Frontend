@@ -98,38 +98,24 @@ const BranchAdminTabs = ({ dashboardData }) => {
     } finally {
       setLoading(false);
     }
-  };
-  const loadPendingRegistrars = async () => {
+  };  const loadPendingRegistrars = async () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('DEBUG - BranchAdminTabs: Loading pending registrars...');
-      console.log('DEBUG - BranchAdminTabs: Current user:', user);
-      console.log('DEBUG - BranchAdminTabs: Endpoint:', API_ENDPOINTS.REGISTRARS.PENDING);
-      
       const response = await fetch(API_ENDPOINTS.REGISTRARS.PENDING, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       
-      console.log('DEBUG - BranchAdminTabs: Response status:', response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('DEBUG - BranchAdminTabs: Received data:', data);
         const registrarsArray = Array.isArray(data) ? data : data.data || [];
-        console.log('DEBUG - BranchAdminTabs: Processed registrars array:', registrarsArray);
-        setPendingRegistrars(registrarsArray);
-      } else {
-        console.error('Failed to load pending registrars');
-        const errorText = await response.text();
-        console.error('DEBUG - BranchAdminTabs: Error response:', errorText);
+        setPendingRegistrars(registrarsArray);      } else {
         setError('Failed to load pending registrars');
       }
     } catch (err) {
       console.error('Error loading pending registrars:', err);
-      console.error('DEBUG - BranchAdminTabs: Error details:', err.stack || err.toString());
       setError(err.message || 'Failed to load pending registrars');
     } finally {
       setLoading(false);
