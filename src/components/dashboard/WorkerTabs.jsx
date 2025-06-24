@@ -477,11 +477,11 @@ const WorkerTabs = ({ dashboardData }) => {
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover mb-0">
-                <thead className="table-light">
-                  <tr>
+                <thead className="table-light">                  <tr>
                     <th scope="col">Guest Name</th>
                     <th scope="col">Contact</th>
                     <th scope="col">Event</th>
+                    <th scope="col">Comments</th>
                     <th scope="col">Event Date & Time</th>
                     <th scope="col">Status</th>
                     <th scope="col">Registered</th>
@@ -505,8 +505,7 @@ const WorkerTabs = ({ dashboardData }) => {
                           <div>
                             <div>{guest.phone}</div>
                           </div>
-                        </td>
-                        <td>
+                        </td>                        <td>
                           <div>
                             <div className="fw-medium">{guest.event?.name || guest.event?.title || 'N/A'}</div>
                             <small className="text-muted">
@@ -514,6 +513,9 @@ const WorkerTabs = ({ dashboardData }) => {
                               {eventLocation}
                             </small>
                           </div>
+                        </td>
+                        <td className="text-muted">
+                          {guest.comments || '-'}
                         </td>
                         <td>
                           <div>
@@ -618,12 +620,12 @@ const WorkerTabs = ({ dashboardData }) => {
 };
 
 // Guest Registration Modal Component
-const GuestRegistrationModal = ({ onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
+const GuestRegistrationModal = ({ onClose, onSuccess }) => {  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    eventId: ''
+    eventId: '',
+    comments: ''
   });
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -734,8 +736,17 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
                     <option key={event._id} value={event._id}>
                       {event.name || event.title || 'Unnamed Event'} - {new Date(event.date).toLocaleDateString()}
                     </option>
-                  ))}
-                </select>
+                  ))}                </select>
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Comments</label>
+                <textarea
+                  className="form-control"
+                  rows="2"
+                  value={formData.comments}
+                  onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
+                  placeholder="Optional comments..."
+                ></textarea>
               </div>
             </div>
             <div className="modal-footer">

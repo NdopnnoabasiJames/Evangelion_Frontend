@@ -499,11 +499,11 @@ const RegistrarTabs = ({ dashboardData }) => {
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover mb-0">
-                <thead className="table-light">
-                  <tr>
+                <thead className="table-light">                  <tr>
                     <th scope="col">Guest Name</th>
                     <th scope="col">Phone</th>
                     <th scope="col">Email</th>
+                    <th scope="col">Comments</th>
                     <th scope="col">Status</th>
                     <th scope="col">Check-In Time</th>
                     <th scope="col">Action</th>
@@ -514,9 +514,9 @@ const RegistrarTabs = ({ dashboardData }) => {
                     <tr key={guest._id}>
                       <td>
                         <div className="fw-semibold">{guest.name}</div>
-                      </td>
-                      <td>{guest.phone}</td>
+                      </td>                      <td>{guest.phone}</td>
                       <td>{guest.email}</td>
+                      <td className="text-muted">{guest.comments || '-'}</td>
                       <td>
                         <span className={`badge ${guest.checkedIn ? 'bg-success' : 'bg-warning'}`}>
                           {guest.checkedIn ? 'Checked In' : 'Registered'}

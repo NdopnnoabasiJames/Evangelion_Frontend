@@ -18,7 +18,6 @@ const Guests = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statistics, setStatistics] = useState({});
-
   // Form state for guest registration
   const [guestForm, setGuestForm] = useState({
     name: '',
@@ -26,7 +25,8 @@ const Guests = () => {
     phone: '',
     transportPreference: 'private',
     pickupStation: '',
-    notes: ''
+    notes: '',
+    comments: ''
   });
 
   // Fetch events for dropdowns
@@ -119,15 +119,15 @@ const Guests = () => {
         body: JSON.stringify(guestForm)
       });
 
-      if (response.ok) {
-        // Reset form
+      if (response.ok) {        // Reset form
         setGuestForm({
           name: '',
           email: '',
           phone: '',
           transportPreference: 'private',
           pickupStation: '',
-          notes: ''
+          notes: '',
+          comments: ''
         });
         
         // Refresh guest list
@@ -366,14 +366,14 @@ const Guests = () => {
                     renderItem={() => (
                       <div className="table-responsive">
                         <table className="table table-hover mb-0">
-                          <thead className="table-light">
-                            <tr>
+                          <thead className="table-light">                            <tr>
                               <th>Name</th>
                               <th>Phone</th>
                               <th>Email</th>
                               <th>Transport</th>
                               <th>Status</th>
                               <th>Registered By</th>
+                              <th>Comments</th>
                               <th>Check-in Time</th>
                             </tr>
                           </thead>
@@ -390,9 +390,11 @@ const Guests = () => {
                                     {guest.transportPreference}
                                   </span>
                                 </td>
-                                <td>{getStatusBadge(guest.status)}</td>
-                                <td className="text-muted">
+                                <td>{getStatusBadge(guest.status)}</td>                                <td className="text-muted">
                                   {guest.registeredBy?.name || 'Unknown'}
+                                </td>
+                                <td className="text-muted">
+                                  {guest.comments || '-'}
                                 </td>
                                 <td className="text-muted">
                                   {guest.checkedInTime 
@@ -460,8 +462,7 @@ const Guests = () => {
                           <option value="private">Private Transport</option>
                           <option value="bus">Bus Transport</option>
                         </select>
-                      </div>
-                      <div className="col-12 mb-3">
+                      </div>                      <div className="col-12 mb-3">
                         <label className="form-label">Notes</label>
                         <textarea
                           className="form-control"
@@ -469,6 +470,16 @@ const Guests = () => {
                           value={guestForm.notes}
                           onChange={(e) => setGuestForm({...guestForm, notes: e.target.value})}
                           placeholder="Any additional notes about the guest..."
+                        ></textarea>
+                      </div>
+                      <div className="col-12 mb-3">
+                        <label className="form-label">Comments</label>
+                        <textarea
+                          className="form-control"
+                          rows="2"
+                          value={guestForm.comments}
+                          onChange={(e) => setGuestForm({...guestForm, comments: e.target.value})}
+                          placeholder="Optional comments..."
                         ></textarea>
                       </div>
                     </div>
