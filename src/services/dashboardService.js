@@ -37,9 +37,8 @@ export const dashboardService = {
           api.get("/api/states"),
           api.get("/api/branches"),
           api.get("/api/events"),
-          api.get("/api/zones/statistics"),
-          api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
-            console.error('🚨 [DASHBOARD DEBUG] Pickup stations API failed:', err);
+          api.get("/api/zones/statistics"),          api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
+            console.error('Error fetching pickup stations:', err);
             return { data: [] };
           }),
           api.get(API_ENDPOINTS.ADMIN.USERS),
@@ -52,9 +51,7 @@ export const dashboardService = {
       const zoneStatsData = zoneStats.data?.data || zoneStats.data || {};      const pickupStationsData = pickupStationsResponse.data?.data || pickupStationsResponse.data || [];
       const usersData = usersResponse.data?.data || usersResponse.data || [];
 
-      console.log('🔍 [DASHBOARD DEBUG] Pickup stations response:', pickupStationsResponse.data);
-      console.log('🔍 [DASHBOARD DEBUG] Pickup stations data:', pickupStationsData);
-      console.log('🔍 [DASHBOARD DEBUG] Pickup stations count:', Array.isArray(pickupStationsData) ? pickupStationsData.length : 'Not an array');const totalUsers = analyticsData?.totalUsers || 0;
+      const totalUsers = analyticsData?.totalUsers || 0;
 
       // Calculate active events (assuming events with isActive: true or similar)
       const activeEvents = Array.isArray(eventsData) 

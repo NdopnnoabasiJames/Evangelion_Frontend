@@ -61,17 +61,12 @@ export const systemMetricsService = {
         systemMetricsService.getSystemMetrics(),
         systemMetricsService.getAdminHierarchyStats(),
         systemMetricsService.getUserRoleBreakdown(),
-        adminManagementService.getPendingAdmins(),
-        api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
-          console.error('🚨 [ENHANCED STATS DEBUG] Pickup stations API failed:', err);
+        adminManagementService.getPendingAdmins(),        api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
+          console.error('Error fetching pickup stations:', err);
           return { data: [] };
-        })
-      ]);
+        })      ]);
 
       const pickupStationsData = pickupStationsResponse.data?.data || pickupStationsResponse.data || [];
-      console.log('🔍 [ENHANCED STATS DEBUG] Pickup stations response:', pickupStationsResponse.data);
-      console.log('🔍 [ENHANCED STATS DEBUG] Pickup stations data:', pickupStationsData);
-      console.log('🔍 [ENHANCED STATS DEBUG] Pickup stations count:', Array.isArray(pickupStationsData) ? pickupStationsData.length : 'Not an array');
 
       const enhancedStats = {
         // Phase 1 data (existing)
