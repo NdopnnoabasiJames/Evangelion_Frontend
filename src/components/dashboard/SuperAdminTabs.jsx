@@ -319,13 +319,12 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 <button className="btn btn-outline-primary">
                   <i className="fas fa-download me-2"></i>
                   Export System Report
-                </button>
-                <button 
+                </button>                <button 
                   className="btn btn-outline-secondary"
-                  onClick={() => setActiveTab('audit-trail')}
+                  onClick={() => setActiveTab('states')}
                 >
-                  <i className="fas fa-list-alt me-2"></i>
-                  View Audit Trail
+                  <i className="fas fa-map me-2"></i>
+                  Manage States
                 </button>
               </div>
             </div>
@@ -451,35 +450,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
     );
   };
 
-  const renderAuditTrail = () => (
-    <div className="card">
-      <div className="card-header">
-        <h5 className="mb-0">Platform Audit Trail</h5>
-      </div>
-      <div className="card-body">
-        <div className="text-center py-5">
-          <i className="fas fa-list-alt fa-3x text-muted mb-3"></i>
-          <h5>Audit Trail</h5>
-          <p className="text-muted">Platform activity logs will be displayed here</p>
-          <small className="text-muted">Feature coming soon...</small>
-        </div>
-      </div>
-    </div>
-  );
-  const renderSystemManagement = () => (
-    <div className="card">
-      <div className="card-header">
-        <h5 className="mb-0">System Management</h5>
-      </div>
-      <div className="card-body">
-        <div className="text-center py-5">
-          <i className="fas fa-cogs fa-3x text-muted mb-3"></i>
-          <h5>System Management</h5>
-          <p className="text-muted">System configuration and management tools</p>
-          <small className="text-muted">Feature coming soon...</small>
-        </div>
-      </div>
-    </div>  );
 
   const renderStatesManagement = () => {
     return <StatesManagement />;
@@ -636,8 +606,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
                 {dashboardData.activeEvents}
               </span>
             )}
-          </button>        </li>
-        <li className="nav-item" role="presentation">
+          </button>        </li>        <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'states' ? 'active' : ''}`}
             onClick={() => setActiveTab('states')}
@@ -647,32 +616,12 @@ const SuperAdminTabs = ({ dashboardData }) => {
             States
           </button>
         </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${activeTab === 'audit-trail' ? 'active' : ''}`}
-            onClick={() => setActiveTab('audit-trail')}
-            type="button"
-          >            <i className="bi bi-list-check me-2"></i>
-            Audit Trail
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${activeTab === 'system-management' ? 'active' : ''}`}
-            onClick={() => setActiveTab('system-management')}
-            type="button"
-          >            <i className="bi bi-gear-fill me-2"></i>
-            System Management
-          </button>
-        </li>
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'admin-management' && renderAdminManagement()}
         {activeTab === 'events' && renderEventManagement()}
         {activeTab === 'states' && renderStatesManagement()}
-        {activeTab === 'audit-trail' && renderAuditTrail()}
-        {activeTab === 'system-management' && renderSystemManagement()}
       </div>
     </div>
   );
