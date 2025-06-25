@@ -28,29 +28,69 @@ export const dashboardService = {
         error.response?.data?.message || "Failed to fetch dashboard analytics"
       );
     }
-  },
-
-  // Super Admin Dashboard Stats
+  },  // Super Admin Dashboard Stats
   getSuperAdminDashboardStats: async () => {
     try {
-      const [basicAnalytics, statesResponse, eventsResponse, zoneStats] =
+      const [basicAnalytics, statesResponse, branchesResponse, eventsResponse, zoneStats, pickupStationsResponse, usersResponse] =
         await Promise.all([
           api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
           api.get("/api/states"),
+          api.get("/api/branches"),
           api.get("/api/events"),
           api.get("/api/zones/statistics"),
+          api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
+            console.error('🚨 [DASHBOARD DEBUG] Pickup stations API failed:', err);
+            return { data: [] };
+          }),
+          api.get(API_ENDPOINTS.ADMIN.USERS),
         ]);
 
       const statesData = statesResponse.data?.data || statesResponse.data || [];
+      const branchesData = branchesResponse.data?.data || branchesResponse.data || [];
       const eventsData = eventsResponse.data?.data || eventsResponse.data || [];
       const analyticsData = basicAnalytics.data?.data || basicAnalytics.data || {};
-      const zoneStatsData = zoneStats.data?.data || zoneStats.data || {};
+      const zoneStatsData = zoneStats.data?.data || zoneStats.data || {};      const pickupStationsData = pickupStationsResponse.data?.data || pickupStationsResponse.data || [];
+      const usersData = usersResponse.data?.data || usersResponse.data || [];
 
-      const totalUsers = analyticsData?.totalUsers || 0;
+      console.log('🔍 [DASHBOARD DEBUG] Pickup stations response:', pickupStationsResponse.data);
+      console.log('🔍 [DASHBOARD DEBUG] Pickup stations data:', pickupStationsData);
+      console.log('🔍 [DASHBOARD DEBUG] Pickup stations count:', Array.isArray(pickupStationsData) ? pickupStationsData.length : 'Not an array');const totalUsers = analyticsData?.totalUsers || 0;
 
-      const stats = {
+      // Calculate active events (assuming events with isActive: true or similar)
+      const activeEvents = Array.isArray(eventsData) 
+        ? eventsData.filter(event => event.isActive !== false).length 
+        : 0;
+
+      // Calculate admin role breakdown
+      const adminsByRole = {
+        stateAdmins: 0,
+        branchAdmins: 0,
+        zonalAdmins: 0,
+        workers: 0
+      };
+
+      if (Array.isArray(usersData)) {
+        usersData.forEach(user => {
+          switch (user.role) {
+            case 'state_admin':
+              adminsByRole.stateAdmins++;
+              break;
+            case 'branch_admin':
+              adminsByRole.branchAdmins++;
+              break;
+            case 'zonal_admin':
+              adminsByRole.zonalAdmins++;
+              break;
+            case 'worker':
+              adminsByRole.workers++;
+              break;
+          }
+        });
+      }      const stats = {
         totalStates: Array.isArray(statesData) ? statesData.length : 0,
+        totalBranches: Array.isArray(branchesData) ? branchesData.length : 0,
         totalEvents: Array.isArray(eventsData) ? eventsData.length : 0,
+        activeEvents: activeEvents,
         totalUsers: totalUsers,
         totalGuests: analyticsData?.totalGuests || 0,
         checkedInGuests: analyticsData?.checkedInGuests || 0,
@@ -59,14 +99,19 @@ export const dashboardService = {
         totalZones: zoneStatsData?.totalZones || 0,
         activeZones: zoneStatsData?.activeZones || 0,
         inactiveZones: zoneStatsData?.inactiveZones || 0,
+        // Pickup stations statistics
+        totalPickupStations: Array.isArray(pickupStationsData) ? pickupStationsData.length : 0,
+        // Admin role breakdown
+        adminsByRole: adminsByRole,
       };
 
       return stats;
     } catch (error) {
-      console.error("Error fetching super admin stats:", error);
-      return {
+      console.error("Error fetching super admin stats:", error);      return {
         totalStates: 0,
+        totalBranches: 0,
         totalEvents: 0,
+        activeEvents: 0,
         totalUsers: 0,
         totalGuests: 0,
         checkedInGuests: 0,
@@ -74,6 +119,13 @@ export const dashboardService = {
         totalZones: 0,
         activeZones: 0,
         inactiveZones: 0,
+        totalPickupStations: 0,
+        adminsByRole: {
+          stateAdmins: 0,
+          branchAdmins: 0,
+          zonalAdmins: 0,
+          workers: 0
+        },
       };
     }
   },

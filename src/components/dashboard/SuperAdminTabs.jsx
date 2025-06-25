@@ -905,9 +905,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
         )}
       </div>
     );
-  };
-
-  // Zone management functions
+  };  // Zone management functions
   const loadZones = async () => {
     setZonesLoading(true);
     setZonesError(null);
@@ -1248,10 +1246,9 @@ const SuperAdminTabs = ({ dashboardData }) => {
                           ) : (
                             <span className="text-muted">No admin assigned</span>
                           )}
-                        </td>
-                        <td>
+                        </td>                        <td>
                           <span className="badge bg-info">
-                            {zone.pickupStationsCount || 0} stations
+                            {zone.pickupStationCount || 0} stations
                           </span>
                         </td>
                         <td>

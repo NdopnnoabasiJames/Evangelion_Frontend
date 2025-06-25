@@ -1,5 +1,6 @@
 import api from './api';
 import adminManagementService from './adminManagement';
+import { API_ENDPOINTS } from '../utils/constants';
 
 /**
  * Service for comprehensive system metrics and enhanced dashboard data
@@ -46,7 +47,6 @@ export const systemMetricsService = {
       throw new Error(error.response?.data?.message || 'Failed to fetch user role breakdown');
     }
   },
-
   // Enhanced Super Admin Dashboard with Phase 2 metrics
   getEnhancedSuperAdminStats: async () => {
     try {
@@ -55,13 +55,23 @@ export const systemMetricsService = {
         systemMetrics,
         hierarchyStats,
         roleBreakdown,
-        pendingAdmins
+        pendingAdmins,
+        pickupStationsResponse
       ] = await Promise.all([
         systemMetricsService.getSystemMetrics(),
         systemMetricsService.getAdminHierarchyStats(),
         systemMetricsService.getUserRoleBreakdown(),
-        adminManagementService.getPendingAdmins()
+        adminManagementService.getPendingAdmins(),
+        api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
+          console.error('🚨 [ENHANCED STATS DEBUG] Pickup stations API failed:', err);
+          return { data: [] };
+        })
       ]);
+
+      const pickupStationsData = pickupStationsResponse.data?.data || pickupStationsResponse.data || [];
+      console.log('🔍 [ENHANCED STATS DEBUG] Pickup stations response:', pickupStationsResponse.data);
+      console.log('🔍 [ENHANCED STATS DEBUG] Pickup stations data:', pickupStationsData);
+      console.log('🔍 [ENHANCED STATS DEBUG] Pickup stations count:', Array.isArray(pickupStationsData) ? pickupStationsData.length : 'Not an array');
 
       const enhancedStats = {
         // Phase 1 data (existing)
@@ -80,6 +90,7 @@ export const systemMetricsService = {
         totalZones: systemMetrics?.totalZones || 0,
         totalEvents: systemMetrics?.totalEvents || 0,
         totalGuests: systemMetrics?.totalGuests || 0,
+        totalPickupStations: Array.isArray(pickupStationsData) ? pickupStationsData.length : 0,
         
         // Admin breakdown for visual charts
         adminsByRole: {
@@ -93,8 +104,7 @@ export const systemMetricsService = {
       return enhancedStats;
     } catch (error) {
       console.error('SystemMetrics: Error fetching enhanced super admin stats:', error);
-      
-      // Return fallback data with both Phase 1 and Phase 2 structure
+        // Return fallback data with both Phase 1 and Phase 2 structure
       return {
         pendingAdmins: 0,
         pendingAdminsList: [],
@@ -107,6 +117,7 @@ export const systemMetricsService = {
         totalZones: 0,
         totalEvents: 0,
         totalGuests: 0,
+        totalPickupStations: 0,
         adminsByRole: {
           stateAdmins: 0,
           branchAdmins: 0,
