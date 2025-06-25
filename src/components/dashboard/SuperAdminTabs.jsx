@@ -25,10 +25,20 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const [approvedError, setApprovedError] = useState(null);  // Branches state
   const [branches, setBranches] = useState([]);
   const [branchesLoading, setBranchesLoading] = useState(false);
-  const [branchesError, setBranchesError] = useState(null);
-  // Branch filters state
+  const [branchesError, setBranchesError] = useState(null);  // Branch filters state
   const [branchFilters, setBranchFilters] = useState({
     stateFilter: 'all',
+    statusFilter: 'all',
+    adminFilter: 'all'
+  });
+  // Zones state
+  const [zones, setZones] = useState([]);
+  const [zonesLoading, setZonesLoading] = useState(false);
+  const [zonesError, setZonesError] = useState(null);
+  // Zone filters state
+  const [zoneFilters, setZoneFilters] = useState({
+    stateFilter: 'all',
+    branchFilter: 'all',
     statusFilter: 'all',
     adminFilter: 'all'
   });
@@ -57,10 +67,11 @@ const SuperAdminTabs = ({ dashboardData }) => {
         const processedEvents = Array.isArray(eventsData) 
           ? eventsData 
           : (eventsData.data || []);
-        setEvents(processedEvents);
-      }
+        setEvents(processedEvents);      }
     } else if (activeTab === 'branches') {
       loadBranches();
+    } else if (activeTab === 'zones') {
+      loadZones();
     }
   }, [activeTab, eventsData]);const loadPendingAdmins = async () => {
     setLoading(true);
@@ -896,6 +907,375 @@ const SuperAdminTabs = ({ dashboardData }) => {
     );
   };
 
+  // Zone management functions
+  const loadZones = async () => {
+    setZonesLoading(true);
+    setZonesError(null);
+    try {
+      const response = await fetch(API_ENDPOINTS.ZONES.ALL_WITH_ADMINS, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch zones: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Handle different response formats
+      let zonesArray = [];
+      if (Array.isArray(data)) {
+        zonesArray = data;
+      } else if (data && Array.isArray(data.data)) {
+        zonesArray = data.data;
+      } else if (data && data.zones && Array.isArray(data.zones)) {
+        zonesArray = data.zones;
+      } else {
+        console.warn('Unexpected zones response format:', data);
+        zonesArray = [];
+      }
+      
+      setZones(zonesArray);
+    } catch (err) {
+      console.error('Error loading zones:', err);
+      setZonesError(err.message || 'Failed to load zones');
+    } finally {
+      setZonesLoading(false);
+    }
+  };
+
+  // Helper functions for zone filtering
+  const getUniqueStatesFromZones = () => {
+    const zonesArray = Array.isArray(zones) ? zones : [];
+    const states = zonesArray
+      .filter(zone => zone.branchId?.stateId?.name)
+      .map(zone => ({ 
+        id: zone.branchId.stateId._id, 
+        name: zone.branchId.stateId.name 
+      }));
+    
+    // Remove duplicates based on state ID
+    const uniqueStates = states.filter((state, index, self) => 
+      index === self.findIndex(s => s.id === state.id)
+    );
+    
+    return uniqueStates.sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const getUniqueBranchesFromZones = () => {
+    const zonesArray = Array.isArray(zones) ? zones : [];
+    const branches = zonesArray
+      .filter(zone => zone.branchId?.name)
+      .map(zone => ({ 
+        id: zone.branchId._id, 
+        name: zone.branchId.name,
+        stateName: zone.branchId.stateId?.name || 'Unknown'
+      }));
+    
+    // Remove duplicates based on branch ID
+    const uniqueBranches = branches.filter((branch, index, self) => 
+      index === self.findIndex(b => b.id === branch.id)
+    );
+    
+    return uniqueBranches.sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const getFilteredZones = () => {
+    const zonesArray = Array.isArray(zones) ? zones : [];
+    
+    return zonesArray.filter(zone => {
+      // State filter
+      if (zoneFilters.stateFilter !== 'all') {
+        if (!zone.branchId?.stateId || zone.branchId.stateId._id !== zoneFilters.stateFilter) {
+          return false;
+        }
+      }
+
+      // Branch filter
+      if (zoneFilters.branchFilter !== 'all') {
+        if (!zone.branchId || zone.branchId._id !== zoneFilters.branchFilter) {
+          return false;
+        }
+      }
+
+      // Status filter
+      if (zoneFilters.statusFilter !== 'all') {
+        if (zoneFilters.statusFilter === 'active' && !zone.isActive) {
+          return false;
+        }
+        if (zoneFilters.statusFilter === 'inactive' && zone.isActive) {
+          return false;
+        }
+      }
+
+      // Admin filter
+      if (zoneFilters.adminFilter !== 'all') {
+        if (zoneFilters.adminFilter === 'has-admin' && !zone.zonalAdmin) {
+          return false;
+        }
+        if (zoneFilters.adminFilter === 'no-admin' && zone.zonalAdmin) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  const handleZoneFilterChange = (filterType, value) => {
+    setZoneFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+  const clearZoneFilters = () => {
+    setZoneFilters({
+      stateFilter: 'all',
+      branchFilter: 'all',
+      statusFilter: 'all',
+      adminFilter: 'all'
+    });
+  };
+
+  // Zones rendering function
+  const renderZones = () => {
+    if (zonesLoading) {
+      return (
+        <div className="row g-4">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="col-12">
+              <LoadingCard height="200px" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (zonesError) {
+      return (
+        <ErrorDisplay 
+          message={zonesError}
+          onRetry={loadZones}
+        />
+      );
+    }
+
+    // Ensure zones is always an array and get filtered results
+    const zonesArray = Array.isArray(zones) ? zones : [];
+    const filteredZones = getFilteredZones();
+    const uniqueStatesFromZones = getUniqueStatesFromZones();
+    const uniqueBranchesFromZones = getUniqueBranchesFromZones();
+
+    return (
+      <div>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 className="mb-1">
+              All Zones
+              {(zoneFilters.stateFilter !== 'all' || 
+                zoneFilters.branchFilter !== 'all' ||
+                zoneFilters.statusFilter !== 'all' || 
+                zoneFilters.adminFilter !== 'all') && (
+                <span className="badge bg-info ms-2">
+                  <i className="fas fa-filter me-1"></i>
+                  Filtered
+                </span>
+              )}
+            </h5>
+            <p className="text-muted mb-0">
+              Showing {filteredZones.length} of {zonesArray.length} zone{zonesArray.length !== 1 ? 's' : ''} across all branches
+            </p>
+          </div>
+          <button 
+            className="btn btn-outline-primary"
+            onClick={loadZones}
+            disabled={zonesLoading}
+          >
+            <i className="fas fa-refresh me-2"></i>
+            Refresh
+          </button>
+        </div>
+
+        {/* Filters Section */}
+        <div className="card mb-4">
+          <div className="card-body">
+            <div className="row g-3 align-items-end">
+              <div className="col-md-2">
+                <label className="form-label fw-bold">Filter by State</label>
+                <select 
+                  className="form-select"
+                  value={zoneFilters.stateFilter}
+                  onChange={(e) => handleZoneFilterChange('stateFilter', e.target.value)}
+                >
+                  <option value="all">All States</option>
+                  {uniqueStatesFromZones.map(state => (
+                    <option key={state.id} value={state.id}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Filter by Branch</label>
+                <select 
+                  className="form-select"
+                  value={zoneFilters.branchFilter}
+                  onChange={(e) => handleZoneFilterChange('branchFilter', e.target.value)}
+                >
+                  <option value="all">All Branches</option>
+                  {uniqueBranchesFromZones.map(branch => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name} ({branch.stateName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="col-md-2">
+                <label className="form-label fw-bold">Filter by Status</label>
+                <select 
+                  className="form-select"
+                  value={zoneFilters.statusFilter}
+                  onChange={(e) => handleZoneFilterChange('statusFilter', e.target.value)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active Only</option>
+                  <option value="inactive">Inactive Only</option>
+                </select>
+              </div>
+              
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Filter by Admin</label>
+                <select 
+                  className="form-select"
+                  value={zoneFilters.adminFilter}
+                  onChange={(e) => handleZoneFilterChange('adminFilter', e.target.value)}
+                >
+                  <option value="all">All Zones</option>
+                  <option value="has-admin">Has Admin</option>
+                  <option value="no-admin">No Admin Assigned</option>
+                </select>
+              </div>
+              
+              <div className="col-md-2">
+                <div className="d-grid gap-2">
+                  <button 
+                    className="btn btn-outline-secondary"
+                    onClick={clearZoneFilters}
+                    disabled={zoneFilters.stateFilter === 'all' && 
+                             zoneFilters.branchFilter === 'all' &&
+                             zoneFilters.statusFilter === 'all' && 
+                             zoneFilters.adminFilter === 'all'}
+                  >
+                    <i className="fas fa-times me-2"></i>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {zonesArray.length === 0 ? (
+          <div className="card">
+            <div className="card-body text-center py-5">
+              <i className="fas fa-layer-group fa-3x text-muted mb-3"></i>
+              <h4>No Zones Found</h4>
+              <p className="text-muted">No zones have been created yet.</p>
+            </div>
+          </div>
+        ) : filteredZones.length === 0 ? (
+          <div className="card">
+            <div className="card-body text-center py-5">
+              <i className="fas fa-filter fa-3x text-muted mb-3"></i>
+              <h4>No Zones Match Your Filters</h4>
+              <p className="text-muted">Try adjusting your filter criteria or clear all filters to see all zones.</p>
+              <button 
+                className="btn btn-outline-primary"
+                onClick={clearZoneFilters}
+              >
+                <i className="fas fa-times me-2"></i>
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="card">
+            <div className="card-body">
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Zone Name</th>
+                      <th>Branch</th>
+                      <th>State</th>
+                      <th>Zonal Admin</th>
+                      <th>Pickup Stations</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredZones.map(zone => (
+                      <tr key={zone._id}>
+                        <td>
+                          <div className="fw-bold">{zone.name}</div>
+                          {zone.description && (
+                            <small className="text-muted">{zone.description}</small>
+                          )}
+                        </td>
+                        <td>
+                          <span className="badge bg-primary">
+                            {zone.branchId?.name || 'Unknown'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="badge bg-secondary">
+                            {zone.branchId?.stateId?.name || 'Unknown'}
+                          </span>
+                        </td>
+                        <td>
+                          {zone.zonalAdmin ? (
+                            <div>
+                              <div className="fw-bold">{zone.zonalAdmin.name}</div>
+                              <small className="text-muted">{zone.zonalAdmin.email}</small>
+                            </div>
+                          ) : (
+                            <span className="text-muted">No admin assigned</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className="badge bg-info">
+                            {zone.pickupStationsCount || 0} stations
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${zone.isActive ? 'bg-success' : 'bg-danger'}`}>
+                            {zone.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <small className="text-muted">
+                            {zone.createdAt ? new Date(zone.createdAt).toLocaleDateString() : 'N/A'}
+                          </small>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div>
       {/* Tab Navigation */}
@@ -943,8 +1323,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             <i className="bi bi-map me-2"></i>
             States
           </button>
-        </li>
-        <li className="nav-item" role="presentation">
+        </li>        <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
             onClick={() => setActiveTab('branches')}
@@ -954,6 +1333,16 @@ const SuperAdminTabs = ({ dashboardData }) => {
             Branches
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'zones' ? 'active' : ''}`}
+            onClick={() => setActiveTab('zones')}
+            type="button"
+          >
+            <i className="bi bi-diagram-3 me-2"></i>
+            Zones
+          </button>
+        </li>
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
@@ -961,6 +1350,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
         {activeTab === 'events' && renderEventManagement()}
         {activeTab === 'states' && renderStatesManagement()}
         {activeTab === 'branches' && renderBranches()}
+        {activeTab === 'zones' && renderZones()}
       </div>
     </div>
   );

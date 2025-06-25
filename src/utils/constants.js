@@ -150,8 +150,7 @@ export const API_ENDPOINTS = {  AUTH: {
     STATE_ADMIN_LIST: '/api/branches/state-admin/my-branches',
     STATE_ADMIN_UPDATE: '/api/branches/state-admin',
     STATE_ADMIN_DELETE: '/api/branches/state-admin'
-  },
-    ZONES: {
+  },    ZONES: {
     BASE: '/api/zones',
     LIST: '/api/zones',
     CREATE: '/api/zones',
@@ -159,6 +158,7 @@ export const API_ENDPOINTS = {  AUTH: {
     DELETE: '/api/zones',
     BY_BRANCH: '/api/zones/by-branch',
     STATISTICS: '/api/zones/statistics',
+    ALL_WITH_ADMINS: '/api/zones/super-admin/all-with-admins',
     // Branch Admin specific endpoints
     BRANCH_ADMIN_CREATE: '/api/zones/branch-admin/create',
     BRANCH_ADMIN_LIST: '/api/zones/branch-admin/list',
