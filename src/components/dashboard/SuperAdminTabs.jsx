@@ -23,6 +23,10 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const [approvedLoading, setApprovedLoading] = useState(false);
   const [error, setError] = useState(null);
   const [approvedError, setApprovedError] = useState(null);
+  // Branches state
+  const [branches, setBranches] = useState([]);
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [branchesError, setBranchesError] = useState(null);
   // Event management state
   const [events, setEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
@@ -50,6 +54,8 @@ const SuperAdminTabs = ({ dashboardData }) => {
           : (eventsData.data || []);
         setEvents(processedEvents);
       }
+    } else if (activeTab === 'branches') {
+      loadBranches();
     }
   }, [activeTab, eventsData]);const loadPendingAdmins = async () => {
     setLoading(true);
@@ -326,6 +332,13 @@ const SuperAdminTabs = ({ dashboardData }) => {
                   <i className="fas fa-map me-2"></i>
                   Manage States
                 </button>
+                <button 
+                  className="btn btn-outline-info"
+                  onClick={() => setActiveTab('branches')}
+                >
+                  <i className="fas fa-building me-2"></i>
+                  Manage Branches
+                </button>
               </div>
             </div>
           </div>
@@ -374,9 +387,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
               <i className="fas fa-refresh me-2"></i>
               Refresh
             </button>
-          </div>
-
-          {pendingAdmins.length === 0 ? (
+          </div>          {pendingAdmins.length === 0 ? (
             <div className="card">
               <div className="card-body text-center py-5">
                 <i className="fas fa-check-circle fa-3x text-success mb-3"></i>
@@ -567,6 +578,169 @@ const SuperAdminTabs = ({ dashboardData }) => {
       </div>
     );
   };
+  const loadBranches = async () => {
+    setBranchesLoading(true);
+    setBranchesError(null);
+    try {
+      const response = await fetch(API_ENDPOINTS.BRANCHES.ALL_WITH_ADMINS, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch branches: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Branches API Response:', data); // Debug log
+      
+      // Handle different response formats
+      let branchesArray = [];
+      if (Array.isArray(data)) {
+        branchesArray = data;
+      } else if (data && Array.isArray(data.data)) {
+        branchesArray = data.data;
+      } else if (data && data.branches && Array.isArray(data.branches)) {
+        branchesArray = data.branches;
+      } else {
+        console.warn('Unexpected branches response format:', data);
+        branchesArray = [];
+      }
+      
+      setBranches(branchesArray);
+    } catch (err) {
+      console.error('Error loading branches:', err);
+      setBranchesError(err.message || 'Failed to load branches');
+    } finally {
+      setBranchesLoading(false);
+    }
+  };
+  const renderBranches = () => {
+    if (branchesLoading) {
+      return (
+        <div className="row g-4">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="col-12">
+              <LoadingCard height="200px" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (branchesError) {
+      return (
+        <ErrorDisplay 
+          message={branchesError}
+          onRetry={loadBranches}
+        />
+      );
+    }
+
+    // Ensure branches is always an array
+    const branchesArray = Array.isArray(branches) ? branches : [];
+
+    return (
+      <div>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 className="mb-1">All Branches</h5>
+            <p className="text-muted mb-0">
+              {branchesArray.length} branch{branchesArray.length !== 1 ? 'es' : ''} across all states
+            </p>
+          </div>
+          <button 
+            className="btn btn-outline-primary"
+            onClick={loadBranches}
+            disabled={branchesLoading}
+          >
+            <i className="fas fa-refresh me-2"></i>
+            Refresh
+          </button>
+        </div>
+
+        {branchesArray.length === 0 ? (
+          <div className="card">
+            <div className="card-body text-center py-5">
+              <i className="fas fa-building fa-3x text-muted mb-3"></i>
+              <h4>No Branches Found</h4>
+              <p className="text-muted">No branches have been created yet.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="card">
+            <div className="card-body">
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Branch Name</th>
+                      <th>State</th>
+                      <th>Branch Admin</th>
+                      <th>Zones</th>
+                      <th>Workers</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {branchesArray.map(branch => (
+                      <tr key={branch._id}>
+                        <td>
+                          <div className="fw-bold">{branch.name}</div>
+                          {branch.address && (
+                            <small className="text-muted">{branch.address}</small>
+                          )}
+                        </td>
+                        <td>
+                          <span className="badge bg-primary">
+                            {branch.stateId?.name || 'Unknown'}
+                          </span>
+                        </td>
+                        <td>
+                          {branch.branchAdmin ? (
+                            <div>
+                              <div className="fw-bold">{branch.branchAdmin.name}</div>
+                              <small className="text-muted">{branch.branchAdmin.email}</small>
+                            </div>
+                          ) : (
+                            <span className="text-muted">No admin assigned</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className="badge bg-info">
+                            {branch.zonesCount} zones
+                          </span>
+                        </td>
+                        <td>
+                          <span className="badge bg-secondary">
+                            {branch.workersCount} workers
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${branch.isActive ? 'bg-success' : 'bg-danger'}`}>
+                            {branch.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <small className="text-muted">
+                            {branch.createdAt ? new Date(branch.createdAt).toLocaleDateString() : 'N/A'}
+                          </small>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -616,12 +790,23 @@ const SuperAdminTabs = ({ dashboardData }) => {
             States
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
+            onClick={() => setActiveTab('branches')}
+            type="button"
+          >
+            <i className="bi bi-building me-2"></i>
+            Branches
+          </button>
+        </li>
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'admin-management' && renderAdminManagement()}
         {activeTab === 'events' && renderEventManagement()}
         {activeTab === 'states' && renderStatesManagement()}
+        {activeTab === 'branches' && renderBranches()}
       </div>
     </div>
   );

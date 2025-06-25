@@ -136,14 +136,15 @@ export const API_ENDPOINTS = {  AUTH: {
     CREATE: '/api/states',
     UPDATE: '/api/states',
     DETAILS: '/api/states'
-  },
-    BRANCHES: {
+  },    BRANCHES: {
     BASE: '/api/branches',
     LIST: '/api/branches',
     CREATE: '/api/branches',
     UPDATE: '/api/branches',
     DELETE: '/api/branches',
     BY_STATE: '/api/branches/by-state',
+    // Super Admin specific endpoints
+    ALL_WITH_ADMINS: '/api/branches/super-admin/all-with-admins',
     // State Admin specific endpoints
     STATE_ADMIN_CREATE: '/api/branches/state-admin/create',
     STATE_ADMIN_LIST: '/api/branches/state-admin/my-branches',
