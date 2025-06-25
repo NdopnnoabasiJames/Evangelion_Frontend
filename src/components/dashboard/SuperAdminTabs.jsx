@@ -22,11 +22,16 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const [loading, setLoading] = useState(false);
   const [approvedLoading, setApprovedLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [approvedError, setApprovedError] = useState(null);
-  // Branches state
+  const [approvedError, setApprovedError] = useState(null);  // Branches state
   const [branches, setBranches] = useState([]);
   const [branchesLoading, setBranchesLoading] = useState(false);
   const [branchesError, setBranchesError] = useState(null);
+  // Branch filters state
+  const [branchFilters, setBranchFilters] = useState({
+    stateFilter: 'all',
+    statusFilter: 'all',
+    adminFilter: 'all'
+  });
   // Event management state
   const [events, setEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
@@ -618,6 +623,71 @@ const SuperAdminTabs = ({ dashboardData }) => {
       setBranchesLoading(false);
     }
   };
+  // Helper functions for branch filtering
+  const getUniqueStates = () => {
+    const branchesArray = Array.isArray(branches) ? branches : [];
+    const states = branchesArray
+      .filter(branch => branch.stateId?.name)
+      .map(branch => ({ id: branch.stateId._id, name: branch.stateId.name }));
+    
+    // Remove duplicates based on state ID
+    const uniqueStates = states.filter((state, index, self) => 
+      index === self.findIndex(s => s.id === state.id)
+    );
+    
+    return uniqueStates.sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const getFilteredBranches = () => {
+    const branchesArray = Array.isArray(branches) ? branches : [];
+    
+    return branchesArray.filter(branch => {
+      // State filter
+      if (branchFilters.stateFilter !== 'all') {
+        if (!branch.stateId || branch.stateId._id !== branchFilters.stateFilter) {
+          return false;
+        }
+      }
+
+      // Status filter
+      if (branchFilters.statusFilter !== 'all') {
+        if (branchFilters.statusFilter === 'active' && !branch.isActive) {
+          return false;
+        }
+        if (branchFilters.statusFilter === 'inactive' && branch.isActive) {
+          return false;
+        }
+      }
+
+      // Admin filter
+      if (branchFilters.adminFilter !== 'all') {
+        if (branchFilters.adminFilter === 'has-admin' && !branch.branchAdmin) {
+          return false;
+        }
+        if (branchFilters.adminFilter === 'no-admin' && branch.branchAdmin) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    setBranchFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setBranchFilters({
+      stateFilter: 'all',
+      statusFilter: 'all',
+      adminFilter: 'all'
+    });
+  };
+
   const renderBranches = () => {
     if (branchesLoading) {
       return (
@@ -638,21 +708,29 @@ const SuperAdminTabs = ({ dashboardData }) => {
           onRetry={loadBranches}
         />
       );
-    }
-
-    // Ensure branches is always an array
+    }    // Ensure branches is always an array and get filtered results
     const branchesArray = Array.isArray(branches) ? branches : [];
+    const filteredBranches = getFilteredBranches();
+    const uniqueStates = getUniqueStates();
 
     return (
       <div>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h5 className="mb-1">All Branches</h5>
+        <div className="d-flex justify-content-between align-items-center mb-4">          <div>
+            <h5 className="mb-1">
+              All Branches
+              {(branchFilters.stateFilter !== 'all' || 
+                branchFilters.statusFilter !== 'all' || 
+                branchFilters.adminFilter !== 'all') && (
+                <span className="badge bg-info ms-2">
+                  <i className="fas fa-filter me-1"></i>
+                  Filtered
+                </span>
+              )}
+            </h5>
             <p className="text-muted mb-0">
-              {branchesArray.length} branch{branchesArray.length !== 1 ? 'es' : ''} across all states
+              Showing {filteredBranches.length} of {branchesArray.length} branch{branchesArray.length !== 1 ? 'es' : ''} across all states
             </p>
-          </div>
-          <button 
+          </div><button 
             className="btn btn-outline-primary"
             onClick={loadBranches}
             disabled={branchesLoading}
@@ -662,12 +740,89 @@ const SuperAdminTabs = ({ dashboardData }) => {
           </button>
         </div>
 
-        {branchesArray.length === 0 ? (
+        {/* Filters Section */}
+        <div className="card mb-4">
+          <div className="card-body">
+            <div className="row g-3 align-items-end">
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Filter by State</label>
+                <select 
+                  className="form-select"
+                  value={branchFilters.stateFilter}
+                  onChange={(e) => handleFilterChange('stateFilter', e.target.value)}
+                >
+                  <option value="all">All States</option>
+                  {uniqueStates.map(state => (
+                    <option key={state.id} value={state.id}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Filter by Status</label>
+                <select 
+                  className="form-select"
+                  value={branchFilters.statusFilter}
+                  onChange={(e) => handleFilterChange('statusFilter', e.target.value)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active Only</option>
+                  <option value="inactive">Inactive Only</option>
+                </select>
+              </div>
+              
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Filter by Admin</label>
+                <select 
+                  className="form-select"
+                  value={branchFilters.adminFilter}
+                  onChange={(e) => handleFilterChange('adminFilter', e.target.value)}
+                >
+                  <option value="all">All Branches</option>
+                  <option value="has-admin">Has Admin</option>
+                  <option value="no-admin">No Admin Assigned</option>
+                </select>
+              </div>
+              
+              <div className="col-md-3">
+                <div className="d-grid gap-2">
+                  <button 
+                    className="btn btn-outline-secondary"
+                    onClick={clearFilters}
+                    disabled={branchFilters.stateFilter === 'all' && 
+                             branchFilters.statusFilter === 'all' && 
+                             branchFilters.adminFilter === 'all'}
+                  >
+                    <i className="fas fa-times me-2"></i>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>        {branchesArray.length === 0 ? (
           <div className="card">
             <div className="card-body text-center py-5">
               <i className="fas fa-building fa-3x text-muted mb-3"></i>
               <h4>No Branches Found</h4>
               <p className="text-muted">No branches have been created yet.</p>
+            </div>
+          </div>
+        ) : filteredBranches.length === 0 ? (
+          <div className="card">
+            <div className="card-body text-center py-5">
+              <i className="fas fa-filter fa-3x text-muted mb-3"></i>
+              <h4>No Branches Match Your Filters</h4>
+              <p className="text-muted">Try adjusting your filter criteria or clear all filters to see all branches.</p>
+              <button 
+                className="btn btn-outline-primary"
+                onClick={clearFilters}
+              >
+                <i className="fas fa-times me-2"></i>
+                Clear All Filters
+              </button>
             </div>
           </div>
         ) : (
@@ -684,10 +839,9 @@ const SuperAdminTabs = ({ dashboardData }) => {
                       <th>Workers</th>
                       <th>Status</th>
                       <th>Created</th>
-                    </tr>
-                  </thead>
+                    </tr>                  </thead>
                   <tbody>
-                    {branchesArray.map(branch => (
+                    {filteredBranches.map(branch => (
                       <tr key={branch._id}>
                         <td>
                           <div className="fw-bold">{branch.name}</div>
