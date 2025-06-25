@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 
-const StatesManagement = () => {
-  const [states, setStates] = useState([]);
+const StatesManagement = () => {  const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingState, setEditingState] = useState(null);
+  // State filters
+  const [stateFilters, setStateFilters] = useState({
+    adminFilter: 'all',
+    statusFilter: 'all',
+    activityFilter: 'all'
+  });
   const { execute: fetchStates } = useApi(null, { immediate: false });
   const { execute: createState, error: createError } = useApi(null, { immediate: false });
   const { execute: updateState, error: updateError } = useApi(null, { immediate: false });
@@ -16,8 +21,7 @@ const StatesManagement = () => {
     loadStates();
   }, []);
 
-  const loadStates = async () => {
-    try {
+  const loadStates = async () => {    try {
       setLoading(true);
       setError(null);
       
@@ -28,7 +32,65 @@ const StatesManagement = () => {
     } finally {
       setLoading(false);
     }
-  };  const handleCreateState = async (formData) => {
+  };  // Helper functions for state filtering
+  const getFilteredStates = () => {
+    return states.filter(state => {
+      // Admin filter
+      if (stateFilters.adminFilter !== 'all') {
+        if (stateFilters.adminFilter === 'has-admin' && !state.stateAdmin) {
+          return false;
+        }
+        if (stateFilters.adminFilter === 'no-admin' && state.stateAdmin) {
+          return false;
+        }
+      }
+
+      // Status filter
+      if (stateFilters.statusFilter !== 'all') {
+        if (stateFilters.statusFilter === 'active' && !state.isActive) {
+          return false;
+        }
+        if (stateFilters.statusFilter === 'inactive' && state.isActive) {
+          return false;
+        }
+      }
+
+      // Activity filter
+      if (stateFilters.activityFilter !== 'all') {
+        if (stateFilters.activityFilter === 'has-branches' && (state.branchCount || 0) === 0) {
+          return false;
+        }
+        if (stateFilters.activityFilter === 'no-branches' && (state.branchCount || 0) > 0) {
+          return false;
+        }
+        if (stateFilters.activityFilter === 'has-zones' && (state.zoneCount || 0) === 0) {
+          return false;
+        }
+        if (stateFilters.activityFilter === 'no-zones' && (state.zoneCount || 0) > 0) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    setStateFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setStateFilters({
+      adminFilter: 'all',
+      statusFilter: 'all',
+      activityFilter: 'all'
+    });
+  };
+
+  const handleCreateState = async (formData) => {
     try {
       const result = await createState(API_ENDPOINTS.STATES.CREATE, {
         method: 'POST',
@@ -105,6 +167,8 @@ const StatesManagement = () => {
     );
   }
 
+  const filteredStates = getFilteredStates();
+
   return (
     <>
       <div className="card">
@@ -131,9 +195,78 @@ const StatesManagement = () => {
               <i className="bi bi-exclamation-triangle me-2"></i>
               {error}
             </div>
-          )}
-
-          {states.length === 0 ? (
+          )}          <div className="mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="text-muted mb-0">
+                Filters
+                {(stateFilters.adminFilter !== 'all' || 
+                  stateFilters.statusFilter !== 'all' || 
+                  stateFilters.activityFilter !== 'all') && (
+                  <span className="badge bg-info ms-2">
+                    <i className="fas fa-filter me-1"></i>
+                    Active
+                  </span>
+                )}
+              </h6>
+              <small className="text-muted">
+                Showing {filteredStates.length} of {states.length} states
+              </small>
+            </div>
+            <div className="row g-3 align-items-end">
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Admin Assignment</label>
+                <select
+                  className="form-select"
+                  value={stateFilters.adminFilter}
+                  onChange={e => handleFilterChange('adminFilter', e.target.value)}
+                >
+                  <option value="all">All States</option>
+                  <option value="has-admin">Has Admin</option>
+                  <option value="no-admin">No Admin Assigned</option>
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Status</label>
+                <select
+                  className="form-select"
+                  value={stateFilters.statusFilter}
+                  onChange={e => handleFilterChange('statusFilter', e.target.value)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active Only</option>
+                  <option value="inactive">Inactive Only</option>
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="form-label fw-bold">Activity Level</label>
+                <select
+                  className="form-select"
+                  value={stateFilters.activityFilter}
+                  onChange={e => handleFilterChange('activityFilter', e.target.value)}
+                >
+                  <option value="all">All States</option>
+                  <option value="has-branches">Has Branches</option>
+                  <option value="no-branches">No Branches</option>
+                  <option value="has-zones">Has Zones</option>
+                  <option value="no-zones">No Zones</option>
+                </select>
+              </div>
+              <div className="col-md-3">
+                <div className="d-grid gap-2">
+                  <button 
+                    className="btn btn-outline-secondary"
+                    onClick={clearFilters}
+                    disabled={stateFilters.adminFilter === 'all' && 
+                             stateFilters.statusFilter === 'all' && 
+                             stateFilters.activityFilter === 'all'}
+                  >
+                    <i className="fas fa-times me-2"></i>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>          {states.length === 0 ? (
             <div className="text-center py-5">
               <i className="bi bi-map text-muted" style={{ fontSize: '3rem' }}></i>
               <h6 className="text-muted mt-3">No States Found</h6>
@@ -146,46 +279,56 @@ const StatesManagement = () => {
                 Create First State
               </button>
             </div>
-          ) : (            <div className="table-responsive">
+          ) : filteredStates.length === 0 ? (
+            <div className="text-center py-5">
+              <i className="fas fa-filter text-muted" style={{ fontSize: '3rem' }}></i>
+              <h6 className="text-muted mt-3">No States Match Your Filters</h6>
+              <p className="text-muted">Try adjusting your filter criteria or clear all filters to see all states.</p>
+              <button 
+                className="btn btn-outline-primary"
+                onClick={clearFilters}
+              >
+                <i className="fas fa-times me-2"></i>
+                Clear All Filters
+              </button>
+            </div>) : (
+            <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
                     <th>State Name</th>
-                    <th>Code</th>
+                    <th>State Admin</th>
                     <th>Branches</th>
                     <th>Zones</th>
-                    <th>Total</th>
                     <th>Created</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {states.map(state => (
+                  {filteredStates.map(state => (
                     <tr key={state._id}>
                       <td>
                         <div className="d-flex align-items-center">
                           <i className="bi bi-geo-alt text-primary me-2"></i>
                           <div>
-                            <strong>{state.name}</strong>
-                          </div>
+                            <strong>{state.name}</strong>                          </div>
                         </div>
                       </td>
                       <td>
-                        {state.code ? (
-                          <span className="badge bg-secondary">{state.code}</span>
+                        {state.stateAdmin ? (
+                          <div>
+                            <div className="fw-bold">{state.stateAdmin.name}</div>
+                            <small className="text-muted">{state.stateAdmin.email}</small>
+                          </div>
                         ) : (
-                          <span className="text-muted">-</span>
+                          <span className="text-muted">No admin assigned</span>
                         )}
                       </td>
                       <td>
                         <span className="badge bg-info">{state.branchCount || 0}</span>
-                      </td>
-                      <td>
+                      </td><td>
                         <span className="badge bg-success">{state.zoneCount || 0}</span>
-                      </td>
-                      <td>
-                        <strong>{state.totalSubdivisions || 0}</strong>
                       </td>
                       <td>
                         <small className="text-muted">
