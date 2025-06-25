@@ -169,10 +169,9 @@ const WorkerTabs = ({ dashboardData }) => {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
-      
-      if (response.ok) {
+        if (response.ok) {
         const result = await response.json();
-        if (result.message.includes('approved')) {
+        if (result?.message?.includes('approved')) {
           alert('Successfully volunteered! You can now register guests for this event.');
           loadMyEvents(); // Refresh My Events tab
         } else {
@@ -181,7 +180,7 @@ const WorkerTabs = ({ dashboardData }) => {
         loadAllEvents(); // Refresh All Events to update button states
       } else {
         const error = await response.json();
-        alert(`Failed to volunteer: ${error.message}`);
+        alert(`Failed to volunteer: ${error.message || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error volunteering for event:', err);
