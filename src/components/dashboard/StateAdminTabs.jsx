@@ -4,6 +4,8 @@ import StateAdminOverview from './StateAdminOverview';
 import BranchAdminManagement from './BranchAdminManagement';
 import StateAdminEvents from './StateAdminEvents';
 import BranchesManagement from '../admin/BranchesManagement';
+import ZonesManagement from '../admin/ZonesManagement';
+import PickupStationsManagement from '../admin/PickupStationsManagement';
 import analyticsService from '../../services/analyticsService';
 
 const StateAdminTabs = ({ dashboardData }) => {
@@ -112,7 +114,7 @@ const StateAdminTabs = ({ dashboardData }) => {
             onClick={() => setActiveTab('branch-admin-management')}
             type="button"          >
             <i className="bi bi-shield-check me-2"></i>
-            Branch Admin Management
+            Branch Admins
             {pendingBranchAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingBranchAdmins.length}
@@ -125,11 +127,30 @@ const StateAdminTabs = ({ dashboardData }) => {
             className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
             onClick={() => setActiveTab('events')}
             type="button"
-          >            <i className="bi bi-calendar-event me-2"></i>
-            Events
+          >            <i className="bi bi-calendar-event me-2"></i>            Events
           </button>
         </li>
-      </ul>      {/* Tab Content */}
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'zones' ? 'active' : ''}`}
+            onClick={() => setActiveTab('zones')}
+            type="button"
+          >
+            <i className="bi bi-geo-alt me-2"></i>
+            Zones
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pickup-stations')}
+            type="button"
+          >
+            <i className="bi bi-pin-map me-2"></i>
+            Pickup Stations
+          </button>
+        </li>
+      </ul>{/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && (
           <StateAdminOverview 
@@ -152,9 +173,10 @@ const StateAdminTabs = ({ dashboardData }) => {
             onRejectBranchAdmin={handleRejectBranchAdmin}
             onRefreshPending={loadPendingBranchAdmins}
             onRefreshApproved={loadApprovedBranchAdmins}
-          />
-        )}
+          />        )}
         {activeTab === 'events' && <StateAdminEvents />}
+        {activeTab === 'zones' && <ZonesManagement />}
+        {activeTab === 'pickup-stations' && <PickupStationsManagement />}
       </div>
     </div>
   );

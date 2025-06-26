@@ -76,9 +76,7 @@ export const adminManagementService = {
           "Failed to fetch admin approval history"
       );
     }
-  },
-
-  // State Admin - Branch Admin Management
+  },  // State Admin - Branch Admin Management
   getPendingBranchAdmins: async () => {
     try {
       const response = await api.get("/api/users/pending-branch-admins");
@@ -91,7 +89,6 @@ export const adminManagementService = {
       );
     }
   },
-
   getApprovedBranchAdmins: async () => {
     try {
       const response = await api.get("/api/users/approved-branch-admins");
@@ -104,14 +101,11 @@ export const adminManagementService = {
       );
     }
   },
-
   approveBranchAdmin: async (adminId, adminData) => {
     try {
       if (!adminId || adminId === "undefined") {
         throw new Error("Branch Admin ID is undefined or invalid");
-      }
-
-      const response = await api.post(
+      }      const response = await api.post(
         `/api/users/approve-branch-admin/${adminId}`,
         adminData
       );
@@ -124,13 +118,11 @@ export const adminManagementService = {
       );
     }
   },
-
   rejectBranchAdmin: async (adminId, reason) => {
     try {
       if (!adminId || adminId === "undefined") {
         throw new Error("Branch Admin ID is undefined or invalid");
       }
-
       const response = await api.post(
         `/api/users/reject-branch-admin/${adminId}`,
         { reason }

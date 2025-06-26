@@ -121,12 +121,17 @@ export const API_ENDPOINTS = {  AUTH: {
     CREATE_SUPER_ADMIN_EVENT: '/api/admin-hierarchy/events/super-admin',
     CREATE_STATE_ADMIN_EVENT: '/api/admin-hierarchy/events/state-admin',
     CREATE_BRANCH_ADMIN_EVENT: '/api/admin-hierarchy/events/branch-admin',
-    CREATE_ZONAL_ADMIN_EVENT: '/api/admin-hierarchy/events/zonal-admin',
-    // Branch Admin specific endpoints
+    CREATE_ZONAL_ADMIN_EVENT: '/api/admin-hierarchy/events/zonal-admin',    // Branch Admin specific endpoints
     PENDING_ZONE_ADMINS: '/api/admin-hierarchy/branch/pending-zone-admins',
     APPROVED_ZONE_ADMINS: '/api/admin-hierarchy/branch/approved-zone-admins',
     APPROVE_ZONE_ADMIN: '/api/admin-hierarchy/branch/approve-zone-admin',
-    REJECT_ZONE_ADMIN: '/api/admin-hierarchy/branch/reject-zone-admin',    BRANCH_ZONES: '/api/admin-hierarchy/branch/zones',
+    REJECT_ZONE_ADMIN: '/api/admin-hierarchy/branch/reject-zone-admin',
+    // State Admin specific endpoints  
+    PENDING_BRANCH_ADMINS: '/api/admin-hierarchy/state/pending-branch-admins',
+    APPROVED_BRANCH_ADMINS: '/api/admin-hierarchy/state/approved-branch-admins',
+    APPROVE_BRANCH_ADMIN: '/api/admin-hierarchy/state/approve-branch-admin',
+    REJECT_BRANCH_ADMIN: '/api/admin-hierarchy/state/reject-branch-admin',
+    BRANCH_ZONES: '/api/admin-hierarchy/branch/zones',
     BRANCH_DASHBOARD_STATS: '/api/admin-hierarchy/branch/dashboard-stats',
     WORKERS: '/api/admin-hierarchy/workers',
     GUESTS: '/api/admin-hierarchy/guests'
@@ -159,18 +164,21 @@ export const API_ENDPOINTS = {  AUTH: {
     DELETE: '/api/zones',
     BY_BRANCH: '/api/zones/by-branch',
     STATISTICS: '/api/zones/statistics',
-    ALL_WITH_ADMINS: '/api/zones/super-admin/all-with-admins',
-    // Branch Admin specific endpoints
+    ALL_WITH_ADMINS: '/api/zones/super-admin/all-with-admins',    // Branch Admin specific endpoints
     BRANCH_ADMIN_CREATE: '/api/zones/branch-admin/create',
     BRANCH_ADMIN_LIST: '/api/zones/branch-admin/list',
     BRANCH_ADMIN_UPDATE: '/api/zones/branch-admin',
-    BRANCH_ADMIN_DELETE: '/api/zones/branch-admin'
+    BRANCH_ADMIN_DELETE: '/api/zones/branch-admin',
+    // State Admin specific endpoints
+    STATE_ADMIN_LIST: '/api/zones/state-admin/my-zones'
   },
   
   PICKUP_STATIONS: {
     BASE: '/api/pickup-stations',
     ASSIGN: '/api/pickup-stations/assign',
-    ZONE_STATIONS: '/api/pickup-stations/zone'
+    ZONE_STATIONS: '/api/pickup-stations/zone',
+    // State Admin specific endpoints
+    STATE_ADMIN_LIST: '/api/pickup-stations/state-admin/my-stations'
   }
 };
 

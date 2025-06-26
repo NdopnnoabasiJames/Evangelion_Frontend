@@ -15,11 +15,10 @@ const ZonesManagement = () => {
     name: '',
     isActive: true
   });
-
   // Filter states
   const [filters, setFilters] = useState({
     search: '',
-    stateFilter: 'all',
+    pickupStationsFilter: 'all',
     branchFilter: 'all',
     statusFilter: 'all',
     adminFilter: 'all'
@@ -35,22 +34,21 @@ const ZonesManagement = () => {
 
   // Filter zones based on search and filter criteria
   useEffect(() => {
-    let filtered = [...zones];
-
-    // Apply search filter
+    let filtered = [...zones];    // Apply search filter
     if (filters.search) {
       filtered = filtered.filter(zone =>
         zone.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         (zone.branchId?.name && zone.branchId.name.toLowerCase().includes(filters.search.toLowerCase())) ||
-        (zone.branchId?.stateId?.name && zone.branchId.stateId.name.toLowerCase().includes(filters.search.toLowerCase())) ||
         (zone.zonalAdmin?.name && zone.zonalAdmin.name.toLowerCase().includes(filters.search.toLowerCase())) ||
         (zone.zonalAdmin?.email && zone.zonalAdmin.email.toLowerCase().includes(filters.search.toLowerCase()))
       );
-    }
-
-    // Apply state filter
-    if (filters.stateFilter !== 'all') {
-      filtered = filtered.filter(zone => zone.branchId?.stateId?._id === filters.stateFilter);
+    }// Apply pickup stations filter
+    if (filters.pickupStationsFilter !== 'all') {
+      if (filters.pickupStationsFilter === 'has-stations') {
+        filtered = filtered.filter(zone => zone.pickupStationCount > 0);
+      } else if (filters.pickupStationsFilter === 'no-stations') {
+        filtered = filtered.filter(zone => zone.pickupStationCount === 0);
+      }
     }
 
     // Apply branch filter
@@ -85,32 +83,24 @@ const ZonesManagement = () => {
   const loadZones = async () => {
     try {
       setLoading(true);
-      setError(null);
-        // Use appropriate endpoint based on user role
-      const endpoint = user?.role === ROLES.SUPER_ADMIN 
-        ? API_ENDPOINTS.ZONES.ALL_WITH_ADMINS
-        : API_ENDPOINTS.ZONES.BRANCH_ADMIN_LIST;
+      setError(null);      // Use appropriate endpoint based on user role
+      let endpoint;
+      if (user?.role === ROLES.SUPER_ADMIN) {
+        endpoint = API_ENDPOINTS.ZONES.ALL_WITH_ADMINS;
+      } else if (user?.role === ROLES.STATE_ADMIN) {
+        endpoint = API_ENDPOINTS.ZONES.STATE_ADMIN_LIST;
+      } else {
+        endpoint = API_ENDPOINTS.ZONES.BRANCH_ADMIN_LIST;
+      }
       
       const response = await fetchZones(endpoint);
       setZones(response?.data || response || []);
     } catch (error) {
-      setError(error.response?.data?.message || error.message || 'Failed to load zones');
-    } finally {
+      setError(error.response?.data?.message || error.message || 'Failed to load zones');    } finally {
       setLoading(false);
-    }  };
-
-  // Filter helper functions
-  const getUniqueStates = () => {
-    const states = zones
-      .filter(zone => zone.branchId?.stateId?.name)
-      .map(zone => ({
-        id: zone.branchId.stateId._id,
-        name: zone.branchId.stateId.name
-      }));
-    return [...new Map(states.map(state => [state.id, state])).values()]
-      .sort((a, b) => a.name.localeCompare(b.name));
+    }
   };
-
+  // Filter helper functions
   const getUniqueBranches = () => {
     const branches = zones
       .filter(zone => zone.branchId?.name)
@@ -129,11 +119,10 @@ const ZonesManagement = () => {
       [filterType]: value
     }));
   };
-
   const clearFilters = () => {
     setFilters({
       search: '',
-      stateFilter: 'all',
+      pickupStationsFilter: 'all',
       branchFilter: 'all',
       statusFilter: 'all',
       adminFilter: 'all'
@@ -304,25 +293,21 @@ const ZonesManagement = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Search zones..."
+                    placeholder="Search by zone name, branch, or admin..."
                     value={filters.search}
                     onChange={(e) => handleFilterChange('search', e.target.value)}
                   />
                 </div>
               </div>
-              
-              <div className="col-md-2">
+                <div className="col-md-2">
                 <select 
                   className="form-select"
-                  value={filters.stateFilter}
-                  onChange={(e) => handleFilterChange('stateFilter', e.target.value)}
+                  value={filters.pickupStationsFilter}
+                  onChange={(e) => handleFilterChange('pickupStationsFilter', e.target.value)}
                 >
-                  <option value="all">All States</option>
-                  {getUniqueStates().map(state => (
-                    <option key={state.id} value={state.id}>
-                      {state.name}
-                    </option>
-                  ))}
+                  <option value="all">All Zones</option>
+                  <option value="has-stations">Has Pickup Stations</option>
+                  <option value="no-stations">No Pickup Stations</option>
                 </select>
               </div>
               
@@ -386,15 +371,13 @@ const ZonesManagement = () => {
                   <i className="bi bi-funnel-fill me-1"></i>
                   Filters applied
                 </small>
-              )}
-            </div>
-
+              )}            </div>
           <div className="table-responsive">
-            <table className="table table-hover">              <thead>
+            <table className="table table-hover">
+              <thead>
                 <tr>
                   <th>Zone Name</th>
                   <th>Branch</th>
-                  <th>State</th>
                   <th>Zonal Admin</th>
                   <th>Pickup Stations</th>
                   <th>Status</th>
@@ -402,7 +385,8 @@ const ZonesManagement = () => {
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>                {filteredZones.map(zone => (
+              <tbody>
+                {filteredZones.map(zone => (
                   <tr key={zone._id}>
                     <td>
                       <div className="d-flex align-items-center">
@@ -415,11 +399,6 @@ const ZonesManagement = () => {
                     <td>
                       <span className="badge bg-primary">
                         {zone.branchId?.name || 'Unknown'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge bg-secondary">
-                        {zone.branchId?.stateId?.name || 'Unknown'}
                       </span>
                     </td>
                     <td>
@@ -462,9 +441,10 @@ const ZonesManagement = () => {
                           title="Delete zone"
                         >
                           <i className="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>                  </tr>                ))}
+                        </button>                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
