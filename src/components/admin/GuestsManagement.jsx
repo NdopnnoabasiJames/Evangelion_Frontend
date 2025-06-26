@@ -9,16 +9,14 @@ const GuestsManagement = () => {
   const [filteredGuests, setFilteredGuests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Filter states
+    // Filter states
   const [filters, setFilters] = useState({
     search: '',
     eventFilter: 'all',
     statusFilter: 'all',
     transportFilter: 'all',
     branchFilter: 'all',
-    stateFilter: 'all',
-    registeredByFilter: 'all'
+    stateFilter: 'all'
   });
 
   const { execute: fetchGuests } = useApi(null, { immediate: false });
@@ -57,16 +55,9 @@ const GuestsManagement = () => {
     // Apply branch filter
     if (filters.branchFilter !== 'all') {
       filtered = filtered.filter(guest => guest.branch?._id === filters.branchFilter);
-    }
-
-    // Apply state filter
+    }    // Apply state filter
     if (filters.stateFilter !== 'all') {
       filtered = filtered.filter(guest => guest.state?._id === filters.stateFilter);
-    }
-
-    // Apply registered by filter
-    if (filters.registeredByFilter !== 'all') {
-      filtered = filtered.filter(guest => guest.registeredBy?._id === filters.registeredByFilter);
     }
 
     setFilteredGuests(filtered);
@@ -124,19 +115,7 @@ const GuestsManagement = () => {
         name: guest.state.name
       }));
     return [...new Map(states.map(state => [state.id, state])).values()]
-      .sort((a, b) => a.name.localeCompare(b.name));
-  };
-
-  const getUniqueWorkers = () => {
-    const workers = guests
-      .filter(guest => guest.registeredBy?.name)
-      .map(guest => ({
-        id: guest.registeredBy._id,
-        name: guest.registeredBy.name
-      }));
-    return [...new Map(workers.map(worker => [worker.id, worker])).values()]
-      .sort((a, b) => a.name.localeCompare(b.name));
-  };
+      .sort((a, b) => a.name.localeCompare(b.name));  };
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
@@ -144,7 +123,6 @@ const GuestsManagement = () => {
       [filterType]: value
     }));
   };
-
   const clearFilters = () => {
     setFilters({
       search: '',
@@ -152,8 +130,7 @@ const GuestsManagement = () => {
       statusFilter: 'all',
       transportFilter: 'all',
       branchFilter: 'all',
-      stateFilter: 'all',
-      registeredByFilter: 'all'
+      stateFilter: 'all'
     });
   };
 
@@ -200,7 +177,156 @@ const GuestsManagement = () => {
           <div className="alert alert-danger" role="alert">
             <i className="bi bi-exclamation-triangle-fill me-2"></i>
             {error}
-          </div>        )}
+          </div>
+        )}
+
+        {/* Search and Filters Section */}
+        <div className="row mb-4">
+          <div className="col-12">
+            <div className="card border-0 bg-light">
+              <div className="card-body">
+                <div className="row g-3">
+                  {/* Search Bar */}
+                  <div className="col-md-4">
+                    <label className="form-label fw-bold">
+                      <i className="bi bi-search me-1"></i>
+                      Search Guests
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Search by name, email, or phone..."
+                      value={filters.search}
+                      onChange={(e) => handleFilterChange('search', e.target.value)}
+                    />
+                  </div>
+
+                  {/* Event Filter */}
+                  <div className="col-md-2">
+                    <label className="form-label fw-bold">
+                      <i className="bi bi-calendar-event me-1"></i>
+                      Event
+                    </label>
+                    <select
+                      className="form-select"
+                      value={filters.eventFilter}
+                      onChange={(e) => handleFilterChange('eventFilter', e.target.value)}
+                    >
+                      <option value="all">All Events</option>
+                      {getUniqueEvents().map(event => (
+                        <option key={event.id} value={event.id}>
+                          {event.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div className="col-md-2">
+                    <label className="form-label fw-bold">
+                      <i className="bi bi-check-circle me-1"></i>
+                      Status
+                    </label>
+                    <select
+                      className="form-select"
+                      value={filters.statusFilter}
+                      onChange={(e) => handleFilterChange('statusFilter', e.target.value)}
+                    >
+                      <option value="all">All Status</option>
+                      <option value="invited">Invited</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="checked_in">Checked In</option>
+                      <option value="no_show">No Show</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+
+                  {/* Transport Filter */}
+                  <div className="col-md-2">
+                    <label className="form-label fw-bold">
+                      <i className="bi bi-bus-front me-1"></i>
+                      Transport
+                    </label>
+                    <select
+                      className="form-select"
+                      value={filters.transportFilter}
+                      onChange={(e) => handleFilterChange('transportFilter', e.target.value)}
+                    >
+                      <option value="all">All Transport</option>
+                      <option value="bus">Bus</option>
+                      <option value="private">Private</option>
+                    </select>
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div className="col-md-2">
+                    <label className="form-label fw-bold text-transparent">Clear</label>
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary w-100"
+                      onClick={clearFilters}
+                      title="Clear all filters"
+                    >
+                      <i className="bi bi-x-circle me-1"></i>
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="row g-3 mt-2">
+                  {/* Branch Filter */}
+                  <div className="col-md-3">
+                    <label className="form-label fw-bold">
+                      <i className="bi bi-building me-1"></i>
+                      Branch
+                    </label>
+                    <select
+                      className="form-select"
+                      value={filters.branchFilter}
+                      onChange={(e) => handleFilterChange('branchFilter', e.target.value)}
+                    >
+                      <option value="all">All Branches</option>
+                      {getUniqueBranches().map(branch => (
+                        <option key={branch.id} value={branch.id}>
+                          {branch.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>                  {/* State Filter */}
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold">
+                      <i className="bi bi-geo-alt me-1"></i>
+                      State
+                    </label>
+                    <select
+                      className="form-select"
+                      value={filters.stateFilter}
+                      onChange={(e) => handleFilterChange('stateFilter', e.target.value)}
+                    >
+                      <option value="all">All States</option>
+                      {getUniqueStates().map(state => (
+                        <option key={state.id} value={state.id}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>                  {/* Filter Results Summary */}
+                  <div className="col-md-3">
+                    <label className="form-label fw-bold">
+                      <i className="bi bi-funnel me-1"></i>
+                      Results
+                    </label>
+                    <div className="form-control-plaintext">
+                      <span className="badge bg-info fs-6">
+                        {filteredGuests.length} of {guests.length} guests
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {guests.length === 0 ? (
           <div className="text-center py-5">
