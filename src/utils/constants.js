@@ -128,7 +128,8 @@ export const API_ENDPOINTS = {  AUTH: {
     APPROVE_ZONE_ADMIN: '/api/admin-hierarchy/branch/approve-zone-admin',
     REJECT_ZONE_ADMIN: '/api/admin-hierarchy/branch/reject-zone-admin',
     BRANCH_ZONES: '/api/admin-hierarchy/branch/zones',
-    BRANCH_DASHBOARD_STATS: '/api/admin-hierarchy/branch/dashboard-stats'
+    BRANCH_DASHBOARD_STATS: '/api/admin-hierarchy/branch/dashboard-stats',
+    WORKERS: '/api/admin-hierarchy/workers'
   },
     STATES: {
     BASE: '/api/states',

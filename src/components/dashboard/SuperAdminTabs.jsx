@@ -9,6 +9,7 @@ import AdminStatesTab from './tabs/AdminStatesTab';
 import AdminEventsTab from './tabs/AdminEventsTab';
 import AdminBranchesTab from './tabs/AdminBranchesTab';
 import AdminZonesTab from './tabs/AdminZonesTab';
+import AdminWorkersTab from './tabs/AdminWorkersTab';
 
 const SuperAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
@@ -99,6 +100,8 @@ const SuperAdminTabs = ({ dashboardData }) => {
 
   const renderZones = () => <AdminZonesTab />;
 
+  const renderWorkers = () => <AdminWorkersTab />;
+
   return (
     <div>
       {/* Tab Navigation */}
@@ -166,6 +169,16 @@ const SuperAdminTabs = ({ dashboardData }) => {
             Zones
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'workers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('workers')}
+            type="button"
+          >
+            <i className="bi bi-person-gear me-2"></i>
+            Workers
+          </button>
+        </li>
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
@@ -174,6 +187,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
         {activeTab === 'states' && renderStatesManagement()}
         {activeTab === 'branches' && renderBranches()}
         {activeTab === 'zones' && renderZones()}
+        {activeTab === 'workers' && renderWorkers()}
       </div>
     </div>
   );
