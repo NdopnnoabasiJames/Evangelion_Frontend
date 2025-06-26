@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 
 const BranchesManagement = () => {
   const { user } = useAuth();
   const [branches, setBranches] = useState([]);
+  const [filteredBranches, setFilteredBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingBranch, setEditingBranch] = useState(null);
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    search: '',
+    stateFilter: 'all',
+    statusFilter: 'all',
+    adminFilter: 'all'
+  });
 
   const { execute: fetchBranches } = useApi(null, { immediate: false });
   const { execute: createBranch, error: createError } = useApi(null, { immediate: false });
@@ -19,24 +28,102 @@ const BranchesManagement = () => {
   useEffect(() => {
     loadBranches();
   }, []);
-
   const loadBranches = async () => {
     try {
       setLoading(true);
       setError(null);
+        // Use appropriate endpoint based on user role
+      const endpoint = user?.role === ROLES.SUPER_ADMIN 
+        ? API_ENDPOINTS.BRANCHES.ALL_WITH_ADMINS
+        : API_ENDPOINTS.BRANCHES.STATE_ADMIN_LIST;
       
-      const response = await fetchBranches(API_ENDPOINTS.BRANCHES.STATE_ADMIN_LIST);
+      const response = await fetchBranches(endpoint);
       setBranches(response?.data || response || []);
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Failed to load branches');
     } finally {
       setLoading(false);
+    }  };
+
+  // Filter branches based on search and filter criteria
+  useEffect(() => {
+    let filtered = [...branches];
+
+    // Apply search filter
+    if (filters.search) {
+      filtered = filtered.filter(branch =>
+        branch.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        (branch.location && branch.location.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (branch.stateId?.name && branch.stateId.name.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (branch.branchAdmin?.name && branch.branchAdmin.name.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (branch.branchAdmin?.email && branch.branchAdmin.email.toLowerCase().includes(filters.search.toLowerCase()))
+      );
     }
+
+    // Apply state filter
+    if (filters.stateFilter !== 'all') {
+      filtered = filtered.filter(branch => branch.stateId?._id === filters.stateFilter);
+    }
+
+    // Apply status filter
+    if (filters.statusFilter !== 'all') {
+      filtered = filtered.filter(branch =>
+        filters.statusFilter === 'active' ? branch.isActive : !branch.isActive
+      );
+    }
+
+    // Apply admin filter
+    if (filters.adminFilter !== 'all') {
+      if (filters.adminFilter === 'has-admin') {
+        filtered = filtered.filter(branch => branch.branchAdmin);
+      } else if (filters.adminFilter === 'no-admin') {
+        filtered = filtered.filter(branch => !branch.branchAdmin);
+      }
+    }
+
+    setFilteredBranches(filtered);
+  }, [branches, filters]);
+
+  // Update filtered branches when branches data changes
+  useEffect(() => {
+    setFilteredBranches(branches);
+  }, [branches]);
+
+  // Filter helper functions
+  const getUniqueStates = () => {
+    const states = branches
+      .filter(branch => branch.stateId?.name)
+      .map(branch => ({
+        id: branch.stateId._id,
+        name: branch.stateId.name
+      }));
+    return [...new Map(states.map(state => [state.id, state])).values()]
+      .sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      stateFilter: 'all',
+      statusFilter: 'all',
+      adminFilter: 'all'
+    });
   };
 
   const handleCreateBranch = async (formData) => {
-    try {
-      const result = await createBranch(API_ENDPOINTS.BRANCHES.STATE_ADMIN_CREATE, {
+    try {      // Use appropriate endpoint based on user role
+      const endpoint = user?.role === ROLES.SUPER_ADMIN 
+        ? API_ENDPOINTS.BRANCHES.CREATE
+        : API_ENDPOINTS.BRANCHES.STATE_ADMIN_CREATE;
+        
+      const result = await createBranch(endpoint, {
         method: 'POST',
         body: formData
       });
@@ -62,10 +149,13 @@ const BranchesManagement = () => {
       throw error; // Let the modal handle the error display
     }
   };
-
   const handleUpdateBranch = async (formData) => {
-    try {
-      const result = await updateBranch(`${API_ENDPOINTS.BRANCHES.STATE_ADMIN_UPDATE}/${editingBranch._id}`, {
+    try {      // Use appropriate endpoint based on user role
+      const endpoint = user?.role === ROLES.SUPER_ADMIN 
+        ? `${API_ENDPOINTS.BRANCHES.UPDATE}/${editingBranch._id}`
+        : `${API_ENDPOINTS.BRANCHES.STATE_ADMIN_UPDATE}/${editingBranch._id}`;
+        
+      const result = await updateBranch(endpoint, {
         method: 'PATCH',
         body: formData
       });
@@ -91,14 +181,17 @@ const BranchesManagement = () => {
       throw error; // Let the modal handle the error display
     }
   };
-
   const handleDeleteBranch = async (branchId) => {
     if (!window.confirm('Are you sure you want to delete this branch? This action cannot be undone.')) {
       return;
     }
 
-    try {
-      await deleteBranch(`${API_ENDPOINTS.BRANCHES.STATE_ADMIN_DELETE}/${branchId}`, {
+    try {      // Use appropriate endpoint based on user role
+      const endpoint = user?.role === ROLES.SUPER_ADMIN 
+        ? `${API_ENDPOINTS.BRANCHES.DELETE}/${branchId}`
+        : `${API_ENDPOINTS.BRANCHES.STATE_ADMIN_DELETE}/${branchId}`;
+        
+      await deleteBranch(endpoint, {
         method: 'DELETE'
       });
 
@@ -178,21 +271,101 @@ const BranchesManagement = () => {
                 <i className="bi bi-plus-circle me-2"></i>
                 Create First Branch
               </button>
-            </div>
-          ) : (            <div className="table-responsive">
+            </div>          ) : (
+            <>
+              {/* Filters Section */}
+              <div className="row g-3 mb-4">
+                <div className="col-md-4">
+                  <div className="input-group">
+                    <span className="input-group-text">
+                      <i className="bi bi-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Search branches..."
+                      value={filters.search}
+                      onChange={(e) => handleFilterChange('search', e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="col-md-2">
+                  <select 
+                    className="form-select"
+                    value={filters.stateFilter}
+                    onChange={(e) => handleFilterChange('stateFilter', e.target.value)}
+                  >
+                    <option value="all">All States</option>
+                    {getUniqueStates().map(state => (
+                      <option key={state.id} value={state.id}>
+                        {state.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="col-md-2">
+                  <select 
+                    className="form-select"
+                    value={filters.statusFilter}
+                    onChange={(e) => handleFilterChange('statusFilter', e.target.value)}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active Only</option>
+                    <option value="inactive">Inactive Only</option>
+                  </select>
+                </div>
+                
+                <div className="col-md-2">
+                  <select 
+                    className="form-select"
+                    value={filters.adminFilter}
+                    onChange={(e) => handleFilterChange('adminFilter', e.target.value)}
+                  >
+                    <option value="all">All Branches</option>
+                    <option value="has-admin">Has Admin</option>
+                    <option value="no-admin">No Admin</option>
+                  </select>
+                </div>
+                
+                <div className="col-md-2">
+                  <button 
+                    className="btn btn-outline-secondary w-100"
+                    onClick={clearFilters}
+                  >
+                    <i className="bi bi-arrow-clockwise me-2"></i>
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              {/* Results Summary */}
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <small className="text-muted">
+                  Showing {filteredBranches.length} of {branches.length} branches
+                </small>
+                {(filters.search || filters.stateFilter !== 'all' || filters.statusFilter !== 'all' || filters.adminFilter !== 'all') && (
+                  <small className="text-info">
+                    <i className="bi bi-funnel-fill me-1"></i>
+                    Filters applied
+                  </small>
+                )}
+              </div>
+
+            <div className="table-responsive">
               <table className="table table-hover">
-                <thead>
-                  <tr>
+                <thead>                  <tr>
                     <th>Branch Name</th>
+                    <th>State</th>
                     <th>Location</th>
-                    <th>Contact</th>
+                    <th>Branch Admin</th>
                     <th>Zones</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {branches.map(branch => (
+                <tbody>                  {filteredBranches.map(branch => (
                     <tr key={branch._id}>
                       <td>
                         <div className="d-flex align-items-center">
@@ -203,28 +376,29 @@ const BranchesManagement = () => {
                         </div>
                       </td>
                       <td>
+                        <span className="badge bg-primary">
+                          {branch.stateId?.name || 'Unknown'}
+                        </span>
+                      </td>
+                      <td>
                         <small className="text-muted">
                           <i className="bi bi-geo-alt me-1"></i>
                           {branch.location}
-                        </small>                      </td>
-                      <td>
-                        <div>
-                          <small className="text-muted">
-                            <i className="bi bi-telephone me-1"></i>
-                            {branch.phone}
-                          </small>
-                          {branch.email && (
-                            <div>
-                              <small className="text-muted">
-                                <i className="bi bi-envelope me-1"></i>
-                                {branch.email}
-                              </small>
-                            </div>
-                          )}
-                        </div>
+                        </small>
                       </td>
                       <td>
-                        <span className="badge bg-info">{branch.zoneCount || 0}</span>                      </td>
+                        {branch.branchAdmin ? (
+                          <div>
+                            <div className="fw-bold">{branch.branchAdmin.name}</div>
+                            <small className="text-muted">{branch.branchAdmin.email}</small>
+                          </div>
+                        ) : (
+                          <span className="text-muted">No admin assigned</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className="badge bg-info">{branch.zoneCount || 0}</span>
+                      </td>
                       <td>
                         <span className={`badge ${branch.isActive ? 'bg-success' : 'bg-warning'}`}>
                           {branch.isActive ? 'Active' : 'Inactive'}
@@ -255,10 +429,10 @@ const BranchesManagement = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
+                  ))}                </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
       </div>
