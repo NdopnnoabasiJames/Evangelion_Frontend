@@ -3,6 +3,7 @@ import dashboardService from "./dashboardService";
 import adminManagementService from "./adminManagement";
 import analyticsDataService from "./analyticsDataService";
 import systemMetricsService from "./systemMetricsService";
+import api from "./api";
 
 /**
  * Main analytics service that acts as a facade for all analytics functionality
@@ -40,12 +41,47 @@ export const analyticsService = {
   getEventSummary: analyticsDataService.getEventSummary,
   exportAnalytics: analyticsDataService.exportAnalytics,
   processChartData: analyticsDataService.processChartData,
-
   // Re-export system metrics services
   getSystemMetrics: systemMetricsService.getSystemMetrics,
   getAdminHierarchyStats: systemMetricsService.getAdminHierarchyStats,
   getUserRoleBreakdown: systemMetricsService.getUserRoleBreakdown,
   getEnhancedSuperAdminStats: systemMetricsService.getEnhancedSuperAdminStats,
+  // Performance Rankings
+  getWorkerRankings: async (params = {}) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const url = `/api/admin-hierarchy/rankings/workers${queryString ? `?${queryString}` : ''}`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching worker rankings:', error);
+      throw error;
+    }
+  },
+
+  getBranchRankings: async (params = {}) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const url = `/api/admin-hierarchy/rankings/branches${queryString ? `?${queryString}` : ''}`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching branch rankings:', error);
+      throw error;
+    }
+  },
+
+  getStateRankings: async (params = {}) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const url = `/api/admin-hierarchy/rankings/states${queryString ? `?${queryString}` : ''}`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching state rankings:', error);
+      throw error;
+    }
+  }
 };
 
 export default analyticsService;

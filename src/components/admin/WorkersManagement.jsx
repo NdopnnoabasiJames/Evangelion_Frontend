@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import { analyticsService } from '../../services/analyticsService';
 
 const WorkersManagement = () => {
   const { user } = useAuth();
@@ -59,16 +60,47 @@ const WorkersManagement = () => {
   // Update filtered workers when workers data changes
   useEffect(() => {
     setFilteredWorkers(workers);
-  }, [workers]);
-
-  const loadWorkers = async () => {
+  }, [workers]);  const loadWorkers = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetchWorkers(API_ENDPOINTS.ADMIN.WORKERS);
-      setWorkers(response?.data || response || []);
+      // Fetch workers and rankings in parallel
+      const [workersResponse, rankingsResponse] = await Promise.all([
+        fetchWorkers(API_ENDPOINTS.ADMIN.WORKERS),        analyticsService.getWorkerRankings(
+          user?.role === ROLES.STATE_ADMIN && user?.state?._id ? { stateId: user.state._id } : {}
+        ).catch((err) => {
+          console.warn('Failed to fetch worker rankings:', err);
+          return { data: [] };
+        })
+      ]);      const workersData = workersResponse?.data || workersResponse || [];
+      const rankingsData = rankingsResponse?.data || rankingsResponse || [];
+      
+      // Create a map of rankings by worker ID
+      const rankingsMap = new Map();
+      rankingsData.forEach((ranking, index) => {
+        rankingsMap.set(ranking._id || ranking.workerId, {
+          rank: index + 1,
+          totalScore: ranking.totalScore || 0,
+          totalInvitedGuests: ranking.totalInvitedGuests || 0,
+          totalCheckedInGuests: ranking.totalCheckedInGuests || 0
+        });
+      });
+      
+      // Merge ranking data with workers data
+      const mergedWorkers = workersData.map(worker => ({
+        ...worker,
+        ...rankingsMap.get(worker._id)
+      }));
+      
+      // Sort by rank (if available) or by name
+      mergedWorkers.sort((a, b) => {
+        if (a.rank && b.rank) return a.rank - b.rank;
+        return a.name.localeCompare(b.name);
+      });
+        setWorkers(mergedWorkers);
     } catch (error) {
+      console.error('Error loading workers:', error);
       setError(error.response?.data?.message || error.message || 'Failed to load workers');
     } finally {
       setLoading(false);
@@ -234,24 +266,44 @@ const WorkersManagement = () => {
                     Filters applied
                   </small>
                 )}
-              </div>
-
-              <div className="table-responsive">
+              </div>              <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>
                     <tr>
+                      <th>Rank</th>
                       <th>Worker Name</th>
                       <th>Branch</th>
                       <th>Status</th>
-                      <th>Approved By</th>
+                      <th>Score</th>
                       <th>Invited Guests</th>
                       <th>Checked-in Guests</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredWorkers.map(worker => (
+                    {filteredWorkers.map((worker, index) => (
                       <tr key={worker._id}>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            {worker.rank && worker.rank <= 3 ? (
+                              <i className={`bi bi-award-fill me-2 ${
+                                worker.rank === 1 ? 'text-info' :     // Platinum (light blue/silver)
+                                worker.rank === 2 ? 'text-warning' :  // Gold 
+                                'text-secondary'                      // Silver (gray)
+                              }`} title={
+                                worker.rank === 1 ? 'Platinum Medal' :
+                                worker.rank === 2 ? 'Gold Medal' : 'Silver Medal'
+                              }></i>
+                            ) : null}
+                            <span className="fw-bold">{worker.rank || index + 1}</span>
+                            {worker.rank && worker.rank <= 3 && (
+                              <small className="text-muted ms-2">
+                                {worker.rank === 1 ? 'Platinum' :
+                                 worker.rank === 2 ? 'Gold' : 'Silver'}
+                              </small>
+                            )}
+                          </div>
+                        </td>
                         <td>
                           <div className="d-flex align-items-center">
                             <i className="bi bi-person text-primary me-2"></i>
@@ -263,28 +315,25 @@ const WorkersManagement = () => {
                         <td>
                           <span className="badge bg-primary">
                             {worker.branch?.name || 'Unknown'}
-                          </span>
-                        </td>
+                          </span>                        </td>
                         <td>
                           <span className={`badge ${worker.isApproved ? 'bg-success' : 'bg-warning'}`}>
                             {worker.isApproved ? 'Approved' : 'Pending'}
                           </span>
                         </td>
                         <td>
-                          {worker.approvedBy ? (
-                            <small className="text-muted">{worker.approvedBy.name}</small>
-                          ) : (
-                            <span className="text-muted">-</span>
-                          )}
+                          <span className="badge bg-success">
+                            {(worker.totalScore || 0)} pts
+                          </span>
                         </td>
                         <td>
                           <span className="badge bg-info">
-                            {worker.totalInvitedGuests || 0}
+                            {worker.totalInvited || 0}
                           </span>
                         </td>
                         <td>
                           <span className="badge bg-success">
-                            {worker.totalCheckedInGuests || 0}
+                            {worker.totalCheckedIn || 0}
                           </span>
                         </td>
                         <td>

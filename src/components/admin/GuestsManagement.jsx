@@ -334,8 +334,7 @@ const GuestsManagement = () => {
             <h6 className="text-muted mt-3">No Guests Found</h6>
             <p className="text-muted">No guests have been registered yet.</p>
           </div>
-        ) : (          <div>
-            <div className="table-responsive">
+        ) : (          <div>            <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
@@ -347,8 +346,8 @@ const GuestsManagement = () => {
                     <th>State</th>
                     <th>Transport</th>
                     <th>Status</th>
-                  </tr>
-                </thead>                <tbody>
+                  </tr>                </thead>
+                <tbody>
                   {filteredGuests.map(guest => {
                     return (
                       <tr key={guest._id}>

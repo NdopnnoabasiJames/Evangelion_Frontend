@@ -6,6 +6,8 @@ import StateAdminEvents from './StateAdminEvents';
 import BranchesManagement from '../admin/BranchesManagement';
 import ZonesManagement from '../admin/ZonesManagement';
 import PickupStationsManagement from '../admin/PickupStationsManagement';
+import WorkersManagement from '../admin/WorkersManagement';
+import GuestsManagement from '../admin/GuestsManagement';
 import analyticsService from '../../services/analyticsService';
 
 const StateAdminTabs = ({ dashboardData }) => {
@@ -88,31 +90,33 @@ const StateAdminTabs = ({ dashboardData }) => {
   };
   return (
     <div>
-      {/* Tab Navigation */}
-      <ul className="nav nav-tabs mb-4" role="tablist">
+      {/* Tab Navigation */}      <ul className="nav nav-tabs mb-4" role="tablist">
         <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
             type="button"
-          >            <i className="bi bi-graph-up me-2"></i>
+          >
+            <i className="bi bi-graph-up me-2"></i>
             Overview
           </button>
-        </li>        <li className="nav-item" role="presentation">
+        </li>
+        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
-            onClick={() => setActiveTab('branches')}
+            className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
+            onClick={() => setActiveTab('events')}
             type="button"
           >
-            <i className="bi bi-building me-2"></i>
-            Branches
+            <i className="bi bi-calendar-event me-2"></i>
+            Events
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'branch-admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('branch-admin-management')}
-            type="button"          >
+            type="button"
+          >
             <i className="bi bi-shield-check me-2"></i>
             Branch Admins
             {pendingBranchAdmins.length > 0 && (
@@ -124,10 +128,12 @@ const StateAdminTabs = ({ dashboardData }) => {
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
-            onClick={() => setActiveTab('events')}
+            className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
+            onClick={() => setActiveTab('branches')}
             type="button"
-          >            <i className="bi bi-calendar-event me-2"></i>            Events
+          >
+            <i className="bi bi-building me-2"></i>
+            Branches
           </button>
         </li>
         <li className="nav-item" role="presentation">
@@ -148,6 +154,26 @@ const StateAdminTabs = ({ dashboardData }) => {
           >
             <i className="bi bi-pin-map me-2"></i>
             Pickup Stations
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'workers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('workers')}
+            type="button"
+          >
+            <i className="bi bi-people-fill me-2"></i>
+            Workers
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'guests' ? 'active' : ''}`}
+            onClick={() => setActiveTab('guests')}
+            type="button"
+          >
+            <i className="bi bi-person-check me-2"></i>
+            Guests
           </button>
         </li>
       </ul>{/* Tab Content */}
@@ -173,10 +199,11 @@ const StateAdminTabs = ({ dashboardData }) => {
             onRejectBranchAdmin={handleRejectBranchAdmin}
             onRefreshPending={loadPendingBranchAdmins}
             onRefreshApproved={loadApprovedBranchAdmins}
-          />        )}
-        {activeTab === 'events' && <StateAdminEvents />}
+          />        )}        {activeTab === 'events' && <StateAdminEvents />}
         {activeTab === 'zones' && <ZonesManagement />}
         {activeTab === 'pickup-stations' && <PickupStationsManagement />}
+        {activeTab === 'workers' && <WorkersManagement />}
+        {activeTab === 'guests' && <GuestsManagement />}
       </div>
     </div>
   );

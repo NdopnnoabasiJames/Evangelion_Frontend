@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
+import { analyticsService } from '../../services/analyticsService';
 
 const StatesManagement = () => {  const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,13 +21,41 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
   useEffect(() => {
     loadStates();
   }, []);
-
   const loadStates = async () => {    try {
       setLoading(true);
       setError(null);
       
-      const response = await fetchStates(API_ENDPOINTS.STATES.LIST);
-      setStates(response?.data || response || []);
+      // Fetch states and rankings in parallel
+      const [statesResponse, rankingsResponse] = await Promise.all([
+        fetchStates(API_ENDPOINTS.STATES.LIST),
+        analyticsService.getStateRankings().catch(() => ({ data: [] }))
+      ]);
+      
+      const statesData = statesResponse?.data || statesResponse || [];
+      const rankingsData = rankingsResponse?.data || rankingsResponse || [];
+      
+      // Create a map of rankings by state ID
+      const rankingsMap = new Map();
+      rankingsData.forEach((ranking, index) => {
+        rankingsMap.set(ranking._id || ranking.stateId, {
+          rank: index + 1,
+          totalScore: ranking.totalScore || 0
+        });
+      });
+      
+      // Merge ranking data with states data
+      const mergedStates = statesData.map(state => ({
+        ...state,
+        ...rankingsMap.get(state._id)
+      }));
+      
+      // Sort by rank (if available) or by name
+      mergedStates.sort((a, b) => {
+        if (a.rank && b.rank) return a.rank - b.rank;
+        return a.name.localeCompare(b.name);
+      });
+      
+      setStates(mergedStates);
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Failed to load states');
     } finally {
@@ -291,13 +320,14 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                 <i className="fas fa-times me-2"></i>
                 Clear All Filters
               </button>
-            </div>) : (
-            <div className="table-responsive">
+            </div>) : (            <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
+                    <th>Rank</th>
                     <th>State Name</th>
                     <th>State Admin</th>
+                    <th>Score</th>
                     <th>Branches</th>
                     <th>Zones</th>
                     <th>Created</th>
@@ -306,8 +336,29 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStates.map(state => (
+                  {filteredStates.map((state, index) => (
                     <tr key={state._id}>
+                      <td>
+                        <div className="d-flex align-items-center">
+                          {state.rank && state.rank <= 3 ? (
+                            <i className={`bi bi-award-fill me-2 ${
+                              state.rank === 1 ? 'text-info' :     // Platinum (light blue/silver)
+                              state.rank === 2 ? 'text-warning' :  // Gold 
+                              'text-secondary'                      // Silver (gray)
+                            }`} title={
+                              state.rank === 1 ? 'Platinum Medal' :
+                              state.rank === 2 ? 'Gold Medal' : 'Silver Medal'
+                            }></i>
+                          ) : null}
+                          <span className="fw-bold">{state.rank || index + 1}</span>
+                          {state.rank && state.rank <= 3 && (
+                            <small className="text-muted ms-2">
+                              {state.rank === 1 ? 'Platinum' :
+                               state.rank === 2 ? 'Gold' : 'Silver'}
+                            </small>
+                          )}
+                        </div>
+                      </td>
                       <td>
                         <div className="d-flex align-items-center">
                           <i className="bi bi-geo-alt text-primary me-2"></i>
@@ -324,6 +375,11 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                         ) : (
                           <span className="text-muted">No admin assigned</span>
                         )}
+                      </td>
+                      <td>
+                        <span className="badge bg-success">
+                          {state.totalScore || 0} pts
+                        </span>
                       </td>
                       <td>
                         <span className="badge bg-info">{state.branchCount || 0}</span>

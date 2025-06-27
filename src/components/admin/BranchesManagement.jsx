@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import { analyticsService } from '../../services/analyticsService';
 
 const BranchesManagement = () => {
   const { user } = useAuth();
@@ -27,8 +28,7 @@ const BranchesManagement = () => {
 
   useEffect(() => {
     loadBranches();
-  }, []);
-  const loadBranches = async () => {
+  }, []);  const loadBranches = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -36,9 +36,39 @@ const BranchesManagement = () => {
       const endpoint = user?.role === ROLES.SUPER_ADMIN 
         ? API_ENDPOINTS.BRANCHES.ALL_WITH_ADMINS
         : API_ENDPOINTS.BRANCHES.STATE_ADMIN_LIST;
+        // Fetch branches and rankings in parallel
+      const [branchesResponse, rankingsResponse] = await Promise.all([
+        fetchBranches(endpoint),        analyticsService.getBranchRankings(
+          user?.role === ROLES.STATE_ADMIN && user?.state?._id ? { stateId: user.state._id } : {}
+        ).catch((err) => {
+          console.warn('Failed to fetch branch rankings:', err);
+          return { data: [] };
+        })
+      ]);      const branchesData = branchesResponse?.data || branchesResponse || [];
+      const rankingsData = rankingsResponse?.data || rankingsResponse || [];
       
-      const response = await fetchBranches(endpoint);
-      setBranches(response?.data || response || []);
+      // Create a map of rankings by branch ID
+      const rankingsMap = new Map();
+      rankingsData.forEach((ranking, index) => {
+        rankingsMap.set(ranking._id || ranking.branchId, {
+          rank: index + 1,
+          totalScore: ranking.totalScore || 0
+        });
+      });
+      
+      // Merge ranking data with branches data
+      const mergedBranches = branchesData.map(branch => ({
+        ...branch,
+        ...rankingsMap.get(branch._id)
+      }));
+      
+      // Sort by rank (if available) or by name
+      mergedBranches.sort((a, b) => {
+        if (a.rank && b.rank) return a.rank - b.rank;
+        return a.name.localeCompare(b.name);
+      });
+      
+      setBranches(mergedBranches);
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Failed to load branches');
     } finally {
@@ -352,33 +382,50 @@ const BranchesManagement = () => {
                   </small>
                 )}
               </div>
-
             <div className="table-responsive">
               <table className="table table-hover">
-                <thead>                  <tr>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
                     <th>Branch Name</th>
-                    <th>State</th>
                     <th>Location</th>
                     <th>Branch Admin</th>
+                    <th>Score</th>
                     <th>Zones</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>                  {filteredBranches.map(branch => (
+                <tbody>
+                  {filteredBranches.map((branch, index) => (
                     <tr key={branch._id}>
                       <td>
+                        <div className="d-flex align-items-center">
+                          {branch.rank && branch.rank <= 3 ? (
+                            <i className={`bi bi-award-fill me-2 ${
+                              branch.rank === 1 ? 'text-info' :     // Platinum (light blue/silver)
+                              branch.rank === 2 ? 'text-warning' :  // Gold 
+                              'text-secondary'                      // Silver (gray)
+                            }`} title={
+                              branch.rank === 1 ? 'Platinum Medal' :
+                              branch.rank === 2 ? 'Gold Medal' : 'Silver Medal'
+                            }></i>
+                          ) : null}
+                          <span className="fw-bold">{branch.rank || index + 1}</span>
+                          {branch.rank && branch.rank <= 3 && (
+                            <small className="text-muted ms-2">
+                              {branch.rank === 1 ? 'Platinum' :
+                               branch.rank === 2 ? 'Gold' : 'Silver'}
+                            </small>
+                          )}
+                        </div>
+                      </td><td>
                         <div className="d-flex align-items-center">
                           <i className="bi bi-building text-primary me-2"></i>
                           <div>
                             <strong>{branch.name}</strong>
                           </div>
                         </div>
-                      </td>
-                      <td>
-                        <span className="badge bg-primary">
-                          {branch.stateId?.name || 'Unknown'}
-                        </span>
                       </td>
                       <td>
                         <small className="text-muted">
@@ -395,6 +442,11 @@ const BranchesManagement = () => {
                         ) : (
                           <span className="text-muted">No admin assigned</span>
                         )}
+                      </td>
+                      <td>
+                        <span className="badge bg-success">
+                          {branch.totalScore || 0} pts
+                        </span>
                       </td>
                       <td>
                         <span className="badge bg-info">{branch.zoneCount || 0}</span>
@@ -429,7 +481,7 @@ const BranchesManagement = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}                </tbody>
+                  ))}</tbody>
               </table>
             </div>
             </>
