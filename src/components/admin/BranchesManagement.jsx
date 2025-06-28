@@ -3,6 +3,9 @@ import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import { analyticsService } from '../../services/analyticsService';
+import adminManagementService from '../../services/adminManagement';
+import BranchModal from './BranchModal';
+import BranchesTable from './BranchesTable';
 
 const BranchesManagement = () => {
   const { user } = useAuth();
@@ -12,6 +15,9 @@ const BranchesManagement = () => {
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingBranch, setEditingBranch] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
+  const [pendingBranches, setPendingBranches] = useState([]);
+  const [rejectedBranches, setRejectedBranches] = useState([]);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -28,6 +34,10 @@ const BranchesManagement = () => {
 
   useEffect(() => {
     loadBranches();
+    if (user?.role === ROLES.SUPER_ADMIN) {
+      loadPendingBranches();
+      loadRejectedBranches();
+    }
   }, []);  const loadBranches = async () => {
     try {
       setLoading(true);
@@ -74,6 +84,29 @@ const BranchesManagement = () => {
     } finally {
       setLoading(false);
     }  };
+
+  const loadPendingBranches = async () => {
+    try {
+      setLoading(true);
+      const data = await adminManagementService.getBranchesByStatus('pending');
+      setPendingBranches(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setError(error.response?.data?.message || error.message || 'Failed to load pending branches');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const loadRejectedBranches = async () => {
+    try {
+      setLoading(true);
+      const data = await adminManagementService.getBranchesByStatus('rejected');
+      setRejectedBranches(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setError(error.response?.data?.message || error.message || 'Failed to load rejected branches');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter branches based on search and filter criteria
   useEffect(() => {
@@ -240,6 +273,19 @@ const BranchesManagement = () => {
     }
   };
 
+  const handleApproveBranch = async (branchId) => {
+    await adminManagementService.approveBranch(branchId);
+    loadPendingBranches();
+    loadRejectedBranches();
+    loadBranches();
+  };
+  const handleRejectBranch = async (branchId) => {
+    await adminManagementService.rejectBranch(branchId);
+    loadPendingBranches();
+    loadRejectedBranches();
+    loadBranches();
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -280,215 +326,95 @@ const BranchesManagement = () => {
             Create Branch
           </button>
         </div>
-
         <div className="card-body">
-          {error && (
-            <div className="alert alert-danger">
-              <i className="bi bi-exclamation-triangle me-2"></i>
-              {error}
-            </div>
+          {/* Sub-tabs for Super Admin */}
+          {user?.role === ROLES.SUPER_ADMIN && (
+            <ul className="nav nav-tabs mb-3">
+              <li className="nav-item">
+                <button className={`nav-link${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>All</button>
+              </li>
+              <li className="nav-item">
+                <button className={`nav-link${activeTab === 'pending' ? ' active' : ''}`} onClick={() => setActiveTab('pending')}>Pending Approval</button>
+              </li>
+              <li className="nav-item">
+                <button className={`nav-link${activeTab === 'rejected' ? ' active' : ''}`} onClick={() => setActiveTab('rejected')}>Rejected</button>
+              </li>
+            </ul>
           )}
-
-          {branches.length === 0 ? (
-            <div className="text-center py-5">
-              <i className="bi bi-building text-muted" style={{ fontSize: '3rem' }}></i>
-              <h6 className="text-muted mt-3">No Branches Found</h6>
-              <p className="text-muted">No branches have been created in your state yet.</p>
-              <button 
-                className="btn btn-primary"
-                onClick={() => setShowCreateModal(true)}
-              >
-                <i className="bi bi-plus-circle me-2"></i>
-                Create First Branch
-              </button>
-            </div>          ) : (
-            <>
-              {/* Filters Section */}
-              <div className="row g-3 mb-4">
-                <div className="col-md-4">
-                  <div className="input-group">
-                    <span className="input-group-text">
-                      <i className="bi bi-search"></i>
-                    </span>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Search branches..."
-                      value={filters.search}
-                      onChange={(e) => handleFilterChange('search', e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="col-md-2">
-                  <select 
-                    className="form-select"
-                    value={filters.stateFilter}
-                    onChange={(e) => handleFilterChange('stateFilter', e.target.value)}
-                  >
-                    <option value="all">All States</option>
-                    {getUniqueStates().map(state => (
-                      <option key={state.id} value={state.id}>
-                        {state.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="col-md-2">
-                  <select 
-                    className="form-select"
-                    value={filters.statusFilter}
-                    onChange={(e) => handleFilterChange('statusFilter', e.target.value)}
-                  >
-                    <option value="all">All Status</option>
-                    <option value="active">Active Only</option>
-                    <option value="inactive">Inactive Only</option>
-                  </select>
-                </div>
-                
-                <div className="col-md-2">
-                  <select 
-                    className="form-select"
-                    value={filters.adminFilter}
-                    onChange={(e) => handleFilterChange('adminFilter', e.target.value)}
-                  >
-                    <option value="all">All Branches</option>
-                    <option value="has-admin">Has Admin</option>
-                    <option value="no-admin">No Admin</option>
-                  </select>
-                </div>
-                
-                <div className="col-md-2">
-                  <button 
-                    className="btn btn-outline-secondary w-100"
-                    onClick={clearFilters}
-                  >
-                    <i className="bi bi-arrow-clockwise me-2"></i>
-                    Clear
-                  </button>
-                </div>
-              </div>
-
-              {/* Results Summary */}
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <small className="text-muted">
-                  Showing {filteredBranches.length} of {branches.length} branches
-                </small>
-                {(filters.search || filters.stateFilter !== 'all' || filters.statusFilter !== 'all' || filters.adminFilter !== 'all') && (
-                  <small className="text-info">
-                    <i className="bi bi-funnel-fill me-1"></i>
-                    Filters applied
-                  </small>
-                )}
-              </div>
+          {/* Tab content */}
+          {activeTab === 'all' && (
+            <BranchesTable
+              branches={filteredBranches}
+              filters={filters}
+              handleFilterChange={handleFilterChange}
+              clearFilters={clearFilters}
+              getUniqueStates={getUniqueStates}
+              error={error}
+              setEditingBranch={setEditingBranch}
+              handleDeleteBranch={handleDeleteBranch}
+            />
+          )}
+          {activeTab === 'pending' && (
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>Rank</th>
                     <th>Branch Name</th>
                     <th>Location</th>
-                    <th>Branch Admin</th>
-                    <th>Score</th>
-                    <th>Zones</th>
-                    <th>Status</th>
+                    <th>State</th>
+                    <th>Created</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredBranches.map((branch, index) => (
+                  {pendingBranches.map(branch => (
                     <tr key={branch._id}>
+                      <td>{branch.name}</td>
+                      <td>{branch.location}</td>
+                      <td>{branch.stateId?.name}</td>
+                      <td>{formatDate(branch.createdAt)}</td>
                       <td>
-                        <div className="d-flex align-items-center">
-                          {branch.rank && branch.rank <= 3 ? (
-                            <i className={`bi bi-award-fill me-2 ${
-                              branch.rank === 1 ? 'text-info' :     // Platinum (light blue/silver)
-                              branch.rank === 2 ? 'text-warning' :  // Gold 
-                              'text-secondary'                      // Silver (gray)
-                            }`} title={
-                              branch.rank === 1 ? 'Platinum Medal' :
-                              branch.rank === 2 ? 'Gold Medal' : 'Silver Medal'
-                            }></i>
-                          ) : null}
-                          <span className="fw-bold">{branch.rank || index + 1}</span>
-                          {branch.rank && branch.rank <= 3 && (
-                            <small className="text-muted ms-2">
-                              {branch.rank === 1 ? 'Platinum' :
-                               branch.rank === 2 ? 'Gold' : 'Silver'}
-                            </small>
-                          )}
-                        </div>
-                      </td><td>
-                        <div className="d-flex align-items-center">
-                          <i className="bi bi-building text-primary me-2"></i>
-                          <div>
-                            <strong>{branch.name}</strong>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <small className="text-muted">
-                          <i className="bi bi-geo-alt me-1"></i>
-                          {branch.location}
-                        </small>
-                      </td>
-                      <td>
-                        {branch.branchAdmin ? (
-                          <div>
-                            <div className="fw-bold">{branch.branchAdmin.name}</div>
-                            <small className="text-muted">{branch.branchAdmin.email}</small>
-                          </div>
-                        ) : (
-                          <span className="text-muted">No admin assigned</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className="badge bg-success">
-                          {branch.totalScore || 0} pts
-                        </span>
-                      </td>
-                      <td>
-                        <span className="badge bg-info">{branch.zoneCount || 0}</span>
-                      </td>
-                      <td>
-                        <span className={`badge ${branch.isActive ? 'bg-success' : 'bg-warning'}`}>
-                          {branch.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="btn-group btn-group-sm">
-                          <button
-                            className="btn btn-outline-primary"
-                            onClick={() => setEditingBranch(branch)}
-                            title="Edit branch"
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </button>
-                          <button
-                            className="btn btn-outline-danger"
-                            onClick={() => handleDeleteBranch(branch._id)}
-                            title="Delete branch"
-                          >
-                            <i className="bi bi-trash"></i>
-                          </button>
-                          <button
-                            className="btn btn-outline-info"
-                            title="View details"
-                          >
-                            <i className="bi bi-eye"></i>
-                          </button>
-                        </div>
+                        <button className="btn btn-success btn-sm me-2" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleRejectBranch(branch._id)}>Reject</button>
                       </td>
                     </tr>
-                  ))}</tbody>
+                  ))}
+                </tbody>
               </table>
+              {pendingBranches.length === 0 && <div className="text-center text-muted py-4">No pending branches.</div>}
             </div>
-            </>
+          )}
+          {activeTab === 'rejected' && (
+            <div className="table-responsive">
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Branch Name</th>
+                    <th>Location</th>
+                    <th>State</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rejectedBranches.map(branch => (
+                    <tr key={branch._id}>
+                      <td>{branch.name}</td>
+                      <td>{branch.location}</td>
+                      <td>{branch.stateId?.name}</td>
+                      <td>{formatDate(branch.createdAt)}</td>
+                      <td>
+                        <button className="btn btn-success btn-sm" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {rejectedBranches.length === 0 && <div className="text-center text-muted py-4">No rejected branches.</div>}
+            </div>
           )}
         </div>
       </div>
-
       {/* Create/Edit Branch Modal */}
       {(showCreateModal || editingBranch) && (
         <BranchModal
@@ -501,204 +427,6 @@ const BranchesManagement = () => {
         />
       )}
     </>
-  );
-};
-
-// Branch Modal Component
-const BranchModal = ({ branch, onHide, onSubmit }) => {  const [formData, setFormData] = useState({
-    name: '',
-    location: '',
-    phone: '',
-    email: '',
-    isActive: true
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  const isEditing = !!branch;
-  // Reset form data when branch changes (for editing)
-  useEffect(() => {
-    if (branch) {
-      setFormData({
-        name: branch.name || '',
-        location: branch.location || '',
-        phone: branch.phone || '',
-        email: branch.email || '',
-        isActive: branch.isActive ?? true
-      });
-    } else {
-      setFormData({
-        name: '',
-        location: '',
-        phone: '',
-        email: '',
-        isActive: true
-      });
-    }
-  }, [branch]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);    try {
-      const submitData = {
-        name: formData.name.trim(),
-        location: formData.location.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim() || undefined,
-        isActive: formData.isActive
-      };
-
-      await onSubmit(submitData);
-      onHide();
-    } catch (error) {
-      setError(error.response?.data?.message || error.message || 'Failed to save branch');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-lg">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">
-              <i className="bi bi-building me-2"></i>
-              {isEditing ? `Edit ${branch.name}` : 'Create New Branch'}
-            </h5>
-            <button type="button" className="btn-close" onClick={onHide}></button>
-          </div>
-          
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-              {error && (
-                <div className="alert alert-danger">
-                  <i className="bi bi-exclamation-triangle me-2"></i>
-                  {error}
-                </div>
-              )}
-
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    <i className="bi bi-building me-1"></i>
-                    Branch Name *
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="e.g., Lagos Central Branch"
-                    required
-                  />
-                  <div className="form-text">Enter a unique name for this branch within your state</div>
-                </div>
-
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    <i className="bi bi-geo-alt me-1"></i>
-                    Location/Address *
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="e.g., Victoria Island, Lagos"
-                    required
-                  />
-                  <div className="form-text">Enter the branch location or address</div>
-                </div>              </div>
-
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    <i className="bi bi-telephone me-1"></i>
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="e.g., +234 xxx xxx xxxx"
-                    required
-                  />
-                  <div className="form-text">Enter the branch contact phone number</div>
-                </div>
-
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">
-                    <i className="bi bi-envelope me-1"></i>
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="e.g., branch@example.com"
-                  />
-                  <div className="form-text">Optional: Branch email address</div>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      name="isActive"
-                      checked={formData.isActive}
-                      onChange={handleChange}
-                    />
-                    <label className="form-check-label">
-                      <i className="bi bi-check-circle me-1"></i>
-                      Active Branch
-                    </label>
-                  </div>
-                  <div className="form-text">Active branches can accept new members and events</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onHide}>
-                Cancel
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={submitting || !formData.name.trim() || !formData.location.trim() || !formData.phone.trim()}>
-                {submitting ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2"></span>
-                    {isEditing ? 'Updating...' : 'Creating...'}
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-check me-2"></i>
-                    {isEditing ? 'Update Branch' : 'Create Branch'}
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
   );
 };
 

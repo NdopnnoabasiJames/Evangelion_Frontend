@@ -185,6 +185,32 @@ export const adminManagementService = {
       throw new Error(error.response?.data?.message || 'Failed to reject zonal admin registration');
     }
   },
+
+  // Branch/Zone Approval Workflow (Super Admin)
+  getBranchesByStatus: async (status) => {
+    const response = await api.get(`/api/branches/status/${status}`);
+    return response.data;
+  },
+  approveBranch: async (branchId) => {
+    const response = await api.patch(`/api/branches/${branchId}/approve`);
+    return response.data;
+  },
+  rejectBranch: async (branchId) => {
+    const response = await api.patch(`/api/branches/${branchId}/reject`);
+    return response.data;
+  },
+  getZonesByStatus: async (status) => {
+    const response = await api.get(`/api/zones/status/${status}`);
+    return response.data;
+  },
+  approveZone: async (zoneId) => {
+    const response = await api.patch(`/api/zones/${zoneId}/approve`);
+    return response.data;
+  },
+  rejectZone: async (zoneId) => {
+    const response = await api.patch(`/api/zones/${zoneId}/reject`);
+    return response.data;
+  },
 };
 
 export default adminManagementService;
