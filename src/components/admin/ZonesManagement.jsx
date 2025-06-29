@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import ZonesTable from './ZonesTable';
+import PendingZonesTable from './PendingZonesTable';
 
 const ZonesManagement = () => {
   const { user } = useAuth();
@@ -15,6 +17,7 @@ const ZonesManagement = () => {
     name: '',
     isActive: true
   });
+  const [activeTab, setActiveTab] = useState('all');
   // Filter states
   const [filters, setFilters] = useState({
     search: '',
@@ -28,12 +31,16 @@ const ZonesManagement = () => {
   const { execute: createZone, error: createError } = useApi(null, { immediate: false });
   const { execute: updateZone, error: updateError } = useApi(null, { immediate: false });
   const { execute: deleteZone } = useApi(null, { immediate: false });
+  const { execute: approveZone, error: approveError } = useApi(null, { immediate: false });
+  const { execute: rejectZone, error: rejectError } = useApi(null, { immediate: false });
+
   useEffect(() => {
     loadZones();
   }, []);
 
   // Filter zones based on search and filter criteria
   useEffect(() => {
+    console.log('[ZonesManagement] zones loaded:', zones);
     let filtered = [...zones];    // Apply search filter
     if (filters.search) {
       filtered = filtered.filter(zone =>
@@ -73,11 +80,13 @@ const ZonesManagement = () => {
     }
 
     setFilteredZones(filtered);
+    console.log('[ZonesManagement] filteredZones:', filtered);
   }, [zones, filters]);
 
   // Update filtered zones when zones data changes
   useEffect(() => {
     setFilteredZones(zones);
+    console.log('[ZonesManagement] setFilteredZones (zones changed):', zones);
   }, [zones]);
 
   const loadZones = async () => {
@@ -92,11 +101,14 @@ const ZonesManagement = () => {
       } else {
         endpoint = API_ENDPOINTS.ZONES.BRANCH_ADMIN_LIST;
       }
-      
+      console.log('[ZonesManagement] Fetching zones from endpoint:', endpoint);
       const response = await fetchZones(endpoint);
+      console.log('[ZonesManagement] fetchZones response:', response);
       setZones(response?.data || response || []);
     } catch (error) {
-      setError(error.response?.data?.message || error.message || 'Failed to load zones');    } finally {
+      setError(error.response?.data?.message || error.message || 'Failed to load zones');
+      console.error('[ZonesManagement] loadZones error:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -202,6 +214,28 @@ const ZonesManagement = () => {
     }
   };
 
+  // Approve zone handler
+  const handleApproveZone = async (zone) => {
+    try {
+      let endpoint = `${API_ENDPOINTS.ZONES.APPROVE}/${zone._id}`;
+      await approveZone(endpoint, { method: 'PATCH' });
+      loadZones();
+    } catch (error) {
+      alert('Failed to approve zone: ' + (error?.message || approveError || 'Unknown error'));
+    }
+  };
+
+  // Reject zone handler
+  const handleRejectZone = async (zone) => {
+    try {
+      let endpoint = `${API_ENDPOINTS.ZONES.REJECT}/${zone._id}`;
+      await rejectZone(endpoint, { method: 'PATCH' });
+      loadZones();
+    } catch (error) {
+      alert('Failed to reject zone: ' + (error?.message || rejectError || 'Unknown error'));
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -227,6 +261,10 @@ const ZonesManagement = () => {
     setEditingZone(null);
     resetForm();
   };
+
+  // Helper: filter zones by status for subtabs
+  const pendingZones = zones.filter(z => z.status === 'pending' || z.approvalStatus === 'pending');
+  const rejectedZones = zones.filter(z => z.status === 'rejected' || z.approvalStatus === 'rejected');
 
   if (loading) {
     return (
@@ -269,186 +307,156 @@ const ZonesManagement = () => {
         </button>
       </div>
       <div className="card-body">
-        {zones.length === 0 ? (
-          <div className="text-center py-5">
-            <i className="bi bi-geo-alt text-muted" style={{ fontSize: '3rem' }}></i>
-            <h4 className="mt-3">No Zones Found</h4>
-            <p className="text-muted">Click "Add Zone" to create your first zone.</p>
-            <button
-              className="btn btn-primary"
-              onClick={openCreateModal}
-            >
-              <i className="bi bi-plus-circle me-2"></i>
-              Create First Zone
+        {/* Subtabs */}
+        <ul className="nav nav-tabs mb-3">
+          <li className="nav-item">
+            <button className={`nav-link${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>
+              All
             </button>
-          </div>        ) : (
-          <>
-            {/* Filters Section */}
-            <div className="row g-3 mb-4">
-              <div className="col-md-3">
-                <div className="input-group">
-                  <span className="input-group-text">
-                    <i className="bi bi-search"></i>
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search by zone name, branch, or admin..."
-                    value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
-                  />
-                </div>
-              </div>
-                <div className="col-md-2">
-                <select 
-                  className="form-select"
-                  value={filters.pickupStationsFilter}
-                  onChange={(e) => handleFilterChange('pickupStationsFilter', e.target.value)}
-                >
-                  <option value="all">All Zones</option>
-                  <option value="has-stations">Has Pickup Stations</option>
-                  <option value="no-stations">No Pickup Stations</option>
-                </select>
-              </div>
-              
-              <div className="col-md-2">
-                <select 
-                  className="form-select"
-                  value={filters.branchFilter}
-                  onChange={(e) => handleFilterChange('branchFilter', e.target.value)}
-                >
-                  <option value="all">All Branches</option>
-                  {getUniqueBranches().map(branch => (
-                    <option key={branch.id} value={branch.id}>
-                      {branch.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="col-md-2">
-                <select 
-                  className="form-select"
-                  value={filters.statusFilter}
-                  onChange={(e) => handleFilterChange('statusFilter', e.target.value)}
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active Only</option>
-                  <option value="inactive">Inactive Only</option>
-                </select>
-              </div>
-              
-              <div className="col-md-2">
-                <select 
-                  className="form-select"
-                  value={filters.adminFilter}
-                  onChange={(e) => handleFilterChange('adminFilter', e.target.value)}
-                >
-                  <option value="all">All Zones</option>
-                  <option value="has-admin">Has Admin</option>
-                  <option value="no-admin">No Admin</option>
-                </select>
-              </div>
-              
-              <div className="col-md-1">
-                <button 
-                  className="btn btn-outline-secondary w-100"
-                  onClick={clearFilters}
-                  title="Clear all filters"
-                >
-                  <i className="bi bi-arrow-clockwise"></i>
-                </button>
-              </div>
+          </li>
+          <li className="nav-item">
+            <button className={`nav-link${activeTab === 'pending' ? ' active' : ''}`} onClick={() => setActiveTab('pending')}>
+              Pending Approval
+            </button>
+          </li>
+          <li className="nav-item">
+            <button className={`nav-link${activeTab === 'rejected' ? ' active' : ''}`} onClick={() => setActiveTab('rejected')}>
+              Rejected
+            </button>
+          </li>
+        </ul>
+        {/* Filters Section */}
+        <div className="row g-3 mb-4">
+          <div className="col-md-3">
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by zone name, branch, or admin..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+              />
             </div>
-
-            {/* Results Summary */}
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <small className="text-muted">
-                Showing {filteredZones.length} of {zones.length} zones
-              </small>
-              {(filters.search || filters.stateFilter !== 'all' || filters.branchFilter !== 'all' || filters.statusFilter !== 'all' || filters.adminFilter !== 'all') && (
-                <small className="text-info">
-                  <i className="bi bi-funnel-fill me-1"></i>
-                  Filters applied
-                </small>
-              )}            </div>
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>Zone Name</th>
-                  <th>Branch</th>
-                  <th>Zonal Admin</th>
-                  <th>Pickup Stations</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredZones.map(zone => (
-                  <tr key={zone._id}>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <i className="bi bi-geo-alt text-primary me-2"></i>
-                        <div>
-                          <strong>{zone.name}</strong>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="badge bg-primary">
-                        {zone.branchId?.name || 'Unknown'}
-                      </span>
-                    </td>
-                    <td>
-                      {zone.zonalAdmin ? (
-                        <div>
-                          <div className="fw-bold">{zone.zonalAdmin.name}</div>
-                          <small className="text-muted">{zone.zonalAdmin.email}</small>
-                        </div>
-                      ) : (
-                        <span className="text-muted">No admin assigned</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className="badge bg-info">
-                        {zone.pickupStationCount || 0} stations
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`badge ${zone.isActive ? 'bg-success' : 'bg-warning'}`}>
-                        {zone.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td>
-                      <small className="text-muted">
-                        {zone.createdAt ? new Date(zone.createdAt).toLocaleDateString() : 'N/A'}
-                      </small>
-                    </td>
-                    <td>
-                      <div className="btn-group btn-group-sm">
-                        <button
-                          className="btn btn-outline-primary"
-                          onClick={() => openEditModal(zone)}
-                          title="Edit zone"
-                        >
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-danger"
-                          onClick={() => handleDeleteZone(zone)}
-                          title="Delete zone"
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
-          </>
+            <div className="col-md-2">
+            <select 
+              className="form-select"
+              value={filters.pickupStationsFilter}
+              onChange={(e) => handleFilterChange('pickupStationsFilter', e.target.value)}
+            >
+              <option value="all">All Zones</option>
+              <option value="has-stations">Has Pickup Stations</option>
+              <option value="no-stations">No Pickup Stations</option>
+            </select>
+          </div>
+          
+          <div className="col-md-2">
+            <select 
+              className="form-select"
+              value={filters.branchFilter}
+              onChange={(e) => handleFilterChange('branchFilter', e.target.value)}
+            >
+              <option value="all">All Branches</option>
+              {getUniqueBranches().map(branch => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="col-md-2">
+            <select 
+              className="form-select"
+              value={filters.statusFilter}
+              onChange={(e) => handleFilterChange('statusFilter', e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
+            </select>
+          </div>
+          
+          <div className="col-md-2">
+            <select 
+              className="form-select"
+              value={filters.adminFilter}
+              onChange={(e) => handleFilterChange('adminFilter', e.target.value)}
+            >
+              <option value="all">All Zones</option>
+              <option value="has-admin">Has Admin</option>
+              <option value="no-admin">No Admin</option>
+            </select>
+          </div>
+          
+          <div className="col-md-1">
+            <button 
+              className="btn btn-outline-secondary w-100"
+              onClick={clearFilters}
+              title="Clear all filters"
+            >
+              <i className="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        {/* Results Summary */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <small className="text-muted">
+            {activeTab === 'all' && (
+              <>Showing {filteredZones.length} of {zones.length} zones</>
+            )}
+            {activeTab === 'pending' && (
+              <>Showing {pendingZones.length} pending zone{pendingZones.length !== 1 ? 's' : ''}</>
+            )}
+            {activeTab === 'rejected' && (
+              <>Showing {rejectedZones.length} rejected zone{rejectedZones.length !== 1 ? 's' : ''}</>
+            )}
+          </small>
+          {(filters.search || filters.stateFilter !== 'all' || filters.branchFilter !== 'all' || filters.statusFilter !== 'all' || filters.adminFilter !== 'all') && (
+            <small className="text-info">
+              <i className="bi bi-funnel-fill me-1"></i>
+              Filters applied
+            </small>
+          )}
+        </div>
+        {activeTab === 'all' && (
+          filteredZones.length > 0 ? (
+            <ZonesTable
+              zones={filteredZones}
+              onEdit={openEditModal}
+              onDelete={handleDeleteZone}
+            />
+          ) : (
+            <div className="text-center text-muted py-5">No zones found.</div>
+          )
+        )}
+        {activeTab === 'pending' && (
+          pendingZones.length > 0 ? (
+            <PendingZonesTable
+              zones={pendingZones}
+              onEdit={openEditModal}
+              onDelete={handleDeleteZone}
+              onApprove={handleApproveZone}
+              onReject={handleRejectZone}
+            />
+          ) : (
+            <div className="text-center text-muted py-5">No pending zones.</div>
+          )
+        )}
+        {activeTab === 'rejected' && (
+          rejectedZones.length > 0 ? (
+            <ZonesTable
+              zones={rejectedZones}
+              onEdit={openEditModal}
+              onDelete={handleDeleteZone}
+            />
+          ) : (
+            <div className="text-center text-muted py-5">No rejected zones.</div>
+          )
         )}
       </div>
 

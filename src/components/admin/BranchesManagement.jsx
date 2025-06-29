@@ -32,31 +32,23 @@ const BranchesManagement = () => {
   const { execute: updateBranch, error: updateError } = useApi(null, { immediate: false });
   const { execute: deleteBranch } = useApi(null, { immediate: false });
 
-  useEffect(() => {
-    loadBranches();
-    if (user?.role === ROLES.SUPER_ADMIN) {
-      loadPendingBranches();
-      loadRejectedBranches();
-    }
-  }, []);  const loadBranches = async () => {
+  const loadBranches = async () => {
     try {
       setLoading(true);
       setError(null);
-        // Use appropriate endpoint based on user role
+      // Use appropriate endpoint based on user role
       const endpoint = user?.role === ROLES.SUPER_ADMIN 
         ? API_ENDPOINTS.BRANCHES.ALL_WITH_ADMINS
         : API_ENDPOINTS.BRANCHES.STATE_ADMIN_LIST;
-        // Fetch branches and rankings in parallel
+      // Fetch branches and rankings in parallel
       const [branchesResponse, rankingsResponse] = await Promise.all([
-        fetchBranches(endpoint),        analyticsService.getBranchRankings(
+        fetchBranches(endpoint),
+        analyticsService.getBranchRankings(
           user?.role === ROLES.STATE_ADMIN && user?.state?._id ? { stateId: user.state._id } : {}
-        ).catch((err) => {
-          console.warn('Failed to fetch branch rankings:', err);
-          return { data: [] };
-        })
-      ]);      const branchesData = branchesResponse?.data || branchesResponse || [];
+        ).catch(() => ({ data: [] }))
+      ]);
+      const branchesData = branchesResponse?.data || branchesResponse || [];
       const rankingsData = rankingsResponse?.data || rankingsResponse || [];
-      
       // Create a map of rankings by branch ID
       const rankingsMap = new Map();
       rankingsData.forEach((ranking, index) => {
@@ -65,37 +57,43 @@ const BranchesManagement = () => {
           totalScore: ranking.totalScore || 0
         });
       });
-      
       // Merge ranking data with branches data
       const mergedBranches = branchesData.map(branch => ({
         ...branch,
         ...rankingsMap.get(branch._id)
       }));
-      
       // Sort by rank (if available) or by name
       mergedBranches.sort((a, b) => {
         if (a.rank && b.rank) return a.rank - b.rank;
         return a.name.localeCompare(b.name);
       });
-      
       setBranches(mergedBranches);
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Failed to load branches');
     } finally {
       setLoading(false);
-    }  };
+    }
+  };
 
   const loadPendingBranches = async () => {
     try {
       setLoading(true);
-      const data = await adminManagementService.getBranchesByStatus('pending');
-      setPendingBranches(Array.isArray(data) ? data : []);
+      let data;
+      if (user?.role === 'state_admin' && user?.state?._id) {
+        data = await adminManagementService.getPendingBranchesForStateAdmin();
+      } else {
+        data = await adminManagementService.getBranchesByStatus('pending');
+      }
+      // Fix: extract array from data property if present
+      let filtered = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+      setPendingBranches(filtered);
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Failed to load pending branches');
     } finally {
       setLoading(false);
     }
   };
+
   const loadRejectedBranches = async () => {
     try {
       setLoading(true);
@@ -108,10 +106,28 @@ const BranchesManagement = () => {
     }
   };
 
+  // Load branches and pending/rejected branches based on user role
+  useEffect(() => {
+    loadBranches();
+    if (user?.role === ROLES.SUPER_ADMIN) {
+      loadPendingBranches();
+      loadRejectedBranches();
+    }
+  }, []);
+
+  // Fetch pending/rejected branches when activeTab changes
+  useEffect(() => {
+    if (activeTab === 'pending') {
+      loadPendingBranches();
+    }
+    if (activeTab === 'rejected') {
+      loadRejectedBranches();
+    }
+  }, [activeTab]);
+
   // Filter branches based on search and filter criteria
   useEffect(() => {
     let filtered = [...branches];
-
     // Apply search filter
     if (filters.search) {
       filtered = filtered.filter(branch =>
@@ -122,19 +138,16 @@ const BranchesManagement = () => {
         (branch.branchAdmin?.email && branch.branchAdmin.email.toLowerCase().includes(filters.search.toLowerCase()))
       );
     }
-
     // Apply state filter
     if (filters.stateFilter !== 'all') {
       filtered = filtered.filter(branch => branch.stateId?._id === filters.stateFilter);
     }
-
     // Apply status filter
     if (filters.statusFilter !== 'all') {
       filtered = filtered.filter(branch =>
         filters.statusFilter === 'active' ? branch.isActive : !branch.isActive
       );
     }
-
     // Apply admin filter
     if (filters.adminFilter !== 'all') {
       if (filters.adminFilter === 'has-admin') {
@@ -143,7 +156,6 @@ const BranchesManagement = () => {
         filtered = filtered.filter(branch => !branch.branchAdmin);
       }
     }
-
     setFilteredBranches(filtered);
   }, [branches, filters]);
 
@@ -341,6 +353,17 @@ const BranchesManagement = () => {
               </li>
             </ul>
           )}
+          {/* Sub-tab for State Admin: Pending Approval */}
+          {user?.role === ROLES.STATE_ADMIN && (
+            <ul className="nav nav-tabs mb-3">
+              <li className="nav-item">
+                <button className={`nav-link${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>All</button>
+              </li>
+              <li className="nav-item">
+                <button className={`nav-link${activeTab === 'pending' ? ' active' : ''}`} onClick={() => setActiveTab('pending')}>Pending Approval</button>
+              </li>
+            </ul>
+          )}
           {/* Tab content */}
           {activeTab === 'all' && (
             <BranchesTable
@@ -355,34 +378,40 @@ const BranchesManagement = () => {
             />
           )}
           {activeTab === 'pending' && (
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Branch Name</th>
-                    <th>Location</th>
-                    <th>State</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingBranches.map(branch => (
-                    <tr key={branch._id}>
-                      <td>{branch.name}</td>
-                      <td>{branch.location}</td>
-                      <td>{branch.stateId?.name}</td>
-                      <td>{formatDate(branch.createdAt)}</td>
-                      <td>
-                        <button className="btn btn-success btn-sm me-2" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleRejectBranch(branch._id)}>Reject</button>
-                      </td>
+            <>
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Branch Name</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                      {user?.role === ROLES.SUPER_ADMIN && <th>State</th>}
+                      <th>Created</th>
+                      {user?.role === ROLES.SUPER_ADMIN && <th>Actions</th>}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              {pendingBranches.length === 0 && <div className="text-center text-muted py-4">No pending branches.</div>}
-            </div>
+                  </thead>
+                  <tbody>
+                    {pendingBranches.map(branch => (
+                      <tr key={branch._id}>
+                        <td>{branch.name}</td>
+                        <td>{branch.location}</td>
+                        <td>{branch.status}</td>
+                        {user?.role === ROLES.SUPER_ADMIN && <td>{branch.stateId?.name}</td>}
+                        <td>{formatDate(branch.createdAt)}</td>
+                        {user?.role === ROLES.SUPER_ADMIN && (
+                          <td>
+                            <button className="btn btn-success btn-sm me-2" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleRejectBranch(branch._id)}>Reject</button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {pendingBranches.length === 0 && <div className="text-center text-muted py-4">No pending branches.</div>}
+              </div>
+            </>
           )}
           {activeTab === 'rejected' && (
             <div className="table-responsive">

@@ -211,6 +211,17 @@ export const adminManagementService = {
     const response = await api.patch(`/api/zones/${zoneId}/reject`);
     return response.data;
   },
+  getPendingBranchesForStateAdmin: async () => {
+    console.log('[adminManagementService] getPendingBranchesForStateAdmin called');
+    try {
+      const response = await api.get('/api/branches/state-admin/pending');
+      console.log('[adminManagementService] getPendingBranchesForStateAdmin response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('[adminManagementService] getPendingBranchesForStateAdmin error:', error);
+      throw error;
+    }
+  },
 };
 
 export default adminManagementService;
