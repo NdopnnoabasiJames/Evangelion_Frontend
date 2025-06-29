@@ -40,7 +40,6 @@ const ZonesManagement = () => {
 
   // Filter zones based on search and filter criteria
   useEffect(() => {
-    console.log('[ZonesManagement] zones loaded:', zones);
     let filtered = [...zones];    // Apply search filter
     if (filters.search) {
       filtered = filtered.filter(zone =>
@@ -80,19 +79,18 @@ const ZonesManagement = () => {
     }
 
     setFilteredZones(filtered);
-    console.log('[ZonesManagement] filteredZones:', filtered);
   }, [zones, filters]);
 
   // Update filtered zones when zones data changes
   useEffect(() => {
     setFilteredZones(zones);
-    console.log('[ZonesManagement] setFilteredZones (zones changed):', zones);
   }, [zones]);
 
   const loadZones = async () => {
     try {
       setLoading(true);
-      setError(null);      // Use appropriate endpoint based on user role
+      setError(null);
+      // Use appropriate endpoint based on user role
       let endpoint;
       if (user?.role === ROLES.SUPER_ADMIN) {
         endpoint = API_ENDPOINTS.ZONES.ALL_WITH_ADMINS;
@@ -101,13 +99,10 @@ const ZonesManagement = () => {
       } else {
         endpoint = API_ENDPOINTS.ZONES.BRANCH_ADMIN_LIST;
       }
-      console.log('[ZonesManagement] Fetching zones from endpoint:', endpoint);
       const response = await fetchZones(endpoint);
-      console.log('[ZonesManagement] fetchZones response:', response);
       setZones(response?.data || response || []);
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Failed to load zones');
-      console.error('[ZonesManagement] loadZones error:', error);
     } finally {
       setLoading(false);
     }
@@ -143,16 +138,19 @@ const ZonesManagement = () => {
 
   const handleCreateZone = async (e) => {
     e.preventDefault();
-    try {      // Use appropriate endpoint based on user role
+    try {
+      // Always set isActive to false for branch admins
+      let zoneData = { ...formData };
+      if (user?.role === ROLES.BRANCH_ADMIN) {
+        zoneData.isActive = false;
+      }
       const endpoint = user?.role === ROLES.SUPER_ADMIN 
         ? API_ENDPOINTS.ZONES.CREATE
         : API_ENDPOINTS.ZONES.BRANCH_ADMIN_CREATE;
-        
       const result = await createZone(endpoint, {
         method: 'POST',
-        body: formData
+        body: zoneData
       });
-
       if (!result) {
         await new Promise(resolve => setTimeout(resolve, 100));
         if (createError) {
@@ -161,7 +159,6 @@ const ZonesManagement = () => {
           throw new Error('Failed to create zone');
         }
       }
-
       setShowCreateModal(false);
       resetForm();
       loadZones();
@@ -219,9 +216,19 @@ const ZonesManagement = () => {
     try {
       let endpoint = `${API_ENDPOINTS.ZONES.APPROVE}/${zone._id}`;
       await approveZone(endpoint, { method: 'PATCH' });
+      if (window.showNotification) {
+        window.showNotification('Zone approved successfully!', 'success');
+      }
       loadZones();
     } catch (error) {
-      alert('Failed to approve zone: ' + (error?.message || approveError || 'Unknown error'));
+      if (window.showNotification) {
+        window.showNotification(
+          'Failed to approve zone: ' + (error?.message || approveError || 'Unknown error'),
+          'error'
+        );
+      } else {
+        alert('Failed to approve zone: ' + (error?.message || approveError || 'Unknown error'));
+      }
     }
   };
 
@@ -230,9 +237,19 @@ const ZonesManagement = () => {
     try {
       let endpoint = `${API_ENDPOINTS.ZONES.REJECT}/${zone._id}`;
       await rejectZone(endpoint, { method: 'PATCH' });
+      if (window.showNotification) {
+        window.showNotification('Zone rejected.', 'success');
+      }
       loadZones();
     } catch (error) {
-      alert('Failed to reject zone: ' + (error?.message || rejectError || 'Unknown error'));
+      if (window.showNotification) {
+        window.showNotification(
+          'Failed to reject zone: ' + (error?.message || rejectError || 'Unknown error'),
+          'error'
+        );
+      } else {
+        alert('Failed to reject zone: ' + (error?.message || rejectError || 'Unknown error'));
+      }
     }
   };
 
@@ -263,8 +280,66 @@ const ZonesManagement = () => {
   };
 
   // Helper: filter zones by status for subtabs
-  const pendingZones = zones.filter(z => z.status === 'pending' || z.approvalStatus === 'pending');
-  const rejectedZones = zones.filter(z => z.status === 'rejected' || z.approvalStatus === 'rejected');
+  const [pendingZones, setPendingZones] = useState([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+
+  // Fetch pending zones for the correct role when pending tab is active
+  useEffect(() => {
+    const fetchPendingZones = async () => {
+      if (activeTab !== 'pending') return;
+      setPendingLoading(true);
+      try {
+        let response;
+        if (user?.role === ROLES.BRANCH_ADMIN) {
+          response = await fetchZones(API_ENDPOINTS.ZONES.BRANCH_ADMIN_PENDING || '/api/zones/branch-admin/pending');
+        } else if (user?.role === ROLES.SUPER_ADMIN) {
+          response = await fetchZones('/api/zones/status/pending');
+        } else if (user?.role === ROLES.STATE_ADMIN) {
+          response = await fetchZones('/api/zones/status/pending');
+        }
+        // Always extract array from response
+        let arr = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
+        setPendingZones(arr);
+      } catch (err) {
+        setPendingZones([]);
+      } finally {
+        setPendingLoading(false);
+      }
+    };
+    fetchPendingZones();
+    // Only depend on user and activeTab to avoid infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, activeTab]);
+
+  // Add rejectedZones state and fetch logic
+  const [rejectedZones, setRejectedZones] = useState([]);
+  const [rejectedLoading, setRejectedLoading] = useState(false);
+
+  // Fetch rejected zones for the correct role when rejected tab is active
+  useEffect(() => {
+    const fetchRejectedZones = async () => {
+      if (activeTab !== 'rejected') return;
+      setRejectedLoading(true);
+      try {
+        let response;
+        if (user?.role === ROLES.BRANCH_ADMIN) {
+          response = await fetchZones(API_ENDPOINTS.ZONES.BRANCH_ADMIN_REJECTED || '/api/zones/branch-admin/rejected');
+        } else if (user?.role === ROLES.SUPER_ADMIN) {
+          response = await fetchZones('/api/zones/status/rejected');
+        } else if (user?.role === ROLES.STATE_ADMIN) {
+          response = await fetchZones('/api/zones/status/rejected');
+        }
+        let arr = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
+        setRejectedZones(arr);
+      } catch (err) {
+        setRejectedZones([]);
+      } finally {
+        setRejectedLoading(false);
+      }
+    };
+    fetchRejectedZones();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, activeTab]);
 
   if (loading) {
     return (
@@ -407,7 +482,7 @@ const ZonesManagement = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <small className="text-muted">
             {activeTab === 'all' && (
-              <>Showing {filteredZones.length} of {zones.length} zones</>
+              <>Showing {filteredZones.length} of {zones.length} zofnes</>
             )}
             {activeTab === 'pending' && (
               <>Showing {pendingZones.length} pending zone{pendingZones.length !== 1 ? 's' : ''}</>
@@ -435,16 +510,34 @@ const ZonesManagement = () => {
           )
         )}
         {activeTab === 'pending' && (
-          pendingZones.length > 0 ? (
-            <PendingZonesTable
-              zones={pendingZones}
-              onEdit={openEditModal}
-              onDelete={handleDeleteZone}
-              onApprove={handleApproveZone}
-              onReject={handleRejectZone}
-            />
+          user?.role === ROLES.BRANCH_ADMIN ? (
+            pendingLoading ? (
+              <div className="text-center text-muted py-5">Loading pending zones...</div>
+            ) : pendingZones.length > 0 ? (
+              <PendingZonesTable
+                zones={pendingZones}
+                onEdit={openEditModal}
+                onDelete={handleDeleteZone}
+                onApprove={handleApproveZone}
+                onReject={handleRejectZone}
+                user={user}
+              />
+            ) : (
+              <div className="text-center text-muted py-5">No pending zones.</div>
+            )
           ) : (
-            <div className="text-center text-muted py-5">No pending zones.</div>
+            pendingZones.length > 0 ? (
+              <PendingZonesTable
+                zones={pendingZones}
+                onEdit={openEditModal}
+                onDelete={handleDeleteZone}
+                onApprove={handleApproveZone}
+                onReject={handleRejectZone}
+                user={user}
+              />
+            ) : (
+              <div className="text-center text-muted py-5">No pending zones.</div>
+            )
           )
         )}
         {activeTab === 'rejected' && (
@@ -500,18 +593,21 @@ const ZonesManagement = () => {
                   </div>
                   
                   <div className="mb-3">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="isActive"
-                        checked={formData.isActive}
-                        onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                      />
-                      <label className="form-check-label" htmlFor="isActive">
-                        Active Zone
-                      </label>
-                    </div>
+                    {/* Only show Active Zone checkbox for super admins */}
+                    {user?.role === ROLES.SUPER_ADMIN && (
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="isActive"
+                          checked={formData.isActive}
+                          onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                        />
+                        <label className="form-check-label" htmlFor="isActive">
+                          Active Zone
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="modal-footer">

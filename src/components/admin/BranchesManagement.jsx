@@ -97,8 +97,15 @@ const BranchesManagement = () => {
   const loadRejectedBranches = async () => {
     try {
       setLoading(true);
-      const data = await adminManagementService.getBranchesByStatus('rejected');
-      setRejectedBranches(Array.isArray(data) ? data : []);
+      let data;
+      if (user?.role === 'state_admin' && user?.state?._id) {
+        // State admin: call state-admin-specific endpoint
+        data = await adminManagementService.getRejectedBranchesForStateAdmin();
+      } else {
+        // Super admin: call super admin endpoint
+        data = await adminManagementService.getBranchesByStatus('rejected');
+      }
+      setRejectedBranches(Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []));
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Failed to load rejected branches');
     } finally {
@@ -286,16 +293,40 @@ const BranchesManagement = () => {
   };
 
   const handleApproveBranch = async (branchId) => {
-    await adminManagementService.approveBranch(branchId);
-    loadPendingBranches();
-    loadRejectedBranches();
-    loadBranches();
+    try {
+      await adminManagementService.approveBranch(branchId);
+      if (window.showNotification) {
+        window.showNotification('Branch approved successfully!', 'success');
+      }
+      loadPendingBranches();
+      loadRejectedBranches();
+      loadBranches();
+    } catch (error) {
+      if (window.showNotification) {
+        window.showNotification(
+          error?.response?.data?.message || error?.message || 'Failed to approve branch',
+          'error'
+        );
+      }
+    }
   };
   const handleRejectBranch = async (branchId) => {
-    await adminManagementService.rejectBranch(branchId);
-    loadPendingBranches();
-    loadRejectedBranches();
-    loadBranches();
+    try {
+      await adminManagementService.rejectBranch(branchId);
+      if (window.showNotification) {
+        window.showNotification('Branch rejected.', 'success');
+      }
+      loadPendingBranches();
+      loadRejectedBranches();
+      loadBranches();
+    } catch (error) {
+      if (window.showNotification) {
+        window.showNotification(
+          error?.response?.data?.message || error?.message || 'Failed to reject branch',
+          'error'
+        );
+      }
+    }
   };
 
   const formatDate = (dateString) => {
@@ -339,8 +370,8 @@ const BranchesManagement = () => {
           </button>
         </div>
         <div className="card-body">
-          {/* Sub-tabs for Super Admin */}
-          {user?.role === ROLES.SUPER_ADMIN && (
+          {/* Sub-tabs for Super Admin and State Admin: Pending Approval and Rejected */}
+          {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.STATE_ADMIN) && (
             <ul className="nav nav-tabs mb-3">
               <li className="nav-item">
                 <button className={`nav-link${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>All</button>
@@ -350,17 +381,6 @@ const BranchesManagement = () => {
               </li>
               <li className="nav-item">
                 <button className={`nav-link${activeTab === 'rejected' ? ' active' : ''}`} onClick={() => setActiveTab('rejected')}>Rejected</button>
-              </li>
-            </ul>
-          )}
-          {/* Sub-tab for State Admin: Pending Approval */}
-          {user?.role === ROLES.STATE_ADMIN && (
-            <ul className="nav nav-tabs mb-3">
-              <li className="nav-item">
-                <button className={`nav-link${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>All</button>
-              </li>
-              <li className="nav-item">
-                <button className={`nav-link${activeTab === 'pending' ? ' active' : ''}`} onClick={() => setActiveTab('pending')}>Pending Approval</button>
               </li>
             </ul>
           )}
@@ -383,26 +403,26 @@ const BranchesManagement = () => {
                 <table className="table table-hover">
                   <thead>
                     <tr>
-                      <th>Branch Name</th>
-                      <th>Location</th>
-                      <th>Status</th>
-                      {user?.role === ROLES.SUPER_ADMIN && <th>State</th>}
-                      <th>Created</th>
-                      {user?.role === ROLES.SUPER_ADMIN && <th>Actions</th>}
+                      <th><i className="bi bi-building"></i> Branch Name</th>
+                      <th><i className="bi bi-geo-alt"></i> Location</th>
+                      <th><i className="bi bi-info-circle"></i> Status</th>
+                      {user?.role === ROLES.SUPER_ADMIN && <th><i className="bi bi-flag"></i> State</th>}
+                      <th><i className="bi bi-calendar"></i> Created</th>
+                      {user?.role === ROLES.SUPER_ADMIN && <th><i className="bi bi-gear"></i> Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {pendingBranches.map(branch => (
                       <tr key={branch._id}>
-                        <td>{branch.name}</td>
-                        <td>{branch.location}</td>
-                        <td>{branch.status}</td>
-                        {user?.role === ROLES.SUPER_ADMIN && <td>{branch.stateId?.name}</td>}
-                        <td>{formatDate(branch.createdAt)}</td>
+                        <td><i className="bi bi-building text-primary me-1"></i> {branch.name}</td>
+                        <td><i className="bi bi-geo-alt text-secondary me-1"></i> {branch.location}</td>
+                        <td><span className={`badge bg-warning text-dark`}><i className="bi bi-hourglass-split me-1"></i> {branch.status}</span></td>
+                        {user?.role === ROLES.SUPER_ADMIN && <td><i className="bi bi-flag text-info me-1"></i> {branch.stateId?.name}</td>}
+                        <td><i className="bi bi-calendar text-muted me-1"></i> {formatDate(branch.createdAt)}</td>
                         {user?.role === ROLES.SUPER_ADMIN && (
                           <td>
-                            <button className="btn btn-success btn-sm me-2" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleRejectBranch(branch._id)}>Reject</button>
+                            <button className="btn btn-success btn-sm me-2" onClick={() => handleApproveBranch(branch._id)}><i className="bi bi-check-circle me-1"></i>Approve</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleRejectBranch(branch._id)}><i className="bi bi-x-circle me-1"></i>Reject</button>
                           </td>
                         )}
                       </tr>
@@ -420,9 +440,9 @@ const BranchesManagement = () => {
                   <tr>
                     <th>Branch Name</th>
                     <th>Location</th>
-                    <th>State</th>
+                    {user?.role === ROLES.SUPER_ADMIN && <th>State</th>}
                     <th>Created</th>
-                    <th>Actions</th>
+                    {user?.role === ROLES.SUPER_ADMIN && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -430,11 +450,13 @@ const BranchesManagement = () => {
                     <tr key={branch._id}>
                       <td>{branch.name}</td>
                       <td>{branch.location}</td>
-                      <td>{branch.stateId?.name}</td>
+                      {user?.role === ROLES.SUPER_ADMIN && <td>{branch.stateId?.name}</td>}
                       <td>{formatDate(branch.createdAt)}</td>
-                      <td>
-                        <button className="btn btn-success btn-sm" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
-                      </td>
+                      {user?.role === ROLES.SUPER_ADMIN && (
+                        <td>
+                          <button className="btn btn-success btn-sm" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

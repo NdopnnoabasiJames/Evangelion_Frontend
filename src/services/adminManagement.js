@@ -222,6 +222,10 @@ export const adminManagementService = {
       throw error;
     }
   },
+  getRejectedBranchesForStateAdmin: async () => {
+    const response = await api.get('/api/branches/state-admin/rejected');
+    return response.data;
+  },
 };
 
 export default adminManagementService;
