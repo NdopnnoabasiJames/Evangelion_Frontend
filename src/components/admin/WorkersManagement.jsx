@@ -78,9 +78,10 @@ const WorkersManagement = () => {
       
       // Create a map of rankings by worker ID
       const rankingsMap = new Map();
-      rankingsData.forEach((ranking, index) => {
+      rankingsData.forEach((ranking) => {
         rankingsMap.set(ranking._id || ranking.workerId, {
-          rank: index + 1,
+          rank: ranking.rank,
+          medal: ranking.medal,
           totalScore: ranking.totalScore || 0,
           totalInvitedGuests: ranking.totalInvitedGuests || 0,
           totalCheckedInGuests: ranking.totalCheckedInGuests || 0
@@ -285,21 +286,20 @@ const WorkersManagement = () => {
                       <tr key={worker._id}>
                         <td>
                           <div className="d-flex align-items-center">
-                            {worker.rank && worker.rank <= 3 ? (
+                            {worker.medal && worker.medal !== '' ? (
                               <i className={`bi bi-award-fill me-2 ${
-                                worker.rank === 1 ? 'text-info' :     // Platinum (light blue/silver)
-                                worker.rank === 2 ? 'text-warning' :  // Gold 
-                                'text-secondary'                      // Silver (gray)
+                                worker.medal === 'gold' ? 'text-warning' :     // Gold
+                                worker.medal === 'platinum' ? 'text-info' :    // Platinum (light blue)
+                                worker.medal === 'silver' ? 'text-secondary' :  // Silver
+                                ''
                               }`} title={
-                                worker.rank === 1 ? 'Platinum Medal' :
-                                worker.rank === 2 ? 'Gold Medal' : 'Silver Medal'
+                                worker.medal.charAt(0).toUpperCase() + worker.medal.slice(1) + ' Medal'
                               }></i>
                             ) : null}
                             <span className="fw-bold">{worker.rank || index + 1}</span>
-                            {worker.rank && worker.rank <= 3 && (
+                            {worker.medal && worker.medal !== '' && (
                               <small className="text-muted ms-2">
-                                {worker.rank === 1 ? 'Platinum' :
-                                 worker.rank === 2 ? 'Gold' : 'Silver'}
+                                {worker.medal.charAt(0).toUpperCase() + worker.medal.slice(1)}
                               </small>
                             )}
                           </div>

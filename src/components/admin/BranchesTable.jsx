@@ -107,7 +107,7 @@ const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, ge
                 <tr key={branch._id}>
                   <td>
                     <div className="d-flex align-items-center">
-                      {branch.medal ? (
+                      {branch.medal && branch.medal !== '' ? (
                         <>
                           <i className={`bi bi-award-fill me-2 ${
                             branch.medal === 'gold' ? 'text-warning' :

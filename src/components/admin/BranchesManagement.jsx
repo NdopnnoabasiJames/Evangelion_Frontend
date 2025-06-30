@@ -51,9 +51,10 @@ const BranchesManagement = () => {
       const rankingsData = rankingsResponse?.data || rankingsResponse || [];
       // Create a map of rankings by branch ID
       const rankingsMap = new Map();
-      rankingsData.forEach((ranking, index) => {
+      rankingsData.forEach((ranking) => {
         rankingsMap.set(ranking._id || ranking.branchId, {
-          rank: index + 1,
+          rank: ranking.rank,
+          medal: ranking.medal,
           totalScore: ranking.totalScore || 0
         });
       });

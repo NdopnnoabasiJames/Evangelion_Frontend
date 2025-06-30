@@ -36,9 +36,10 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
       
       // Create a map of rankings by state ID
       const rankingsMap = new Map();
-      rankingsData.forEach((ranking, index) => {
+      rankingsData.forEach((ranking) => {
         rankingsMap.set(ranking._id || ranking.stateId, {
-          rank: index + 1,
+          rank: ranking.rank,
+          medal: ranking.medal,
           totalScore: ranking.totalScore || 0
         });
       });
@@ -340,21 +341,19 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                     <tr key={state._id}>
                       <td>
                         <div className="d-flex align-items-center">
-                          {state.rank && state.rank <= 3 ? (
+                          {state.medal && state.medal !== '' ? (
                             <i className={`bi bi-award-fill me-2 ${
-                              state.rank === 1 ? 'text-info' :     // Platinum (light blue/silver)
-                              state.rank === 2 ? 'text-warning' :  // Gold 
-                              'text-secondary'                      // Silver (gray)
+                              state.medal === 'gold' ? 'text-warning' :     // Gold
+                              state.medal === 'silver' ? 'text-secondary' :  // Silver
+                              state.medal === 'bronze' ? 'text-orange' : ''  // Bronze
                             }`} title={
-                              state.rank === 1 ? 'Platinum Medal' :
-                              state.rank === 2 ? 'Gold Medal' : 'Silver Medal'
+                              state.medal.charAt(0).toUpperCase() + state.medal.slice(1) + ' Medal'
                             }></i>
                           ) : null}
                           <span className="fw-bold">{state.rank || index + 1}</span>
-                          {state.rank && state.rank <= 3 && (
+                          {state.medal && state.medal !== '' && (
                             <small className="text-muted ms-2">
-                              {state.rank === 1 ? 'Platinum' :
-                               state.rank === 2 ? 'Gold' : 'Silver'}
+                              {state.medal.charAt(0).toUpperCase() + state.medal.slice(1)}
                             </small>
                           )}
                         </div>
