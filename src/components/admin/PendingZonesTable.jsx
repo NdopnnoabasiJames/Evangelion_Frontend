@@ -82,28 +82,14 @@ const PendingZonesTable = ({ zones, onEdit, onDelete, onApprove, onReject, user 
                         onClick={() => onApprove && onApprove(zone)}
                         title="Approve zone"
                       >
-                        <i className="bi bi-check-circle"></i>
+                        <i className="bi bi-check-circle"></i> Approve
                       </button>
                       <button
                         className="btn btn-outline-danger"
                         onClick={() => onReject && onReject(zone)}
                         title="Reject zone"
                       >
-                        <i className="bi bi-x-circle"></i>
-                      </button>
-                      <button
-                        className="btn btn-outline-primary"
-                        onClick={() => onEdit(zone)}
-                        title="Edit zone"
-                      >
-                        <i className="bi bi-pencil"></i>
-                      </button>
-                      <button
-                        className="btn btn-outline-secondary"
-                        onClick={() => onDelete(zone)}
-                        title="Delete zone"
-                      >
-                        <i className="bi bi-trash"></i>
+                        <i className="bi bi-x-circle"></i> Reject
                       </button>
                     </div>
                   </td>

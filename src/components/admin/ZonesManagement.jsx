@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import ZonesTable from './ZonesTable';
 import PendingZonesTable from './PendingZonesTable';
+import adminManagementService from '../../services/adminManagement';
 
 const ZonesManagement = () => {
   const { user } = useAuth();
@@ -214,12 +215,25 @@ const ZonesManagement = () => {
   // Approve zone handler
   const handleApproveZone = async (zone) => {
     try {
-      let endpoint = `${API_ENDPOINTS.ZONES.APPROVE}/${zone._id}`;
-      await approveZone(endpoint, { method: 'PATCH' });
+      await adminManagementService.approveZone(zone._id);
       if (window.showNotification) {
         window.showNotification('Zone approved successfully!', 'success');
       }
       loadZones();
+      // Refresh pending zones after approval
+      if (activeTab === 'pending') {
+        // Re-run the pending zones fetch logic
+        let response;
+        if (user?.role === ROLES.BRANCH_ADMIN) {
+          response = await fetchZones(API_ENDPOINTS.ZONES.BRANCH_ADMIN_PENDING || '/api/zones/branch-admin/pending');
+        } else if (user?.role === ROLES.SUPER_ADMIN) {
+          response = await fetchZones('/api/zones/status/pending');
+        } else if (user?.role === ROLES.STATE_ADMIN) {
+          response = await fetchZones('/api/zones/status/pending');
+        }
+        let arr = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
+        setPendingZones(arr);
+      }
     } catch (error) {
       if (window.showNotification) {
         window.showNotification(

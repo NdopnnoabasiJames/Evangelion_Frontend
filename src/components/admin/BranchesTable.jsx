@@ -107,18 +107,22 @@ const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, ge
                 <tr key={branch._id}>
                   <td>
                     <div className="d-flex align-items-center">
-                      {branch.rank && branch.rank <= 3 ? (
-                        <i className={`bi bi-award-fill me-2 ${
-                          branch.rank === 1 ? 'text-info' : branch.rank === 2 ? 'text-warning' : 'text-secondary'
-                        }`} title={
-                          branch.rank === 1 ? 'Platinum Medal' : branch.rank === 2 ? 'Gold Medal' : 'Silver Medal'
-                        }></i>
-                      ) : null}
-                      <span className="fw-bold">{branch.rank || index + 1}</span>
-                      {branch.rank && branch.rank <= 3 && (
-                        <small className="text-muted ms-2">
-                          {branch.rank === 1 ? 'Platinum' : branch.rank === 2 ? 'Gold' : 'Silver'}
-                        </small>
+                      {branch.medal ? (
+                        <>
+                          <i className={`bi bi-award-fill me-2 ${
+                            branch.medal === 'gold' ? 'text-warning' :
+                            branch.medal === 'silver' ? 'text-secondary' :
+                            branch.medal === 'bronze' ? 'text-orange' : ''
+                          }`} title={
+                            branch.medal.charAt(0).toUpperCase() + branch.medal.slice(1) + ' Medal'
+                          }></i>
+                          <span className="fw-bold">{branch.rank}</span>
+                          <small className="text-muted ms-2">
+                            {branch.medal.charAt(0).toUpperCase() + branch.medal.slice(1)}
+                          </small>
+                        </>
+                      ) : (
+                        <span className="fw-bold">{branch.rank || index + 1}</span>
                       )}
                     </div>
                   </td>

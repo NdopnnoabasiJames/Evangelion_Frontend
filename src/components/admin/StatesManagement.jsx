@@ -441,7 +441,6 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
 const StateFormModal = ({ state, onHide, onSubmit }) => {
   const [formData, setFormData] = useState({
     name: '',
-    code: '',
     isActive: true
   });
   const [submitting, setSubmitting] = useState(false);
@@ -454,13 +453,11 @@ const StateFormModal = ({ state, onHide, onSubmit }) => {
     if (state) {
       setFormData({
         name: state.name || '',
-        code: state.code || '',
         isActive: state.isActive ?? true
       });
     } else {
       setFormData({
         name: '',
-        code: '',
         isActive: true
       });
     }
@@ -475,11 +472,6 @@ const StateFormModal = ({ state, onHide, onSubmit }) => {
         name: formData.name.trim(),
         isActive: formData.isActive
       };
-
-      // Only include code if it's provided
-      if (formData.code.trim()) {
-        submitData.code = formData.code.trim().toUpperCase();
-      }
 
       await onSubmit(submitData);
       onHide();
@@ -535,24 +527,6 @@ const StateFormModal = ({ state, onHide, onSubmit }) => {
                     required
                   />
                   <div className="form-text">Enter the full name of the state</div>
-                </div>
-
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">
-                    <i className="bi bi-tag me-1"></i>
-                    State Code
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control text-uppercase"
-                    name="code"
-                    value={formData.code}
-                    onChange={handleChange}
-                    placeholder="e.g., LAG, FCT, KAN"
-                    maxLength="3"
-                    style={{ textTransform: 'uppercase' }}
-                  />
-                  <div className="form-text">3-character abbreviation (optional)</div>
                 </div>              </div>
 
               <div className="mb-3">
