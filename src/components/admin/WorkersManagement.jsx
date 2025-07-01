@@ -15,7 +15,9 @@ const WorkersManagement = () => {
     search: '',
     branchFilter: 'all',
     statusFilter: 'all',
-    stateFilter: 'all'
+    stateFilter: 'all',
+    scoreValue: '',
+    scoreOperator: 'greater'
   });
 
   const { execute: fetchWorkers } = useApi(null, { immediate: false });
@@ -54,6 +56,24 @@ const WorkersManagement = () => {
       filtered = filtered.filter(worker => worker.state?._id === filters.stateFilter);
     }
 
+    // Apply score filter
+    if (filters.scoreValue !== '' && !isNaN(filters.scoreValue)) {
+      const scoreThreshold = parseFloat(filters.scoreValue);
+      filtered = filtered.filter(worker => {
+        const workerScore = worker.totalScore || 0;
+        switch (filters.scoreOperator) {
+          case 'greater':
+            return workerScore > scoreThreshold;
+          case 'less':
+            return workerScore < scoreThreshold;
+          case 'equal':
+            return workerScore === scoreThreshold;
+          default:
+            return true;
+        }
+      });
+    }
+
     setFilteredWorkers(filtered);
   }, [workers, filters]);
 
@@ -83,8 +103,8 @@ const WorkersManagement = () => {
           rank: ranking.rank,
           medal: ranking.medal,
           totalScore: ranking.totalScore || 0,
-          totalInvitedGuests: ranking.totalInvitedGuests || 0,
-          totalCheckedInGuests: ranking.totalCheckedInGuests || 0
+          totalInvited: ranking.totalInvited || 0,
+          totalCheckedIn: ranking.totalCheckedIn || 0
         });
       });
       
@@ -143,7 +163,9 @@ const WorkersManagement = () => {
       search: '',
       branchFilter: 'all',
       statusFilter: 'all',
-      stateFilter: 'all'
+      stateFilter: 'all',
+      scoreValue: '',
+      scoreOperator: 'greater'
     });
   };
 
@@ -187,7 +209,7 @@ const WorkersManagement = () => {
             <>
               {/* Filters Section */}
               <div className="row g-3 mb-4">
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <div className="input-group">
                     <span className="input-group-text">
                       <i className="bi bi-search"></i>
@@ -217,7 +239,7 @@ const WorkersManagement = () => {
                   </select>
                 </div>
                 
-                <div className="col-md-2">
+                <div className="col-md-1">
                   <select 
                     className="form-select"
                     value={filters.statusFilter}
@@ -244,14 +266,38 @@ const WorkersManagement = () => {
                   </select>
                 </div>
                 
+                {/* Score Filter */}
+                <div className="col-md-1">
+                  <select 
+                    className="form-select"
+                    value={filters.scoreOperator}
+                    onChange={(e) => handleFilterChange('scoreOperator', e.target.value)}
+                    title="Score comparison"
+                  >
+                    <option value="greater">&gt;</option>
+                    <option value="less">&lt;</option>
+                    <option value="equal">=</option>
+                  </select>
+                </div>
+                
                 <div className="col-md-2">
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Score filter..."
+                    value={filters.scoreValue}
+                    onChange={(e) => handleFilterChange('scoreValue', e.target.value)}
+                    min="0"
+                  />
+                </div>
+                
+                <div className="col-md-1">
                   <button 
                     className="btn btn-outline-secondary w-100"
                     onClick={clearFilters}
                     title="Clear all filters"
                   >
-                    <i className="bi bi-arrow-clockwise me-2"></i>
-                    Clear
+                    <i className="bi bi-arrow-clockwise"></i>
                   </button>
                 </div>
               </div>
@@ -261,7 +307,7 @@ const WorkersManagement = () => {
                 <small className="text-muted">
                   Showing {filteredWorkers.length} of {workers.length} workers
                 </small>
-                {(filters.search || filters.branchFilter !== 'all' || filters.statusFilter !== 'all' || filters.stateFilter !== 'all') && (
+                {(filters.search || filters.branchFilter !== 'all' || filters.statusFilter !== 'all' || filters.stateFilter !== 'all' || filters.scoreValue !== '') && (
                   <small className="text-info">
                     <i className="bi bi-funnel-fill me-1"></i>
                     Filters applied
