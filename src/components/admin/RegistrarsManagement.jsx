@@ -42,19 +42,28 @@ const RegistrarsManagement = () => {
     }
   }, [activeTab, filters]);
 
-  // Filter branches when state changes
+  // Filter branches when state changes - fetch branches by state from backend
   useEffect(() => {
     if (filters.stateFilter) {
-      const stateBranches = branches.filter(branch => branch.stateId === filters.stateFilter);
-      setFilteredBranches(stateBranches);
-      // Reset branch filter if current selection is not in the new state
-      if (filters.branchFilter && !stateBranches.find(b => b._id === filters.branchFilter)) {
+      loadBranchesByState(filters.stateFilter);
+      // Reset branch filter when state changes
+      if (filters.branchFilter) {
         setFilters(prev => ({ ...prev, branchFilter: '' }));
       }
     } else {
       setFilteredBranches(branches);
     }
-  }, [filters.stateFilter, branches]);
+  }, [filters.stateFilter]);
+
+  const loadBranchesByState = async (stateId) => {
+    try {
+      const response = await fetchBranches(`/api/branches/by-state/${stateId}`);
+      setFilteredBranches(response?.data || response || []);
+    } catch (error) {
+      console.error('Error loading branches for state:', error);
+      setFilteredBranches([]);
+    }
+  };
 
   const loadInitialData = async () => {
     try {
@@ -325,6 +334,7 @@ const RegistrarsManagement = () => {
                   <th>Branch</th>
                   <th>Registration Date</th>
                   <th>Status</th>
+                  {activeTab === 'all' && <th>Checked-in Guests</th>}
                   {activeTab === 'pending' && <th>Actions</th>}
                 </tr>
               </thead>
@@ -356,6 +366,16 @@ const RegistrarsManagement = () => {
                         {registrar.isApproved ? 'Approved' : 'Pending'}
                       </span>
                     </td>
+                    {activeTab === 'all' && (
+                      <td>
+                        <div className="d-flex align-items-center">
+                          <i className="bi bi-person-check text-success me-2"></i>
+                          <span className="fw-bold">
+                            {registrar.checkedInGuests || registrar.totalCheckedIn || 0}
+                          </span>
+                        </div>
+                      </td>
+                    )}
                     {activeTab === 'pending' && (
                       <td>
                         <div className="btn-group btn-group-sm">

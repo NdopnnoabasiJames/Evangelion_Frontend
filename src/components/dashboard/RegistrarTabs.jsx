@@ -277,7 +277,7 @@ const RegistrarTabs = ({ dashboardData }) => {
     <div>
       {/* Registrar Information Card */}
       <div className="row mb-4">
-        <div className="col-12">
+        <div className="col-md-8">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
               <div className="d-flex align-items-center">
@@ -286,23 +286,47 @@ const RegistrarTabs = ({ dashboardData }) => {
                 </div>
                 <div className="flex-grow-1">
                   <h5 className="mb-1">Welcome, {user?.name || 'Registrar'}</h5>
-                  <div className="text-muted">
-                    <i className="bi bi-geo-alt me-1"></i>
-                    {user?.state?.name ? `${user.state.name} State` : 'State not assigned'}
-                    {user?.branch?.name ? `, ${user.branch.name} Branch` : ''}
-                    {!user?.state?.name && !user?.branch?.name && 'Location not assigned'}
-                  </div>
-                  <small className="text-muted">
+                  <div className="text-muted mb-2">
                     <i className="bi bi-envelope me-1"></i>
                     {user?.email || 'Email not available'}
-                  </small>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <span className="badge bg-info me-2">
+                      <i className="bi bi-clipboard-check me-1"></i>
+                      Active Registrar
+                    </span>
+                    {user?.isApproved && (
+                      <span className="badge bg-success">
+                        <i className="bi bi-check-circle me-1"></i>
+                        Approved
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-end">
-                  <span className="badge bg-info">
-                    <i className="bi bi-clipboard-check me-1"></i>
-                    Active Registrar
-                  </span>
-                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card border-0 shadow-sm h-100">
+            <div className="card-body">
+              <h6 className="card-title mb-3">
+                <i className="bi bi-geo-alt text-primary me-2"></i>
+                Location Assignment
+              </h6>
+              <div className="mb-2">
+                <strong>State:</strong>
+                <br />
+                <span className="badge bg-primary bg-opacity-10 text-primary">
+                  {user?.state?.name || 'Not assigned'}
+                </span>
+              </div>
+              <div>
+                <strong>Branch:</strong>
+                <br />
+                <span className="badge bg-secondary bg-opacity-10 text-secondary">
+                  {user?.branch?.name || 'Not assigned'}
+                </span>
               </div>
             </div>
           </div>

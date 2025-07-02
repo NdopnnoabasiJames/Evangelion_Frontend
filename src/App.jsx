@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './hooks/useAuth';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { ToastManager } from './components/common/Toast';
+import { ToastContainer } from 'react-toastify';
 
 // Import pages
 import Landing from './pages/Landing';
@@ -20,6 +21,7 @@ import Analytics from './pages/Analytics';
 // Import styles
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
 
 function App() {
@@ -103,6 +105,17 @@ function App() {
           
           {/* Toast notifications */}
           <ToastManager />
+          <ToastContainer 
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
         </div>
       </Router>
     </AuthProvider>
