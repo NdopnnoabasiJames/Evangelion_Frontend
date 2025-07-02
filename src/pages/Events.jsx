@@ -27,13 +27,13 @@ const Events = () => {
 
   // Fetch events needing delegation for State/Branch Admins
   const { data: eventsNeedingBranchSelection, refetch: refetchBranchSelection } = useApi(
-    user?.role === 'state_admin' ? API_ENDPOINTS.EVENTS.NEEDING_BRANCH_SELECTION : null,
-    { immediate: user?.role === 'state_admin' }
+    user?.currentRole === 'state_admin' ? API_ENDPOINTS.EVENTS.NEEDING_BRANCH_SELECTION : null,
+    { immediate: user?.currentRole === 'state_admin' }
   );
 
   const { data: eventsNeedingZoneSelection, refetch: refetchZoneSelection } = useApi(
-    user?.role === 'branch_admin' ? API_ENDPOINTS.EVENTS.NEEDING_ZONE_SELECTION : null,
-    { immediate: user?.role === 'branch_admin' }
+    user?.currentRole === 'branch_admin' ? API_ENDPOINTS.EVENTS.NEEDING_ZONE_SELECTION : null,
+    { immediate: user?.currentRole === 'branch_admin' }
   );  useEffect(() => {
     if (eventsData) {
       // Ensure we get the array of events from the API response
@@ -45,24 +45,24 @@ const Events = () => {
   }, [eventsData, eventsLoading, eventsError]);
   useEffect(() => {
     // Set pending events based on user role
-    if (user?.role === 'state_admin' && eventsNeedingBranchSelection) {
+    if (user?.currentRole === 'state_admin' && eventsNeedingBranchSelection) {
       const pendingArray = Array.isArray(eventsNeedingBranchSelection) 
         ? eventsNeedingBranchSelection 
         : (eventsNeedingBranchSelection.data || []);
       setPendingEvents(pendingArray);
-    } else if (user?.role === 'branch_admin' && eventsNeedingZoneSelection) {
+    } else if (user?.currentRole === 'branch_admin' && eventsNeedingZoneSelection) {
       const pendingArray = Array.isArray(eventsNeedingZoneSelection) 
         ? eventsNeedingZoneSelection 
         : (eventsNeedingZoneSelection.data || []);
       setPendingEvents(pendingArray);
     }
-  }, [eventsNeedingBranchSelection, eventsNeedingZoneSelection, user?.role]);
+  }, [eventsNeedingBranchSelection, eventsNeedingZoneSelection, user?.currentRole]);
   // Role-based permissions
-  const canCreateEvents = ['super_admin', 'state_admin', 'branch_admin', 'zonal_admin'].includes(user?.role);
-  const canEditEvents = ['super_admin', 'state_admin', 'branch_admin'].includes(user?.role);
-  const canDelegateEvents = ['state_admin', 'branch_admin'].includes(user?.role);
-  const canAssignPickupStations = user?.role === 'zonal_admin';
-  const canViewPickupStations = ['super_admin', 'zonal_admin'].includes(user?.role);
+  const canCreateEvents = ['super_admin', 'state_admin', 'branch_admin', 'zonal_admin'].includes(user?.currentRole);
+  const canEditEvents = ['super_admin', 'state_admin', 'branch_admin'].includes(user?.currentRole);
+  const canDelegateEvents = ['state_admin', 'branch_admin'].includes(user?.currentRole);
+  const canAssignPickupStations = user?.currentRole === 'zonal_admin';
+  const canViewPickupStations = ['super_admin', 'zonal_admin'].includes(user?.currentRole);
 
   const refreshAllData = () => {
     refetch();
@@ -142,7 +142,7 @@ const Events = () => {
     }    if (canViewPickupStations) {
       baseTabs.push({
         key: 'pickup-stations',
-        label: user?.role === 'super_admin' ? 'View Pickup Stations' : 'Pickup Stations',
+        label: user?.currentRole === 'super_admin' ? 'View Pickup Stations' : 'Pickup Stations',
         icon: 'bi-geo-alt'
       });
     }
@@ -155,7 +155,7 @@ const Events = () => {
         {/* Header */}
         <PageHeader
           title="Events Management"
-          subtitle={`Manage events and activities${user?.role ? ` as ${user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : ''}`}
+          subtitle={`Manage events and activities${user?.currentRole ? ` as ${user.currentRole.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : ''}`}
           actions={canCreateEvents ? [
             {
               label: 'Create Event',
@@ -190,14 +190,14 @@ const Events = () => {
             <TabPane tabId="pending" title="Pending Delegation">
               <EventDelegation 
                 events={pendingEvents}
-                userRole={user?.role}
+                userRole={user?.currentRole}
                 onDelegationComplete={refreshAllData}
               />
             </TabPane>
           )}          {canCreateEvents && (
             <TabPane tabId="create" title="Create Event">
               <HierarchicalEventCreation 
-                userRole={user?.role}
+                userRole={user?.currentRole}
                 onEventCreated={() => {
                   setActiveTab('list');
                   // Small delay to ensure backend has processed the event

@@ -10,8 +10,8 @@ const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete 
   const { user } = useAuth();
 
   // If super admin, show the viewer component
-  if (user?.role === 'super_admin') {
-    return <PickupStationsViewer userRole={user.role} />;
+  if (user?.currentRole === 'super_admin') {
+    return <PickupStationsViewer userRole={user.currentRole} />;
   }
 
   // Rest of the component for zonal admins
@@ -25,7 +25,7 @@ const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete 
   const { execute: fetchStations } = useApi(null, { immediate: false });
 
   // Safety check: only zonal admins should access the assignment functionality
-  if (user?.role !== 'zonal_admin') {
+  if (user?.currentRole !== 'zonal_admin') {
     return (
       <div className="alert alert-warning" role="alert">
         <i className="bi bi-exclamation-triangle me-2"></i>

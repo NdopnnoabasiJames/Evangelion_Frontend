@@ -10,8 +10,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Get navigation items based on user role
   const getNavItems = () => {
-    if (!user?.role) return [];
-    return NAVIGATION_ITEMS[user.role] || [];
+    const userRole = user?.currentRole || user?.role;
+    if (!userRole) return [];
+    return NAVIGATION_ITEMS[userRole] || [];
   };
 
   const navItems = getNavItems();
@@ -77,7 +78,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               <div>
                 <div className="fw-semibold small text-white">{user?.name || 'User'}</div>
                 <div className="small" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  {user?.role?.replace('_', ' ') || 'Role'}
+                  {(user?.currentRole || user?.role)?.replace('_', ' ') || 'Role'}
                 </div>
               </div>
             </div></div>
@@ -116,8 +117,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           {/* Quick actions section */}          <div className="mt-4 pt-3" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}>
             <h6 className="small mb-3" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Quick Actions</h6>
             <div className="d-grid gap-2">
-              {(user?.role === ROLES.REGISTRAR || 
-                user?.role === ROLES.WORKER) && (
+              {((user?.currentRole || user?.role) === ROLES.REGISTRAR || 
+                (user?.currentRole || user?.role) === ROLES.WORKER) && (
                 <button 
                   className="btn btn-outline-primary btn-sm"
                   onClick={() => handleNavClick('/check-in')}
@@ -127,7 +128,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 </button>
               )}
               
-              {(user?.role !== ROLES.GUEST && user?.role !== ROLES.REGISTRAR) && (
+              {((user?.currentRole || user?.role) !== ROLES.GUEST && (user?.currentRole || user?.role) !== ROLES.REGISTRAR) && (
                 <button 
                   className="btn btn-outline-success btn-sm"
                   onClick={() => handleNavClick('/events/new')}

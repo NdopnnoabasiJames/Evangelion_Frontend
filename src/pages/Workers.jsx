@@ -32,8 +32,8 @@ const Workers = () => {
   }, [workersData, workersLoading, workersError]);
 
   // Role-based permissions
-  const canApproveWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
-  const canManageWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
+  const canApproveWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.currentRole || user?.role);
+  const canManageWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.currentRole || user?.role);
   if (loading) {
     return (
       <Layout>
@@ -76,7 +76,7 @@ const Workers = () => {
         {/* Header */}
         <PageHeader 
           {...HeaderConfigurations.workerManagement(
-            user?.role, 
+            user?.currentRole || user?.role, 
             refetch, 
             () => {/* Export functionality */}
           )}

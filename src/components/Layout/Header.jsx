@@ -32,7 +32,7 @@ const Header = () => {
             Welcome, {user?.name}
           </span>
           <span className="badge me-3" style={{ backgroundColor: 'var(--primary-yellow)', color: 'var(--purple-darker)' }}>
-            {user?.role}
+            {user?.currentRole || user?.role}
           </span>
           <button 
             className="btn btn-outline-light btn-sm"

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { useAuth } from '../../hooks/useAuth';
+import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import { toast } from 'react-toastify';
 
 const RegistrarsManagement = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
   const [registrars, setRegistrars] = useState([]);
   const [pendingRegistrars, setPendingRegistrars] = useState([]);
@@ -29,6 +31,7 @@ const RegistrarsManagement = () => {
   const { execute: fetchBranches } = useApi(null, { immediate: false });
   const { execute: approveRegistrar } = useApi(null, { immediate: false });
   const { execute: rejectRegistrar } = useApi(null, { immediate: false });
+  const { execute: convertToWorker } = useApi(null, { immediate: false });
 
   useEffect(() => {
     loadInitialData();
@@ -174,6 +177,39 @@ const RegistrarsManagement = () => {
     } catch (error) {
       console.error('Error rejecting registrar:', error);
       toast.error(error.message || 'Failed to reject registrar');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [registrarId]: null }));
+    }
+  };
+
+  const handleConvertToWorker = async (registrarId, registrarName) => {
+    if (!window.confirm(`Are you sure you want to convert ${registrarName} to a worker? They will be logged out and need to log back in.`)) {
+      return;
+    }
+
+    setActionLoading(prev => ({ ...prev, [registrarId]: 'converting' }));
+
+    try {
+      await convertToWorker(API_ENDPOINTS.ADMIN.CONVERT_TO_WORKER, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          userId: registrarId,
+          reason: 'Converted from registrar to worker by super admin'
+        }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      toast.success(`${registrarName} has been converted to worker! They need to log in again.`);
+      
+      // Refresh data
+      if (activeTab === 'all') {
+        loadAllRegistrars();
+      } else {
+        loadPendingRegistrars();
+      }
+    } catch (error) {
+      console.error('Error converting registrar to worker:', error);
+      toast.error(error.message || 'Failed to convert registrar to worker');
     } finally {
       setActionLoading(prev => ({ ...prev, [registrarId]: null }));
     }
@@ -335,6 +371,7 @@ const RegistrarsManagement = () => {
                   <th>Registration Date</th>
                   <th>Status</th>
                   {activeTab === 'all' && <th>Checked-in Guests</th>}
+                  {activeTab === 'all' && (user?.currentRole || user?.role) === ROLES.SUPER_ADMIN && <th>Actions</th>}
                   {activeTab === 'pending' && <th>Actions</th>}
                 </tr>
               </thead>
@@ -374,6 +411,23 @@ const RegistrarsManagement = () => {
                             {registrar.checkedInGuests || registrar.totalCheckedIn || 0}
                           </span>
                         </div>
+                      </td>
+                    )}
+                    {activeTab === 'all' && (user?.currentRole || user?.role) === ROLES.SUPER_ADMIN && (
+                      <td>
+                        <button
+                          className="btn btn-outline-warning btn-sm"
+                          onClick={() => handleConvertToWorker(registrar._id, registrar.name)}
+                          disabled={actionLoading[registrar._id]}
+                          title="Convert to Worker"
+                        >
+                          {actionLoading[registrar._id] === 'converting' ? (
+                            <span className="spinner-border spinner-border-sm me-1"></span>
+                          ) : (
+                            <i className="bi bi-arrow-left-circle me-1"></i>
+                          )}
+                          Convert to Worker
+                        </button>
                       </td>
                     )}
                     {activeTab === 'pending' && (

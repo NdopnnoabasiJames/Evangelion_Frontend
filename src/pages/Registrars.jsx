@@ -32,9 +32,9 @@ const Registrars = () => {
   }, [registrarsData, registrarsLoading, registrarsError]);
 
   // Role-based permissions
-  const canApproveRegistrars = [ROLES.SUPER_ADMIN].includes(user?.role); // Only super admin can approve
-  const canManageRegistrars = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.ZONAL_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
-  const canAssignZones = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN].includes(user?.role);
+  const canApproveRegistrars = [ROLES.SUPER_ADMIN].includes(user?.currentRole || user?.role); // Only super admin can approve
+  const canManageRegistrars = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.ZONAL_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.currentRole || user?.role);
+  const canAssignZones = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN].includes(user?.currentRole || user?.role);
   if (loading) {
     return (
       <Layout>

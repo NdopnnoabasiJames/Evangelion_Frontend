@@ -151,6 +151,8 @@ export const API_ENDPOINTS = {
   },
   ADMIN: {
     USERS: "/api/admin/users",
+    CONVERT_TO_REGISTRAR: "/api/users/convert-to-registrar",
+    CONVERT_TO_WORKER: "/api/users/convert-to-worker",
     HIERARCHY: "/api/admin-hierarchy",
     STATES: "/api/admin-hierarchy/accessible-states",
     BRANCHES: "/api/admin-hierarchy/selection/branches",

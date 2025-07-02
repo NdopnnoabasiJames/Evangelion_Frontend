@@ -3,6 +3,7 @@ import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import { analyticsService } from '../../services/analyticsService';
+import { toast } from 'react-toastify';
 
 const WorkersManagement = () => {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ const WorkersManagement = () => {
   const [filteredWorkers, setFilteredWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [convertLoading, setConvertLoading] = useState({});
   // Filter states
   const [filters, setFilters] = useState({
     search: '',
@@ -21,6 +23,7 @@ const WorkersManagement = () => {
   });
 
   const { execute: fetchWorkers } = useApi(null, { immediate: false });
+  const { execute: convertToRegistrar } = useApi(null, { immediate: false });
 
   useEffect(() => {
     loadWorkers();
@@ -88,7 +91,7 @@ const WorkersManagement = () => {
       // Fetch workers and rankings in parallel
       const [workersResponse, rankingsResponse] = await Promise.all([
         fetchWorkers(API_ENDPOINTS.ADMIN.WORKERS),        analyticsService.getWorkerRankings(
-          user?.role === ROLES.STATE_ADMIN && user?.state?._id ? { stateId: user.state._id } : {}
+          user?.currentRole === ROLES.STATE_ADMIN && user?.state?._id ? { stateId: user.state._id } : {}
         ).catch((err) => {
           console.warn('Failed to fetch worker rankings:', err);
           return { data: [] };
@@ -167,6 +170,35 @@ const WorkersManagement = () => {
       scoreValue: '',
       scoreOperator: 'greater'
     });
+  };
+
+  const handleConvertToRegistrar = async (workerId, workerName) => {
+    if (!window.confirm(`Are you sure you want to convert ${workerName} to a registrar? They will be logged out and need to log back in.`)) {
+      return;
+    }
+
+    setConvertLoading(prev => ({ ...prev, [workerId]: true }));
+
+    try {
+      await convertToRegistrar(API_ENDPOINTS.ADMIN.CONVERT_TO_REGISTRAR, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          userId: workerId,
+          reason: 'Converted from worker to registrar by super admin'
+        }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      toast.success(`${workerName} has been converted to registrar! They need to log in again.`);
+      
+      // Refresh the workers list
+      loadWorkers();
+    } catch (error) {
+      console.error('Error converting worker to registrar:', error);
+      toast.error(error.message || 'Failed to convert worker to registrar');
+    } finally {
+      setConvertLoading(prev => ({ ...prev, [workerId]: false }));
+    }
   };
 
   if (loading) {
@@ -396,6 +428,20 @@ const WorkersManagement = () => {
                             >
                               <i className={`bi ${worker.isActive ? 'bi-pause' : 'bi-play'}`}></i>
                             </button>
+                            {(user?.currentRole || user?.role) === ROLES.SUPER_ADMIN && (
+                              <button
+                                className="btn btn-outline-primary"
+                                onClick={() => handleConvertToRegistrar(worker._id, worker.name)}
+                                disabled={convertLoading[worker._id]}
+                                title="Convert to Registrar"
+                              >
+                                {convertLoading[worker._id] ? (
+                                  <span className="spinner-border spinner-border-sm"></span>
+                                ) : (
+                                  <i className="bi bi-arrow-right-circle"></i>
+                                )}
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

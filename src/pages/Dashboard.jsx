@@ -53,8 +53,9 @@ const Dashboard = () => {
         setError(null);
 
         // Fetch real data based on user role
+        const userRole = user.currentRole || user.role;
         const realData = await analyticsService.getDashboardStatsByRole(
-          user.role
+          userRole
         );
 
         // Add metadata
@@ -70,7 +71,8 @@ const Dashboard = () => {
         setError(err.message || "Failed to load dashboard data");
 
         // Fallback to mock data on error
-        const mockData = getDashboardMockData(user.role);
+        const userRole = user.currentRole || user.role;
+        const mockData = getDashboardMockData(userRole);
         setDashboardData(mockData);
       } finally {
         setLoading(false);
@@ -134,8 +136,9 @@ const Dashboard = () => {
 
     try {
       setError(null);
+      const userRole = user.currentRole || user.role;
       const realData = await analyticsService.getDashboardStatsByRole(
-        user.role
+        userRole
       );
       const dashboardData = {
         ...realData,
@@ -146,14 +149,15 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Dashboard refresh error:", err);
       // Fallback to mock data on error
-      const mockData = getDashboardMockData(user.role);
+      const userRole = user.currentRole || user.role;
+      const mockData = getDashboardMockData(userRole);
       setDashboardData(mockData);
     }
   }; // Role-specific dashboard content
   const getDashboardContent = () => {
     if (!dashboardData) return null;
 
-    switch (user?.role) {
+    switch (user?.currentRole || user?.role) {
       case ROLES.SUPER_ADMIN:
         return <SuperAdminTabs dashboardData={dashboardData} />;
       case ROLES.STATE_ADMIN:
@@ -223,7 +227,7 @@ const Dashboard = () => {
               const loadDashboardData = async () => {
                 try {
                   await new Promise((resolve) => setTimeout(resolve, 1500));
-                  const mockData = getDashboardMockData(user?.role);
+                  const mockData = getDashboardMockData(user?.currentRole || user?.role);
                   setDashboardData(mockData);
                 } catch (err) {
                   setError("Failed to load dashboard data");
@@ -243,7 +247,7 @@ const Dashboard = () => {
       <div className="container-fluid">
         <PageHeader
           {...HeaderConfigurations.dashboard(
-            user?.role,
+            user?.currentRole || user?.role,
             user?.firstName || user?.name || user?.email,
             refreshDashboard,
             userProfile?.state,

@@ -142,7 +142,7 @@ const CheckIn = () => {
   };
 
   // Only registrars should access this page
-  if (user?.role !== 'REGISTRAR') {
+  if ((user?.currentRole || user?.role) !== 'REGISTRAR') {
     return (
       <Layout>
         <div className="container-fluid py-4">

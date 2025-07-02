@@ -240,7 +240,12 @@ export const dashboardService = {
     }
   },  // Get role-specific dashboard data
   getDashboardStatsByRole: async (userRole) => {
-    switch (userRole) {
+    console.log('Dashboard Service - Role received:', userRole, 'Type:', typeof userRole);
+    
+    // Normalize the role to handle different formats
+    const normalizedRole = userRole?.toLowerCase()?.trim();
+    
+    switch (normalizedRole) {
       case "super_admin":
         // Dynamically import to avoid circular dependency
         const { systemMetricsService } = await import("./systemMetricsService");
@@ -254,7 +259,9 @@ export const dashboardService = {
       case "registrar":
         return dashboardService.getRegistrarDashboardStats();
       default:
-        return dashboardService.getDashboardAnalytics();
+        console.warn('Dashboard Service - Unknown role, using registrar fallback:', userRole);
+        // Fallback to registrar instead of making admin API calls
+        return dashboardService.getRegistrarDashboardStats();
     }
   },
 };

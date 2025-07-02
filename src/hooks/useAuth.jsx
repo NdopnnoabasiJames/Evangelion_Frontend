@@ -88,13 +88,42 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
   };
+
+  // Function to check if user's role has changed and force logout
+  const checkRoleChange = async () => {
+    try {
+      const currentStoredUser = authService.getCurrentUser();
+      if (!currentStoredUser || !authService.getToken()) {
+        return;
+      }
+
+      const profileResponse = await authService.getProfile();
+      const freshUserData = profileResponse.data?.data || profileResponse.data;
+      
+      if (freshUserData) {
+        const storedRole = currentStoredUser?.currentRole || currentStoredUser?.role;
+        const freshRole = freshUserData?.currentRole || freshUserData?.role;
+        
+        if (storedRole !== freshRole) {
+          // Role has changed, force logout
+          console.log('User role changed, forcing logout');
+          logout();
+          return true; // Role changed
+        }
+      }
+      return false; // No role change
+    } catch (error) {
+      console.error('Error checking role change:', error);
+      return false;
+    }
+  };
   const hasRole = (role) => {
-    const userRole = user?.role || user?.data?.role;
+    const userRole = user?.currentRole || user?.role || user?.data?.currentRole || user?.data?.role;
     return userRole === role;
   };
 
   const hasAnyRole = (roles) => {
-    const userRole = user?.role || user?.data?.role;
+    const userRole = user?.currentRole || user?.role || user?.data?.currentRole || user?.data?.role;
     return roles.includes(userRole);
   };
 
@@ -105,7 +134,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     hasRole,
-    hasAnyRole
+    hasAnyRole,
+    checkRoleChange
   };
 
   return (
