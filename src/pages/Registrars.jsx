@@ -32,8 +32,8 @@ const Registrars = () => {
   }, [registrarsData, registrarsLoading, registrarsError]);
 
   // Role-based permissions
-  const canApproveRegistrars = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.ZONAL_ADMIN].includes(user?.role);
-  const canManageRegistrars = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.ZONAL_ADMIN].includes(user?.role);
+  const canApproveRegistrars = [ROLES.SUPER_ADMIN].includes(user?.role); // Only super admin can approve
+  const canManageRegistrars = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.ZONAL_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
   const canAssignZones = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN].includes(user?.role);
   if (loading) {
     return (
@@ -128,6 +128,7 @@ const Registrars = () => {
               <PendingRegistrars 
                 registrars={registrars.filter(r => r.status === STATUS.PENDING)}
                 onRefresh={refetch}
+                canApprove={canApproveRegistrars}
               />
             </TabPane>
           )}
@@ -222,7 +223,7 @@ const RegistrarsList = ({ registrars, loading, error, canManage, onRefresh }) =>
 };
 
 // Pending Registrars Component
-const PendingRegistrars = ({ registrars, onRefresh }) => {
+const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
   const { execute: approveRegistrar } = useApi(null, { immediate: false });
   const { execute: rejectRegistrar } = useApi(null, { immediate: false });
 
@@ -278,16 +279,19 @@ const PendingRegistrars = ({ registrars, onRefresh }) => {
                 <i className="bi bi-geo-alt me-2 text-muted"></i>
                 <small>{registrar.preferredZone || 'No Zone Preference'}</small>
               </div>
+              
+              {canApprove && (
                 <ApprovalActions
-                entityId={registrar._id}
-                entityType="registrar"
-                onApprove={handleApprove}
-                onReject={handleReject}
-                approveText="Approve"
-                rejectText="Reject"
-                size="sm"
-                layout="horizontal"
-              />
+                  entityId={registrar._id}
+                  entityType="registrar"
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  approveText="Approve"
+                  rejectText="Reject"
+                  size="sm"
+                  layout="horizontal"
+                />
+              )}
             </div>
           </div>
         </div>

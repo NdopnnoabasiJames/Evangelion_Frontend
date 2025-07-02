@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }) => {
             const profileResponse = await authService.getProfile();
             const fullUser = profileResponse.data;
             
-            
             // Normalize user data structure - flatten if nested in data property
             const normalizedUser = fullUser.data || fullUser;
             

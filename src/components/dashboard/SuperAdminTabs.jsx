@@ -11,6 +11,7 @@ import AdminBranchesTab from './tabs/AdminBranchesTab';
 import AdminZonesTab from './tabs/AdminZonesTab';
 import AdminWorkersTab from './tabs/AdminWorkersTab';
 import AdminGuestsTab from './tabs/AdminGuestsTab';
+import RegistrarsManagement from '../admin/RegistrarsManagement';
 
 const SuperAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
@@ -105,6 +106,8 @@ const SuperAdminTabs = ({ dashboardData }) => {
 
   const renderGuests = () => <AdminGuestsTab />;
 
+  const renderRegistrars = () => <RegistrarsManagement />;
+
   return (
     <div>
       {/* Tab Navigation */}
@@ -183,6 +186,16 @@ const SuperAdminTabs = ({ dashboardData }) => {
         </li>
         <li className="nav-item" role="presentation">
           <button
+            className={`nav-link ${activeTab === 'registrars' ? 'active' : ''}`}
+            onClick={() => setActiveTab('registrars')}
+            type="button"
+          >
+            <i className="bi bi-person-badge me-2"></i>
+            Registrars
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
             className={`nav-link ${activeTab === 'guests' ? 'active' : ''}`}
             onClick={() => setActiveTab('guests')}
             type="button"
@@ -200,6 +213,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
         {activeTab === 'branches' && renderBranches()}
         {activeTab === 'zones' && renderZones()}
         {activeTab === 'workers' && renderWorkers()}
+        {activeTab === 'registrars' && renderRegistrars()}
         {activeTab === 'guests' && renderGuests()}
       </div>
     </div>
