@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 import { analyticsService } from '../../services/analyticsService';
+import { exportToExcel } from '../../utils/exportUtils';
 
 const StatesManagement = () => {  const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -184,6 +185,37 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
     });
   };
 
+  const handleExportStates = () => {
+    const columns = [
+      { key: 'rank', label: 'Rank' },
+      { key: 'name', label: 'State Name' },
+      { key: 'stateAdminName', label: 'State Admin Name' },
+      { key: 'stateAdminEmail', label: 'State Admin Email' },
+      { key: 'score', label: 'Score' },
+      { key: 'branchCount', label: 'Branches Count' },
+      { key: 'zoneCount', label: 'Zones Count' },
+      { key: 'createdAt', label: 'Created Date' },
+      { key: 'status', label: 'Status' },
+      { key: 'medal', label: 'Medal' }
+    ];
+
+    const exportData = filteredStates.map(state => ({
+      rank: state.rank || '',
+      name: state.name,
+      stateAdminName: state.stateAdmin?.name || 'No admin assigned',
+      stateAdminEmail: state.stateAdmin?.email || '',
+      score: state.totalScore || 0,
+      branchCount: state.branchCount || 0,
+      zoneCount: state.zoneCount || 0,
+      createdAt: formatDate(state.createdAt),
+      status: state.isActive ? 'Active' : 'Inactive',
+      medal: state.medal ? state.medal.charAt(0).toUpperCase() + state.medal.slice(1) : ''
+    }));
+
+    const filename = `States_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
   if (loading) {
     return (
       <div className="card">
@@ -321,102 +353,117 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                 <i className="fas fa-times me-2"></i>
                 Clear All Filters
               </button>
-            </div>) : (            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>State Name</th>
-                    <th>State Admin</th>
-                    <th>Score</th>
-                    <th>Branches</th>
-                    <th>Zones</th>
-                    <th>Created</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStates.map((state, index) => (
-                    <tr key={state._id}>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          {state.medal && state.medal !== '' ? (
-                            <i className={`bi bi-award-fill me-2 ${
-                              state.medal === 'gold' ? 'text-warning' :     // Gold
-                              state.medal === 'silver' ? 'text-secondary' :  // Silver
-                              state.medal === 'bronze' ? 'text-orange' : ''  // Bronze
-                            }`} title={
-                              state.medal.charAt(0).toUpperCase() + state.medal.slice(1) + ' Medal'
-                            }></i>
-                          ) : null}
-                          <span className="fw-bold">{state.rank || index + 1}</span>
-                          {state.medal && state.medal !== '' && (
-                            <small className="text-muted ms-2">
-                              {state.medal.charAt(0).toUpperCase() + state.medal.slice(1)}
-                            </small>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <i className="bi bi-geo-alt text-primary me-2"></i>
-                          <div>
-                            <strong>{state.name}</strong>                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        {state.stateAdmin ? (
-                          <div>
-                            <div className="fw-bold">{state.stateAdmin.name}</div>
-                            <small className="text-muted">{state.stateAdmin.email}</small>
-                          </div>
-                        ) : (
-                          <span className="text-muted">No admin assigned</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className="badge bg-success">
-                          {state.totalScore || 0} pts
-                        </span>
-                      </td>
-                      <td>
-                        <span className="badge bg-info">{state.branchCount || 0}</span>
-                      </td><td>
-                        <span className="badge bg-success">{state.zoneCount || 0}</span>
-                      </td>
-                      <td>
-                        <small className="text-muted">
-                          {formatDate(state.createdAt)}
-                        </small>
-                      </td>
-                      <td>
-                        <span className={`badge ${state.isActive ? 'bg-success' : 'bg-warning'}`}>
-                          {state.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="btn-group btn-group-sm">
-                          <button
-                            className="btn btn-outline-primary"
-                            onClick={() => setEditingState(state)}
-                            title="Edit state"
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </button>
-                          <button
-                            className="btn btn-outline-info"
-                            title="View details"
-                          >
-                            <i className="bi bi-eye"></i>
-                          </button>
-                        </div>
-                      </td>
+            </div>) : (
+            <>
+              {/* Export Button */}
+              <div className="d-flex justify-content-end mb-3">
+                <button 
+                  className="btn btn-success btn-sm"
+                  onClick={handleExportStates}
+                  disabled={filteredStates.length === 0}
+                >
+                  <i className="bi bi-download me-2"></i>
+                  Export to Excel ({filteredStates.length} states)
+                </button>
+              </div>
+
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>State Name</th>
+                      <th>State Admin</th>
+                      <th>Score</th>
+                      <th>Branches</th>
+                      <th>Zones</th>
+                      <th>Created</th>
+                      <th>Status</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filteredStates.map((state, index) => (
+                      <tr key={state._id}>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            {state.medal && state.medal !== '' ? (
+                              <i className={`bi bi-award-fill me-2 ${
+                                state.medal === 'gold' ? 'text-warning' :     // Gold
+                                state.medal === 'silver' ? 'text-secondary' :  // Silver
+                                state.medal === 'bronze' ? 'text-orange' : ''  // Bronze
+                              }`} title={
+                                state.medal.charAt(0).toUpperCase() + state.medal.slice(1) + ' Medal'
+                              }></i>
+                            ) : null}
+                            <span className="fw-bold">{state.rank || index + 1}</span>
+                            {state.medal && state.medal !== '' && (
+                              <small className="text-muted ms-2">
+                                {state.medal.charAt(0).toUpperCase() + state.medal.slice(1)}
+                              </small>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <i className="bi bi-geo-alt text-primary me-2"></i>
+                            <div>
+                              <strong>{state.name}</strong>                          </div>
+                          </div>
+                        </td>
+                        <td>
+                          {state.stateAdmin ? (
+                            <div>
+                              <div className="fw-bold">{state.stateAdmin.name}</div>
+                              <small className="text-muted">{state.stateAdmin.email}</small>
+                            </div>
+                          ) : (
+                            <span className="text-muted">No admin assigned</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className="badge bg-success">
+                            {state.totalScore || 0} pts
+                          </span>
+                        </td>
+                        <td>
+                          <span className="badge bg-info">{state.branchCount || 0}</span>
+                        </td><td>
+                          <span className="badge bg-success">{state.zoneCount || 0}</span>
+                        </td>
+                        <td>
+                          <small className="text-muted">
+                            {formatDate(state.createdAt)}
+                          </small>
+                        </td>
+                        <td>
+                          <span className={`badge ${state.isActive ? 'bg-success' : 'bg-warning'}`}>
+                            {state.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="btn-group btn-group-sm">
+                            <button
+                              className="btn btn-outline-primary"
+                              onClick={() => setEditingState(state)}
+                              title="Edit state"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </button>
+                            <button
+                              className="btn btn-outline-info"
+                              title="View details"
+                            >
+                              <i className="bi bi-eye"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>
