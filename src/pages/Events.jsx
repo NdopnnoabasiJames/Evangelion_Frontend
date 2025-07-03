@@ -10,10 +10,12 @@ import EventsList from '../components/events/EventsList';
 import EventDelegation from '../components/events/EventDelegation';
 import HierarchicalEventCreation from '../components/events/HierarchicalEventCreation';
 import PickupStationAssignment from '../components/events/PickupStationAssignment';
+import RegistrarVolunteerEvents from '../components/registrars/RegistrarVolunteerEvents';
+import PendingRegistrarRequests from '../components/registrars/PendingRegistrarRequests';
 
 const Events = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('list');
+  const [activeTab, setActiveTab] = useState(user?.role === 'registrar' ? 'volunteer-events' : 'list');
   const [events, setEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +65,8 @@ const Events = () => {
   const canDelegateEvents = ['state_admin', 'branch_admin'].includes(user?.role);
   const canAssignPickupStations = user?.role === 'zonal_admin';
   const canViewPickupStations = ['super_admin', 'zonal_admin'].includes(user?.role);
+  const isRegistrar = user?.role === 'registrar';
+  const canApprovePendingRegistrars = user?.role === 'branch_admin';
 
   const refreshAllData = () => {
     refetch();
@@ -116,13 +120,22 @@ const Events = () => {
   }
 
   const getTabsForRole = () => {
-    const baseTabs = [
-      {
+    const baseTabs = [];
+
+    // For registrars, show volunteer events instead of regular events list
+    if (isRegistrar) {
+      baseTabs.push({
+        key: 'volunteer-events',
+        label: 'Volunteer Events',
+        icon: 'bi-person-check'
+      });
+    } else {
+      baseTabs.push({
         key: 'list',
         label: 'Events List',
         icon: 'bi-list-ul'
-      }
-    ];
+      });
+    }
 
     if (canDelegateEvents && pendingEvents?.length > 0) {
       baseTabs.push({
@@ -130,6 +143,14 @@ const Events = () => {
         label: `Pending Delegation (${pendingEvents.length})`,
         icon: 'bi-clock-history',
         badge: pendingEvents.length
+      });
+    }
+
+    if (canApprovePendingRegistrars) {
+      baseTabs.push({
+        key: 'pending-registrars',
+        label: 'Pending Registrars',
+        icon: 'bi-person-exclamation'
       });
     }
 
@@ -172,19 +193,37 @@ const Events = () => {
           onTabChange={setActiveTab}
           tabs={getTabsForRole()}
           variant="tabs"
-        >          <TabPane tabId="list" title="Events List">
-            <EventsList 
-              events={events}
-              loading={loading}
-              error={error}
-              canEdit={canEditEvents}
-              onRefresh={refreshAllData}
-              onCreateEvent={canCreateEvents ? () => {
-                console.log('Events page: Switching to create tab');
-                setActiveTab('create');
-              } : null}
-            />
-          </TabPane>
+        >          
+          {/* Registrar Volunteer Events Tab */}
+          {isRegistrar && (
+            <TabPane tabId="volunteer-events" title="Volunteer Events">
+              <RegistrarVolunteerEvents />
+            </TabPane>
+          )}
+
+          {/* Regular Events List for Admins */}
+          {!isRegistrar && (
+            <TabPane tabId="list" title="Events List">
+              <EventsList 
+                events={events}
+                loading={loading}
+                error={error}
+                canEdit={canEditEvents}
+                onRefresh={refreshAllData}
+                onCreateEvent={canCreateEvents ? () => {
+                  console.log('Events page: Switching to create tab');
+                  setActiveTab('create');
+                } : null}
+              />
+            </TabPane>
+          )}
+
+          {/* Pending Registrar Requests for Branch Admins */}
+          {canApprovePendingRegistrars && (
+            <TabPane tabId="pending-registrars" title="Pending Registrars">
+              <PendingRegistrarRequests />
+            </TabPane>
+          )}
 
           {canDelegateEvents && pendingEvents?.length > 0 && (
             <TabPane tabId="pending" title="Pending Delegation">

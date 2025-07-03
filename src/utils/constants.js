@@ -55,7 +55,7 @@ export const ROLE_NAVIGATION_PERMISSIONS = {
   ],
   [ROLES.ZONAL_ADMIN]: ["dashboard", "events", "guests", "registrars"],
   [ROLES.WORKER]: ["dashboard", "events", "myGuests"],
-  [ROLES.REGISTRAR]: ["dashboard", "checkin"],
+  [ROLES.REGISTRAR]: ["dashboard", "events", "checkin"],
 };
 
 // Helper function to get navigation items for a specific role
@@ -136,6 +136,16 @@ export const API_ENDPOINTS = {
     MY_EVENTS: "/api/registrars/events/my",
     VOLUNTEER: "/api/registrars/events",
     CHECK_IN_GUESTS: "/api/registrars/events",
+    VOLUNTEER_STATS: "/api/registrars/volunteer/stats",
+    VOLUNTEER_EVENTS: "/api/registrars/volunteer/events",
+    VOLUNTEER_MY_EVENTS: "/api/registrars/volunteer/events/my",
+    VOLUNTEER_FOR_EVENT: "/api/registrars/volunteer/events",
+    VOLUNTEER_EVENT_GUESTS: "/api/registrars/volunteer/events",
+    VOLUNTEER_CHECKIN: "/api/registrars/volunteer/events",
+    // Branch Admin approval endpoints
+    PENDING_VOLUNTEER_REQUESTS: "/api/registrars/admin/volunteer-requests/pending",
+    APPROVE_VOLUNTEER_REQUEST: "/api/registrars/admin/volunteer-requests",
+    REJECT_VOLUNTEER_REQUEST: "/api/registrars/admin/volunteer-requests",
     // Super Admin endpoints
     SUPER_ADMIN_ALL: "/api/registrars/super-admin/all",
     SUPER_ADMIN_PENDING: "/api/registrars/super-admin/pending",

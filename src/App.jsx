@@ -17,6 +17,7 @@ import CheckIn from './pages/CheckIn';
 import Workers from './pages/Workers';
 import Registrars from './pages/Registrars';
 import Analytics from './pages/Analytics';
+import RegistrarEventCheckIn from './components/registrars/RegistrarEventCheckIn';
 
 // Import styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -96,6 +97,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Analytics />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/events/:eventId/checkin" 
+              element={
+                <ProtectedRoute>
+                  <RegistrarEventCheckIn />
                 </ProtectedRoute>
               } 
             />

@@ -156,7 +156,7 @@ const RegistrarTabs = ({ dashboardData }) => {
 
   const handleCheckInGuest = async (guestId) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.REGISTRARS.BASE}/guests/${guestId}/check-in`, {
+      const response = await fetch(`${API_ENDPOINTS.REGISTRARS.VOLUNTEER_CHECKIN}/${selectedEvent._id}/guests/${guestId}/checkin`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -523,10 +523,12 @@ const RegistrarTabs = ({ dashboardData }) => {
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover mb-0">
-                <thead className="table-light">                  <tr>
+                <thead className="table-light">
+                  <tr>
                     <th scope="col">Guest Name</th>
                     <th scope="col">Phone</th>
                     <th scope="col">Email</th>
+                    <th scope="col">Registered By</th>
                     <th scope="col">Comments</th>
                     <th scope="col">Status</th>
                     <th scope="col">Check-In Time</th>
@@ -538,8 +540,19 @@ const RegistrarTabs = ({ dashboardData }) => {
                     <tr key={guest._id}>
                       <td>
                         <div className="fw-semibold">{guest.name}</div>
-                      </td>                      <td>{guest.phone}</td>
+                      </td>
+                      <td>{guest.phone}</td>
                       <td>{guest.email}</td>
+                      <td>
+                        {guest.registeredBy ? (
+                          <div>
+                            <div className="fw-semibold">{guest.registeredBy.name}</div>
+                            <small className="text-muted">{guest.registeredBy.email}</small>
+                          </div>
+                        ) : (
+                          <small className="text-muted">Unknown</small>
+                        )}
+                      </td>
                       <td className="text-muted">{guest.comments || '-'}</td>
                       <td>
                         <span className={`badge ${guest.checkedIn ? 'bg-success' : 'bg-warning'}`}>
@@ -570,7 +583,7 @@ const RegistrarTabs = ({ dashboardData }) => {
                           {guest.checkedIn ? (
                             <><i className="bi bi-check-circle me-1"></i>Checked In</>
                           ) : (
-                            <><i className="bi bi-check2 me-1"></i>Check In</>
+                            <><i className="bi bi-person-check me-1"></i>Check In</>
                           )}
                         </button>
                       </td>
