@@ -298,7 +298,7 @@ const GuestsManagement = () => {
                       onChange={(e) => handleFilterChange('transportFilter', e.target.value)}
                     >
                       <option value="all">All Transport</option>
-                      <option value="bus">Bus</option>
+                      <option value="church_bus">Church Bus</option>
                       <option value="private">Private</option>
                     </select>
                   </div>
@@ -458,8 +458,8 @@ const GuestsManagement = () => {
                           </span>
                         </td>
                         <td>
-                          <span className={`badge ${guest.transportPreference === 'bus' ? 'bg-warning' : 'bg-success'}`}>
-                            {guest.transportPreference === 'bus' ? 'Bus' : 'Private'}
+                          <span className={`badge ${guest.transportPreference === 'church_bus' ? 'bg-warning' : 'bg-success'}`}>
+                            {guest.transportPreference === 'church_bus' ? 'Church Bus' : 'Private'}
                           </span>
                         </td>
                         <td>

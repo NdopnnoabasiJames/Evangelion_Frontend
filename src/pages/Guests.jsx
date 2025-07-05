@@ -7,6 +7,8 @@ import { StatisticsGrid, StatisticsCardTypes } from '../components/common/Statis
 import { TabbedInterface, TabPane, TabConfigurations } from '../components/common/TabNavigation';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { API_ENDPOINTS } from '../utils/constants';
+import GuestRegistrationForm from '../components/guests/GuestRegistrationForm';
+import { fetchGuestsHelper, fetchPickupStationsHelper, handleQuickSearchHelper, getStatusBadge } from '../helpers/guests.helpers.jsx';
 
 const Guests = () => {
   const { user } = useAuth();
@@ -18,6 +20,8 @@ const Guests = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statistics, setStatistics] = useState({});
+  const [pickupStations, setPickupStations] = useState([]);
+  const [loadingPickupStations, setLoadingPickupStations] = useState(false);
   // Form state for guest registration
   const [guestForm, setGuestForm] = useState({
     name: '',
@@ -37,42 +41,25 @@ const Guests = () => {
 
   // Fetch guests based on role and permissions
   const fetchGuests = async () => {
-    try {
-      setLoading(true);
-      let endpoint = '';
-      
-      if (['SUPER_ADMIN', 'STATE_ADMIN', 'BRANCH_ADMIN', 'ZONAL_ADMIN'].includes(user?.role)) {
-        // Admin users get advanced guest management
-        endpoint = `${API_ENDPOINTS.GUESTS.ADMIN}${selectedEvent ? `?eventId=${selectedEvent}` : ''}`;
-      } else if (user?.role === 'WORKER') {
-        // Workers see only their registered guests
-        endpoint = `${API_ENDPOINTS.WORKERS.MY_GUESTS}${selectedEvent ? `?eventId=${selectedEvent}` : ''}`;
-      } else {
-        // Registrars should not access this page typically
-        endpoint = API_ENDPOINTS.GUESTS.BASE;
-      }
+    await fetchGuestsHelper({
+      user,
+      selectedEvent,
+      setLoading,
+      setGuests,
+      setStatistics,
+      setError,
+      API_ENDPOINTS
+    });
+  };
 
-      const response = await fetch(endpoint, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGuests(data.guests || data || []);
-        if (data.summary) {
-          setStatistics(data.summary);
-        }
-      } else {
-        setError('Failed to fetch guests');
-      }
-    } catch (err) {
-      setError('Error loading guests: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
+  // Fetch pickup stations for the worker's branch
+  const fetchPickupStations = async () => {
+    await fetchPickupStationsHelper({
+      user,
+      setLoadingPickupStations,
+      setPickupStations,
+      API_ENDPOINTS
+    });
   };
 
   useEffect(() => {
@@ -90,6 +77,13 @@ const Guests = () => {
     }
   }, [selectedEvent, user]);
 
+  // Fetch pickup stations when user's branch is available
+  useEffect(() => {
+    if (user?.branch?._id) {
+      fetchPickupStations();
+    }
+  }, [user]);
+
   // Role-based permissions
   const canRegisterGuests = ['WORKER'].includes(user?.role);
   const canManageGuests = ['SUPER_ADMIN', 'STATE_ADMIN', 'BRANCH_ADMIN', 'ZONAL_ADMIN'].includes(user?.role);
@@ -100,6 +94,12 @@ const Guests = () => {
     
     if (!selectedEvent) {
       alert('Please select an event');
+      return;
+    }
+
+    // Validate pickup station when church bus is selected
+    if (guestForm.transportPreference === 'church_bus' && !guestForm.pickupStation) {
+      alert('Please select a pickup station for church bus transport');
       return;
     }
 
@@ -149,54 +149,17 @@ const Guests = () => {
   };
 
   const handleQuickSearch = async () => {
-    if (!searchTerm.trim()) {
-      await fetchGuests();
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      let endpoint = '';
-      if (canSearchAdvanced) {
-        endpoint = `${API_ENDPOINTS.GUESTS.QUICK_SEARCH}?q=${encodeURIComponent(searchTerm)}`;
-      } else {
-        // For workers, search their own guests
-        endpoint = `${API_ENDPOINTS.WORKERS.MY_GUESTS}?search=${encodeURIComponent(searchTerm)}`;
-      }
-
-      const response = await fetch(endpoint, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGuests(data.guests || data || []);
-      }
-    } catch (err) {
-      setError('Search failed: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
+    await handleQuickSearchHelper({
+      searchTerm,
+      canSearchAdvanced,
+      fetchGuests,
+      setLoading,
+      setGuests,
+      setError,
+      API_ENDPOINTS
+    });
   };
 
-  const getStatusBadge = (status) => {
-    const statusColors = {
-      'registered': 'bg-primary',
-      'checked_in': 'bg-success',
-      'no_show': 'bg-warning',
-      'cancelled': 'bg-danger'
-    };
-    
-    return (
-      <span className={`badge ${statusColors[status] || 'bg-secondary'} text-white`}>
-        {status?.replace('_', ' ').toUpperCase() || 'REGISTERED'}
-      </span>
-    );
-  };
   if (loading && !guests.length) {
     return (
       <Layout>
@@ -386,9 +349,19 @@ const Guests = () => {
                                 <td>{guest.phone}</td>
                                 <td className="text-muted">{guest.email || '-'}</td>
                                 <td>
-                                  <span className={`badge ${guest.transportPreference === 'bus' ? 'bg-info' : 'bg-secondary'}`}>
-                                    {guest.transportPreference}
-                                  </span>
+                                  <div>
+                                    <span className={`badge ${guest.transportPreference === 'church_bus' ? 'bg-info' : 'bg-secondary'}`}>
+                                      {guest.transportPreference === 'church_bus' ? 'Church Bus' : 'Private'}
+                                    </span>
+                                    {guest.transportPreference === 'church_bus' && guest.pickupStation && (
+                                      <div className="small text-muted mt-1">
+                                        📍 {guest.pickupStation.location}
+                                        {guest.pickupStation.departureTime && (
+                                          <span className="ms-1">({guest.pickupStation.departureTime})</span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </td>
                                 <td>{getStatusBadge(guest.status)}</td>                                <td className="text-muted">
                                   {guest.registeredBy?.name || 'Unknown'}
@@ -421,92 +394,15 @@ const Guests = () => {
                   <h5 className="mb-0">Register New Guest</h5>
                 </div>
                 <div className="card-body">
-                  <form onSubmit={handleGuestRegistration}>
-                    <div className="row">
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Full Name *</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={guestForm.name}
-                          onChange={(e) => setGuestForm({...guestForm, name: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Phone Number *</label>
-                        <input
-                          type="tel"
-                          className="form-control"
-                          value={guestForm.phone}
-                          onChange={(e) => setGuestForm({...guestForm, phone: e.target.value})}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Email Address</label>
-                        <input
-                          type="email"
-                          className="form-control"
-                          value={guestForm.email}
-                          onChange={(e) => setGuestForm({...guestForm, email: e.target.value})}
-                        />
-                      </div>
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Transport Preference</label>
-                        <select
-                          className="form-select"
-                          value={guestForm.transportPreference}
-                          onChange={(e) => setGuestForm({...guestForm, transportPreference: e.target.value})}
-                        >
-                          <option value="private">Private Transport</option>
-                          <option value="bus">Bus Transport</option>
-                        </select>
-                      </div>                      <div className="col-12 mb-3">
-                        <label className="form-label">Notes</label>
-                        <textarea
-                          className="form-control"
-                          rows="3"
-                          value={guestForm.notes}
-                          onChange={(e) => setGuestForm({...guestForm, notes: e.target.value})}
-                          placeholder="Any additional notes about the guest..."
-                        ></textarea>
-                      </div>
-                      <div className="col-12 mb-3">
-                        <label className="form-label">Comments</label>
-                        <textarea
-                          className="form-control"
-                          rows="2"
-                          value={guestForm.comments}
-                          onChange={(e) => setGuestForm({...guestForm, comments: e.target.value})}
-                          placeholder="Optional comments..."
-                        ></textarea>
-                      </div>
-                    </div>
-                    
-                    <div className="d-flex gap-2">
-                      <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Registering...
-                          </>
-                        ) : (
-                          <>
-                            <i className="bi bi-person-plus me-2"></i>
-                            Register Guest
-                          </>
-                        )}
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn btn-outline-secondary"
-                        onClick={() => setActiveTab('list')}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
+                  <GuestRegistrationForm
+                    guestForm={guestForm}
+                    setGuestForm={setGuestForm}
+                    handleGuestRegistration={handleGuestRegistration}
+                    loading={loading}
+                    loadingPickupStations={loadingPickupStations}
+                    pickupStations={pickupStations}
+                    setActiveTab={setActiveTab}
+                  />
                 </div>
               </div>
             </TabPane>

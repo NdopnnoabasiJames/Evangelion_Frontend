@@ -232,6 +232,7 @@ export const API_ENDPOINTS = {
     BASE: "/api/pickup-stations",
     ASSIGN: "/api/pickup-stations/assign",
     ZONE_STATIONS: "/api/pickup-stations/zone",
+    BY_BRANCH: "/api/pickup-stations/by-branch",
     // State Admin specific endpoints
     STATE_ADMIN_LIST: "/api/pickup-stations/state-admin/my-stations",
   },
