@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import { exportToExcel } from '../../utils/exportUtils';
 
 const GuestsManagement = () => {
   const { user } = useAuth();
@@ -132,6 +133,50 @@ const GuestsManagement = () => {
       branchFilter: 'all',
       stateFilter: 'all'
     });
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Export function for guests
+  const handleExportGuests = () => {
+    const columns = [
+      { key: 'name', label: 'Guest Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'event', label: 'Event' },
+      { key: 'status', label: 'Status' },
+      { key: 'transport', label: 'Transport' },
+      { key: 'checkedIn', label: 'Checked In' },
+      { key: 'registeredBy', label: 'Registered By' },
+      { key: 'branch', label: 'Branch' },
+      { key: 'state', label: 'State' },
+      { key: 'registrationDate', label: 'Registration Date' },
+      { key: 'checkedInTime', label: 'Check-in Time' }
+    ];
+
+    const exportData = filteredGuests.map(guest => ({
+      name: guest.name,
+      email: guest.email || '',
+      phone: guest.phone || '',
+      event: guest.event?.name || '',
+      status: formatStatusText(guest.status),
+      transport: guest.transportPreference || '',
+      checkedIn: guest.checkedIn ? 'Yes' : 'No',
+      registeredBy: guest.registeredBy?.name || '',
+      branch: guest.branch?.name || '',
+      state: guest.state?.name || '',
+      registrationDate: formatDate(guest.createdAt),
+      checkedInTime: guest.checkedInTime ? formatDate(guest.checkedInTime) : ''
+    }));
+
+    const filename = `Guests_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
   };
 
   const getStatusBadgeClass = (status) => {
@@ -334,7 +379,32 @@ const GuestsManagement = () => {
             <h6 className="text-muted mt-3">No Guests Found</h6>
             <p className="text-muted">No guests have been registered yet.</p>
           </div>
-        ) : (          <div>            <div className="table-responsive">
+        ) : (
+          <div>
+            {/* Results Summary and Export Button */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <small className="text-muted">
+                Showing {filteredGuests.length} of {guests.length} guests
+              </small>
+              <div className="d-flex align-items-center gap-2">
+                {(filters.search || filters.eventFilter !== 'all' || filters.statusFilter !== 'all' || filters.transportFilter !== 'all' || filters.branchFilter !== 'all' || filters.stateFilter !== 'all') && (
+                  <small className="text-info">
+                    <i className="bi bi-funnel-fill me-1"></i>
+                    Filters applied
+                  </small>
+                )}
+                <button
+                  className="btn btn-outline-success btn-sm"
+                  onClick={handleExportGuests}
+                  title="Export to Excel"
+                >
+                  <i className="bi bi-file-earmark-excel me-1"></i>
+                  Export
+                </button>
+              </div>
+            </div>
+            
+            <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>

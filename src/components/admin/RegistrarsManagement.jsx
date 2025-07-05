@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 import { toast } from 'react-toastify';
+import { exportToExcel } from '../../utils/exportUtils';
 
 const RegistrarsManagement = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -194,6 +195,71 @@ const RegistrarsManagement = () => {
     });
   };
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Export functions for registrars
+  const handleExportRegistrars = () => {
+    const columns = [
+      { key: 'name', label: 'Registrar Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'state', label: 'State' },
+      { key: 'branch', label: 'Branch' },
+      { key: 'assignedZones', label: 'Assigned Zones' },
+      { key: 'status', label: 'Status' },
+      { key: 'approvedBy', label: 'Approved By' },
+      { key: 'approvedAt', label: 'Approved Date' },
+      { key: 'createdAt', label: 'Created Date' }
+    ];
+
+    const exportData = registrars.map(registrar => ({
+      name: registrar.name,
+      email: registrar.email || '',
+      phone: registrar.phone || '',
+      state: registrar.state?.name || '',
+      branch: registrar.branch?.name || '',
+      assignedZones: registrar.assignedZones?.length || 0,
+      status: registrar.isApproved ? 'Approved' : 'Pending',
+      approvedBy: registrar.approvedBy?.name || '',
+      approvedAt: registrar.approvedAt ? formatDate(registrar.approvedAt) : '',
+      createdAt: formatDate(registrar.createdAt)
+    }));
+
+    const filename = `Registrars_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
+  const handleExportPendingRegistrars = () => {
+    const columns = [
+      { key: 'name', label: 'Registrar Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'state', label: 'State' },
+      { key: 'branch', label: 'Branch' },
+      { key: 'status', label: 'Status' },
+      { key: 'createdAt', label: 'Created Date' }
+    ];
+
+    const exportData = pendingRegistrars.map(registrar => ({
+      name: registrar.name,
+      email: registrar.email || '',
+      phone: registrar.phone || '',
+      state: registrar.state?.name || '',
+      branch: registrar.branch?.name || '',
+      status: 'Pending',
+      createdAt: formatDate(registrar.createdAt)
+    }));
+
+    const filename = `Pending_Registrars_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
   const currentData = activeTab === 'all' ? registrars : pendingRegistrars;
   const pendingCount = pendingRegistrars.length;
 
@@ -324,7 +390,21 @@ const RegistrarsManagement = () => {
             </p>
           </div>
         ) : (
-          <div className="table-responsive">
+          <>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="mb-0">
+                {activeTab === 'all' ? 'All Registrars' : 'Pending Approval'}
+              </h6>
+              <button
+                className="btn btn-outline-success btn-sm"
+                onClick={activeTab === 'all' ? handleExportRegistrars : handleExportPendingRegistrars}
+                title="Export to Excel"
+              >
+                <i className="bi bi-file-earmark-excel me-1"></i>
+                Export
+              </button>
+            </div>
+            <div className="table-responsive">
             <table className="table table-hover">
               <thead>
                 <tr>
@@ -412,7 +492,8 @@ const RegistrarsManagement = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>

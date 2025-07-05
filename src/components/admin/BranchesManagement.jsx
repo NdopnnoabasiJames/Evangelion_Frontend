@@ -6,6 +6,7 @@ import { analyticsService } from '../../services/analyticsService';
 import adminManagementService from '../../services/adminManagement';
 import BranchModal from './BranchModal';
 import BranchesTable from './BranchesTable';
+import { exportToExcel } from '../../utils/exportUtils';
 
 const BranchesManagement = () => {
   const { user } = useAuth();
@@ -338,6 +339,80 @@ const BranchesManagement = () => {
     });
   };
 
+  // Export functions for different tabs
+  const handleExportBranches = () => {
+    const columns = [
+      { key: 'rank', label: 'Rank' },
+      { key: 'name', label: 'Branch Name' },
+      { key: 'location', label: 'Location' },
+      { key: 'state', label: 'State' },
+      { key: 'branchAdmin', label: 'Branch Admin' },
+      { key: 'adminEmail', label: 'Admin Email' },
+      { key: 'zonesCount', label: 'Zones' },
+      { key: 'workersCount', label: 'Workers' },
+      { key: 'totalScore', label: 'Score' },
+      { key: 'status', label: 'Status' },
+      { key: 'medal', label: 'Medal' }
+    ];
+
+    const exportData = filteredBranches.map(branch => ({
+      rank: branch.rank || '',
+      name: branch.name,
+      location: branch.location || '',
+      state: branch.stateId?.name || '',
+      branchAdmin: branch.branchAdmin?.name || 'No admin assigned',
+      adminEmail: branch.branchAdmin?.email || '',
+      zonesCount: branch.zonesCount || 0,
+      workersCount: branch.workersCount || 0,
+      totalScore: branch.totalScore || 0,
+      status: branch.isActive ? 'Active' : 'Inactive',
+      medal: branch.medal ? branch.medal.charAt(0).toUpperCase() + branch.medal.slice(1) : ''
+    }));
+
+    const filename = `Branches_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
+  const handleExportPendingBranches = () => {
+    const columns = [
+      { key: 'name', label: 'Branch Name' },
+      { key: 'location', label: 'Location' },
+      { key: 'status', label: 'Status' },
+      { key: 'state', label: 'State' },
+      { key: 'createdAt', label: 'Created Date' }
+    ];
+
+    const exportData = pendingBranches.map(branch => ({
+      name: branch.name,
+      location: branch.location || '',
+      status: branch.status,
+      state: branch.stateId?.name || '',
+      createdAt: formatDate(branch.createdAt)
+    }));
+
+    const filename = `Pending_Branches_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
+  const handleExportRejectedBranches = () => {
+    const columns = [
+      { key: 'name', label: 'Branch Name' },
+      { key: 'location', label: 'Location' },
+      { key: 'state', label: 'State' },
+      { key: 'createdAt', label: 'Created Date' }
+    ];
+
+    const exportData = rejectedBranches.map(branch => ({
+      name: branch.name,
+      location: branch.location || '',
+      state: branch.stateId?.name || '',
+      createdAt: formatDate(branch.createdAt)
+    }));
+
+    const filename = `Rejected_Branches_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
   if (loading) {
     return (
       <div className="card">
@@ -387,19 +462,43 @@ const BranchesManagement = () => {
           )}
           {/* Tab content */}
           {activeTab === 'all' && (
-            <BranchesTable
-              branches={filteredBranches}
-              filters={filters}
-              handleFilterChange={handleFilterChange}
-              clearFilters={clearFilters}
-              getUniqueStates={getUniqueStates}
-              error={error}
-              setEditingBranch={setEditingBranch}
-              handleDeleteBranch={handleDeleteBranch}
-            />
+            <>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="mb-0">All Branches</h6>
+                <button
+                  className="btn btn-outline-success btn-sm"
+                  onClick={handleExportBranches}
+                  title="Export to Excel"
+                >
+                  <i className="bi bi-file-earmark-excel me-1"></i>
+                  Export
+                </button>
+              </div>
+              <BranchesTable
+                branches={filteredBranches}
+                filters={filters}
+                handleFilterChange={handleFilterChange}
+                clearFilters={clearFilters}
+                getUniqueStates={getUniqueStates}
+                error={error}
+                setEditingBranch={setEditingBranch}
+                handleDeleteBranch={handleDeleteBranch}
+              />
+            </>
           )}
           {activeTab === 'pending' && (
             <>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="mb-0">Pending Approval</h6>
+                <button
+                  className="btn btn-outline-success btn-sm"
+                  onClick={handleExportPendingBranches}
+                  title="Export to Excel"
+                >
+                  <i className="bi bi-file-earmark-excel me-1"></i>
+                  Export
+                </button>
+              </div>
               <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>
@@ -435,35 +534,48 @@ const BranchesManagement = () => {
             </>
           )}
           {activeTab === 'rejected' && (
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Branch Name</th>
-                    <th>Location</th>
-                    {user?.role === ROLES.SUPER_ADMIN && <th>State</th>}
-                    <th>Created</th>
-                    {user?.role === ROLES.SUPER_ADMIN && <th>Actions</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rejectedBranches.map(branch => (
-                    <tr key={branch._id}>
-                      <td>{branch.name}</td>
-                      <td>{branch.location}</td>
-                      {user?.role === ROLES.SUPER_ADMIN && <td>{branch.stateId?.name}</td>}
-                      <td>{formatDate(branch.createdAt)}</td>
-                      {user?.role === ROLES.SUPER_ADMIN && (
-                        <td>
-                          <button className="btn btn-success btn-sm" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
-                        </td>
-                      )}
+            <>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="mb-0">Rejected Branches</h6>
+                <button
+                  className="btn btn-outline-success btn-sm"
+                  onClick={handleExportRejectedBranches}
+                  title="Export to Excel"
+                >
+                  <i className="bi bi-file-earmark-excel me-1"></i>
+                  Export
+                </button>
+              </div>
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Branch Name</th>
+                      <th>Location</th>
+                      {user?.role === ROLES.SUPER_ADMIN && <th>State</th>}
+                      <th>Created</th>
+                      {user?.role === ROLES.SUPER_ADMIN && <th>Actions</th>}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              {rejectedBranches.length === 0 && <div className="text-center text-muted py-4">No rejected branches.</div>}
-            </div>
+                  </thead>
+                  <tbody>
+                    {rejectedBranches.map(branch => (
+                      <tr key={branch._id}>
+                        <td>{branch.name}</td>
+                        <td>{branch.location}</td>
+                        {user?.role === ROLES.SUPER_ADMIN && <td>{branch.stateId?.name}</td>}
+                        <td>{formatDate(branch.createdAt)}</td>
+                        {user?.role === ROLES.SUPER_ADMIN && (
+                          <td>
+                            <button className="btn btn-success btn-sm" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {rejectedBranches.length === 0 && <div className="text-center text-muted py-4">No rejected branches.</div>}
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -5,6 +5,7 @@ import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import ZonesTable from './ZonesTable';
 import PendingZonesTable from './PendingZonesTable';
 import adminManagementService from '../../services/adminManagement';
+import { exportToExcel } from '../../utils/exportUtils';
 
 const ZonesManagement = () => {
   const { user } = useAuth();
@@ -135,6 +136,82 @@ const ZonesManagement = () => {
       statusFilter: 'all',
       adminFilter: 'all'
     });
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Export functions for different tabs
+  const handleExportZones = () => {
+    const columns = [
+      { key: 'name', label: 'Zone Name' },
+      { key: 'branch', label: 'Branch' },
+      { key: 'state', label: 'State' },
+      { key: 'zonalAdmin', label: 'Zonal Admin' },
+      { key: 'adminEmail', label: 'Admin Email' },
+      { key: 'pickupStations', label: 'Pickup Stations' },
+      { key: 'status', label: 'Status' },
+      { key: 'createdAt', label: 'Created Date' }
+    ];
+
+    const exportData = filteredZones.map(zone => ({
+      name: zone.name,
+      branch: zone.branchId?.name || '',
+      state: zone.branchId?.stateId?.name || '',
+      zonalAdmin: zone.zonalAdmin?.name || 'No admin assigned',
+      adminEmail: zone.zonalAdmin?.email || '',
+      pickupStations: zone.pickupStations?.length || 0,
+      status: zone.isActive ? 'Active' : 'Inactive',
+      createdAt: formatDate(zone.createdAt)
+    }));
+
+    const filename = `Zones_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
+  const handleExportPendingZones = () => {
+    const columns = [
+      { key: 'name', label: 'Zone Name' },
+      { key: 'branch', label: 'Branch' },
+      { key: 'state', label: 'State' },
+      { key: 'status', label: 'Status' },
+      { key: 'createdAt', label: 'Created Date' }
+    ];
+
+    const exportData = pendingZones.map(zone => ({
+      name: zone.name,
+      branch: zone.branchId?.name || '',
+      state: zone.branchId?.stateId?.name || '',
+      status: zone.status || 'pending',
+      createdAt: formatDate(zone.createdAt)
+    }));
+
+    const filename = `Pending_Zones_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
+  };
+
+  const handleExportRejectedZones = () => {
+    const columns = [
+      { key: 'name', label: 'Zone Name' },
+      { key: 'branch', label: 'Branch' },
+      { key: 'state', label: 'State' },
+      { key: 'createdAt', label: 'Created Date' }
+    ];
+
+    const exportData = rejectedZones.map(zone => ({
+      name: zone.name,
+      branch: zone.branchId?.name || '',
+      state: zone.branchId?.stateId?.name || '',
+      createdAt: formatDate(zone.createdAt)
+    }));
+
+    const filename = `Rejected_Zones_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
   };
 
   const handleCreateZone = async (e) => {
@@ -513,57 +590,96 @@ const ZonesManagement = () => {
           )}
         </div>
         {activeTab === 'all' && (
-          filteredZones.length > 0 ? (
-            <ZonesTable
-              zones={filteredZones}
-              onEdit={openEditModal}
-              onDelete={handleDeleteZone}
-            />
-          ) : (
-            <div className="text-center text-muted py-5">No zones found.</div>
-          )
+          <>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="mb-0">All Zones</h6>
+              <button
+                className="btn btn-outline-success btn-sm"
+                onClick={handleExportZones}
+                title="Export to Excel"
+              >
+                <i className="bi bi-file-earmark-excel me-1"></i>
+                Export
+              </button>
+            </div>
+            {filteredZones.length > 0 ? (
+              <ZonesTable
+                zones={filteredZones}
+                onEdit={openEditModal}
+                onDelete={handleDeleteZone}
+              />
+            ) : (
+              <div className="text-center text-muted py-5">No zones found.</div>
+            )}
+          </>
         )}
         {activeTab === 'pending' && (
-          user?.role === ROLES.BRANCH_ADMIN ? (
-            pendingLoading ? (
-              <div className="text-center text-muted py-5">Loading pending zones...</div>
-            ) : pendingZones.length > 0 ? (
-              <PendingZonesTable
-                zones={pendingZones}
-                onEdit={openEditModal}
-                onDelete={handleDeleteZone}
-                onApprove={handleApproveZone}
-                onReject={handleRejectZone}
-                user={user}
-              />
+          <>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="mb-0">Pending Approval</h6>
+              <button
+                className="btn btn-outline-success btn-sm"
+                onClick={handleExportPendingZones}
+                title="Export to Excel"
+              >
+                <i className="bi bi-file-earmark-excel me-1"></i>
+                Export
+              </button>
+            </div>
+            {user?.role === ROLES.BRANCH_ADMIN ? (
+              pendingLoading ? (
+                <div className="text-center text-muted py-5">Loading pending zones...</div>
+              ) : pendingZones.length > 0 ? (
+                <PendingZonesTable
+                  zones={pendingZones}
+                  onEdit={openEditModal}
+                  onDelete={handleDeleteZone}
+                  onApprove={handleApproveZone}
+                  onReject={handleRejectZone}
+                  user={user}
+                />
+              ) : (
+                <div className="text-center text-muted py-5">No pending zones.</div>
+              )
             ) : (
-              <div className="text-center text-muted py-5">No pending zones.</div>
-            )
-          ) : (
-            pendingZones.length > 0 ? (
-              <PendingZonesTable
-                zones={pendingZones}
-                onEdit={openEditModal}
-                onDelete={handleDeleteZone}
-                onApprove={handleApproveZone}
-                onReject={handleRejectZone}
-                user={user}
-              />
-            ) : (
-              <div className="text-center text-muted py-5">No pending zones.</div>
-            )
-          )
+              pendingZones.length > 0 ? (
+                <PendingZonesTable
+                  zones={pendingZones}
+                  onEdit={openEditModal}
+                  onDelete={handleDeleteZone}
+                  onApprove={handleApproveZone}
+                  onReject={handleRejectZone}
+                  user={user}
+                />
+              ) : (
+                <div className="text-center text-muted py-5">No pending zones.</div>
+              )
+            )}
+          </>
         )}
         {activeTab === 'rejected' && (
-          rejectedZones.length > 0 ? (
-            <ZonesTable
-              zones={rejectedZones}
-              onEdit={openEditModal}
-              onDelete={handleDeleteZone}
-            />
-          ) : (
-            <div className="text-center text-muted py-5">No rejected zones.</div>
-          )
+          <>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="mb-0">Rejected Zones</h6>
+              <button
+                className="btn btn-outline-success btn-sm"
+                onClick={handleExportRejectedZones}
+                title="Export to Excel"
+              >
+                <i className="bi bi-file-earmark-excel me-1"></i>
+                Export
+              </button>
+            </div>
+            {rejectedZones.length > 0 ? (
+              <ZonesTable
+                zones={rejectedZones}
+                onEdit={openEditModal}
+                onDelete={handleDeleteZone}
+              />
+            ) : (
+              <div className="text-center text-muted py-5">No rejected zones.</div>
+            )}
+          </>
         )}
       </div>
 

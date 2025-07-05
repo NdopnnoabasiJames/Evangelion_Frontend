@@ -3,6 +3,7 @@ import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import { analyticsService } from '../../services/analyticsService';
+import { exportToExcel } from '../../utils/exportUtils';
 
 const WorkersManagement = () => {
   const { user } = useAuth();
@@ -149,6 +150,52 @@ const WorkersManagement = () => {
       }));
     return [...new Map(states.map(state => [state.id, state])).values()]
       .sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Export function for workers
+  const handleExportWorkers = () => {
+    const columns = [
+      { key: 'rank', label: 'Rank' },
+      { key: 'name', label: 'Worker Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'branch', label: 'Branch' },
+      { key: 'state', label: 'State' },
+      { key: 'status', label: 'Status' },
+      { key: 'totalScore', label: 'Score' },
+      { key: 'totalInvited', label: 'Invited Guests' },
+      { key: 'totalCheckedIn', label: 'Checked-in Guests' },
+      { key: 'medal', label: 'Medal' },
+      { key: 'approvedBy', label: 'Approved By' },
+      { key: 'approvedAt', label: 'Approved Date' }
+    ];
+
+    const exportData = filteredWorkers.map(worker => ({
+      rank: worker.rank || '',
+      name: worker.name,
+      email: worker.email || '',
+      phone: worker.phone || '',
+      branch: worker.branch?.name || 'Unknown',
+      state: worker.state?.name || '',
+      status: worker.isApproved ? 'Approved' : 'Pending',
+      totalScore: worker.totalScore || 0,
+      totalInvited: worker.totalInvited || 0,
+      totalCheckedIn: worker.totalCheckedIn || 0,
+      medal: worker.medal ? worker.medal.charAt(0).toUpperCase() + worker.medal.slice(1) : '',
+      approvedBy: worker.approvedBy?.name || '',
+      approvedAt: worker.approvedAt ? formatDate(worker.approvedAt) : ''
+    }));
+
+    const filename = `Workers_Export_${new Date().toISOString().split('T')[0]}`;
+    exportToExcel(exportData, columns, filename);
   };
 
   const handleFilterChange = (filterType, value) => {
@@ -307,12 +354,22 @@ const WorkersManagement = () => {
                 <small className="text-muted">
                   Showing {filteredWorkers.length} of {workers.length} workers
                 </small>
-                {(filters.search || filters.branchFilter !== 'all' || filters.statusFilter !== 'all' || filters.stateFilter !== 'all' || filters.scoreValue !== '') && (
-                  <small className="text-info">
-                    <i className="bi bi-funnel-fill me-1"></i>
-                    Filters applied
-                  </small>
-                )}
+                <div className="d-flex align-items-center gap-2">
+                  {(filters.search || filters.branchFilter !== 'all' || filters.statusFilter !== 'all' || filters.stateFilter !== 'all' || filters.scoreValue !== '') && (
+                    <small className="text-info">
+                      <i className="bi bi-funnel-fill me-1"></i>
+                      Filters applied
+                    </small>
+                  )}
+                  <button
+                    className="btn btn-outline-success btn-sm"
+                    onClick={handleExportWorkers}
+                    title="Export to Excel"
+                  >
+                    <i className="bi bi-file-earmark-excel me-1"></i>
+                    Export
+                  </button>
+                </div>
               </div>              <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>
