@@ -70,7 +70,7 @@ const Login = () => {
                   <p className="text-muted mb-2">
                     Don't have an account?{' '}
                     <Link to="/register" style={{ color: 'var(--primary-purple)' }}>
-                      Register here
+                      Register 
                     </Link>
                   </p>
                   <Link to="/" className="text-muted small">

@@ -6,6 +6,7 @@ import StateAdminEvents from './StateAdminEvents';
 import BranchesManagement from '../admin/BranchesManagement';
 import ZonesManagement from '../admin/ZonesManagement';
 import PickupStationsManagement from '../admin/PickupStationsManagement';
+import StateAdminPickupStationsTab from './tabs/StateAdminPickupStationsTab';
 import WorkersManagement from '../admin/WorkersManagement';
 import GuestsManagement from '../admin/GuestsManagement';
 import analyticsService from '../../services/analyticsService';
@@ -148,16 +149,6 @@ const StateAdminTabs = ({ dashboardData }) => {
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pickup-stations')}
-            type="button"
-          >
-            <i className="bi bi-pin-map me-2"></i>
-            Pickup Stations
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
             className={`nav-link ${activeTab === 'workers' ? 'active' : ''}`}
             onClick={() => setActiveTab('workers')}
             type="button"
@@ -174,6 +165,16 @@ const StateAdminTabs = ({ dashboardData }) => {
           >
             <i className="bi bi-person-check me-2"></i>
             Guests
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pickup-stations')}
+            type="button"
+          >
+            <i className="bi bi-pin-map me-2"></i>
+            Pickup Stations
           </button>
         </li>
       </ul>{/* Tab Content */}
@@ -201,9 +202,9 @@ const StateAdminTabs = ({ dashboardData }) => {
             onRefreshApproved={loadApprovedBranchAdmins}
           />        )}        {activeTab === 'events' && <StateAdminEvents />}
         {activeTab === 'zones' && <ZonesManagement />}
-        {activeTab === 'pickup-stations' && <PickupStationsManagement />}
         {activeTab === 'workers' && <WorkersManagement />}
         {activeTab === 'guests' && <GuestsManagement />}
+        {activeTab === 'pickup-stations' && <StateAdminPickupStationsTab />}
       </div>
     </div>
   );

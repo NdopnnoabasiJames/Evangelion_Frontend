@@ -11,6 +11,7 @@ import AdminBranchesTab from './tabs/AdminBranchesTab';
 import AdminZonesTab from './tabs/AdminZonesTab';
 import AdminWorkersTab from './tabs/AdminWorkersTab';
 import AdminGuestsTab from './tabs/AdminGuestsTab';
+import SuperAdminPickupStationsTab from './tabs/SuperAdminPickupStationsTab';
 import RegistrarsManagement from '../admin/RegistrarsManagement';
 
 const SuperAdminTabs = ({ dashboardData }) => {
@@ -105,6 +106,8 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const renderWorkers = () => <AdminWorkersTab />;
 
   const renderGuests = () => <AdminGuestsTab />;
+
+  const renderPickupStations = () => <SuperAdminPickupStationsTab />;
 
   const renderRegistrars = () => <RegistrarsManagement />;
 
@@ -204,6 +207,16 @@ const SuperAdminTabs = ({ dashboardData }) => {
             Guests
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pickup-stations')}
+            type="button"
+          >
+            <i className="bi bi-geo-alt me-2"></i>
+            Pickup Stations
+          </button>
+        </li>
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
@@ -215,6 +228,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
         {activeTab === 'workers' && renderWorkers()}
         {activeTab === 'registrars' && renderRegistrars()}
         {activeTab === 'guests' && renderGuests()}
+        {activeTab === 'pickup-stations' && renderPickupStations()}
       </div>
     </div>
   );

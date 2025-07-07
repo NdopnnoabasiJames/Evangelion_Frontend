@@ -7,6 +7,7 @@ import ZoneAdminManagement from './ZoneAdminManagement';
 import ZonesManagement from '../admin/ZonesManagement';
 import WorkerManagement from '../admin/WorkerManagement';
 import RegistrarManagement from '../admin/RegistrarManagement';
+import BranchAdminPickupStationsTab from './tabs/BranchAdminPickupStationsTab';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 import workerService from '../../services/workerService';
@@ -555,6 +556,16 @@ const BranchAdminTabs = ({ dashboardData }) => {
             Events
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pickup-stations')}
+            type="button"
+          >
+            <i className="bi bi-geo-alt me-2"></i>
+            Pickup Stations
+          </button>
+        </li>
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
@@ -567,6 +578,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
         {activeTab === 'worker-management' && <WorkerManagement />}
         {activeTab === 'registrar-management' && <RegistrarManagement />}
         {activeTab === 'events' && <BranchAdminEvents />}
+        {activeTab === 'pickup-stations' && <BranchAdminPickupStationsTab />}
       </div>
     </div>
   );
