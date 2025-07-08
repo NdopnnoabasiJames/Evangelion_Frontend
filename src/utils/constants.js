@@ -114,6 +114,7 @@ export const API_ENDPOINTS = {
     ALL_EVENTS: "/api/workers/events/all",
     MY_EVENTS: "/api/workers/events/my",
     VOLUNTEER: "/api/workers/events",
+    EVENT_PICKUP_STATIONS: "/api/workers/events/:eventId/pickup-stations",
     PENDING_VOLUNTEERS: "/api/workers/volunteer-requests/pending",
     APPROVE_VOLUNTEER: "/api/workers/volunteer-requests",
   },

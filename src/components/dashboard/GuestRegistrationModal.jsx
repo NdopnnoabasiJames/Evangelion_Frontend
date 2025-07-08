@@ -36,24 +36,49 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
 
   useEffect(() => {
     const loadPickupStations = async () => {
-      if (guestForm.transportPreference === 'church_bus') {
+      if (guestForm.transportPreference === 'church_bus' && guestForm.eventId) {
         setLoadingPickupStations(true);
         try {
-          const response = await fetch(`${API_ENDPOINTS.ADMIN.PICKUP_STATIONS}`, {
+          // Use event-specific pickup stations endpoint
+          const eventPickupStationsUrl = API_ENDPOINTS.WORKERS.EVENT_PICKUP_STATIONS.replace(':eventId', guestForm.eventId);
+          console.log('Loading pickup stations from:', eventPickupStationsUrl);
+          
+          const response = await fetch(eventPickupStationsUrl, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
           });
+          
           if (response.ok) {
             const stations = await response.json();
-            setPickupStations(Array.isArray(stations) ? stations : stations.data || []);
+            console.log('Raw pickup stations response:', stations);
+            
+            // Handle the response - it should be an array of pickup stations
+            let stationsArray = [];
+            if (Array.isArray(stations)) {
+              stationsArray = stations;
+            } else if (stations && Array.isArray(stations.data)) {
+              stationsArray = stations.data;
+            } else if (stations && Array.isArray(stations.pickupStations)) {
+              stationsArray = stations.pickupStations;
+            }
+            
+            console.log('Processed pickup stations:', stationsArray);
+            setPickupStations(stationsArray);
+          } else {
+            console.error('Failed to load pickup stations:', response.status, response.statusText);
           }
-        } catch {}
+        } catch (error) {
+          console.error('Error loading pickup stations:', error);
+        }
         setLoadingPickupStations(false);
+      } else {
+        // Clear pickup stations if not using church bus or no event selected
+        setPickupStations([]);
       }
     };
     loadPickupStations();
-  }, [guestForm.transportPreference]);
+  }, [guestForm.transportPreference, guestForm.eventId]);
 
   const handleGuestRegistration = async (e) => {
     e.preventDefault();
@@ -173,11 +198,14 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
                       disabled={loadingPickupStations}
                     >
                       <option value="">Select pickup station</option>
-                      {pickupStations.map((station) => (
-                        <option key={station._id} value={station._id}>
-                          {station.name} - {station.address}
-                        </option>
-                      ))}
+                      {pickupStations.map((station) => {
+                        console.log('Rendering station:', station);
+                        return (
+                          <option key={station._id} value={station._id}>
+                            {station.location || station.name || 'Unknown Location'}
+                          </option>
+                        );
+                      })}
                     </select>
                     {loadingPickupStations && (
                       <div className="form-text">Loading pickup stations...</div>
