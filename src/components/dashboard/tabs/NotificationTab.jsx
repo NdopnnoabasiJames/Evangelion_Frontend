@@ -131,7 +131,11 @@ const NotificationTab = () => {
         message: notification.message
       });
       console.log('✅ [NotificationTab] Preview response:', response);
-      setPreview(response.data);
+      console.log('📊 [NotificationTab] Preview data structure:', response.data);
+      // Handle the response structure - check if it's wrapped
+      const previewData = response.data.data || response.data;
+      console.log('📋 [NotificationTab] Final preview data:', previewData);
+      setPreview(previewData);
     } catch (error) {
       console.error('❌ [NotificationTab] Failed to generate preview:', error);
       setError('Failed to generate preview');
@@ -333,9 +337,9 @@ const NotificationTab = () => {
           <div className="preview-recipients">
             <h5>Recipients:</h5>
             <ul>
-              {preview.recipients.map(recipient => (
+              {preview.recipients && Array.isArray(preview.recipients) ? preview.recipients.map(recipient => (
                 <li key={recipient.email}>{recipient.name} - {recipient.email}</li>
-              ))}
+              )) : <li>No recipients found</li>}
             </ul>
           </div>
         </div>
