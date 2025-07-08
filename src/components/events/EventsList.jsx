@@ -69,6 +69,14 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                       : event.availableBranches.length <= 4
                       ? event.availableBranches.map(branch => branch?.name).filter(Boolean).join(', ')
                       : `${event.availableBranches.map(branch => branch?.name).filter(Boolean).slice(0, 2).join(', ')} and ${event.availableBranches.length - 2} more branches`
+                    : event.creatorLevel === 'branch_admin' && event.location
+                    ? event.location
+                    : event.creatorLevel === 'branch_admin' && event.availableZones?.length > 0
+                    ? event.availableZones.length === 1 
+                      ? event.availableZones[0]?.name || `${event.availableZones.length} zone selected`
+                      : event.availableZones.length <= 4
+                      ? event.availableZones.map(zone => zone?.name).filter(Boolean).join(', ')
+                      : `${event.availableZones.map(zone => zone?.name).filter(Boolean).slice(0, 2).join(', ')} and ${event.availableZones.length - 2} more zones`
                     : event.location || 'Location TBD'
                   }
                 </small>
@@ -85,14 +93,18 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                 </p>
               )}
               
-              {/* Delegation Progress for Super Admin Events */}
-              {event.creatorLevel === 'super_admin' && (
+              {/* Delegation Progress for Super Admin and Branch Admin Events */}
+              {(event.creatorLevel === 'super_admin' || event.creatorLevel === 'branch_admin') && (
                 <div className="mb-3">
-                  <small className="text-muted d-block mb-1">Delegation Progress:</small>
+                  <small className="text-muted d-block mb-1">
+                    {event.creatorLevel === 'super_admin' ? 'Delegation Progress:' : 'Zone Assignment:'}
+                  </small>
                   <div className="d-flex gap-2">
-                    <span className={`badge ${event.availableBranches?.length > 0 ? 'bg-success' : 'bg-secondary'}`}>
-                      Branches {event.availableBranches?.length > 0 ? '✓' : '○'}
-                    </span>
+                    {event.creatorLevel === 'super_admin' && (
+                      <span className={`badge ${event.availableBranches?.length > 0 ? 'bg-success' : 'bg-secondary'}`}>
+                        Branches {event.availableBranches?.length > 0 ? '✓' : '○'}
+                      </span>
+                    )}
                     <span className={`badge ${event.availableZones?.length > 0 ? 'bg-success' : 'bg-secondary'}`}>
                       Zones {event.availableZones?.length > 0 ? '✓' : '○'}
                     </span>

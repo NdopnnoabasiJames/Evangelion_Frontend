@@ -247,6 +247,20 @@ const RegistrarTabs = ({ dashboardData }) => {
       return 'Multi-State Event';
     }
     
+    // Handle branch admin events - prioritize location field
+    if (event.creatorLevel === 'branch_admin') {
+      if (event.location) {
+        return event.location;
+      }
+      if (event.availableZones && event.availableZones.length > 0) {
+        if (event.availableZones.length === 1) {
+          const zone = event.availableZones[0];
+          return zone.name ? `${zone.name} Zone` : 'Zone Event';
+        }
+        return `${event.availableZones.length} Zones`;
+      }
+    }
+    
     return event.location || 'Location TBD';
   };
 

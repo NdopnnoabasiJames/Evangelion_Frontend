@@ -349,9 +349,11 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                     <i className="bi bi-geo-alt text-primary me-2"></i>
                     <span className="text-truncate">
                       {event.location || 
-                       (event.availableBranches?.length > 0 
+                       (event.creatorLevel === 'super_admin' && event.availableStates?.length > 0
+                         ? event.availableStates.map(state => state?.name || state).filter(Boolean).join(', ')
+                         : event.creatorLevel === 'state_admin' && event.availableBranches?.length > 0 
                          ? event.availableBranches.map(branch => branch?.location || branch?.name || branch).filter(Boolean).join(', ')
-                         : event.availableZones?.length > 0
+                         : event.creatorLevel === 'branch_admin' && event.availableZones?.length > 0
                            ? event.availableZones.map(zone => zone?.name || zone).filter(Boolean).join(', ')
                            : 'Location TBD'
                        )}

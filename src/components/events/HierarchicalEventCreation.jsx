@@ -101,6 +101,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
             name: formData.name,
             description: formData.description,
             date: formData.date,
+            location: formData.location, // Include location for branch admin
             states: [], // Required by CreateEventDto
             branches: [], // Required by CreateEventDto
             selectedZones: formData.selectedZones, // For hierarchical DTO
@@ -359,10 +360,28 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
                         Select the branches in your state that will participate in this event.
                       </div>                    </div>
                   ) : userRole === 'branch_admin' ? (
-                    <div className="mb-3">
-                      <div className="alert alert-info">
-                        <i className="bi bi-info-circle me-2"></i>
-                        As a Branch Admin, you can create events for selected zones in your branch.
+                    <div>
+                      <div className="mb-3">
+                        <div className="alert alert-info">
+                          <i className="bi bi-info-circle me-2"></i>
+                          As a Branch Admin, you can create events for selected zones in your branch.
+                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="location" className="form-label">Event Venue *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="location"
+                          name="location"
+                          value={formData.location}
+                          onChange={handleChange}
+                          placeholder="Enter event venue/location"
+                          required
+                        />
+                        <div className="form-text">
+                          Specify the venue where the event will be held.
+                        </div>
                       </div>
                     </div>
                   ) : (

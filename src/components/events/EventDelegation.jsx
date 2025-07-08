@@ -131,6 +131,14 @@ const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
                           : event.selectedBranches.length <= 4
                           ? event.selectedBranches.map(branch => branch?.name).filter(Boolean).join(', ')
                           : `${event.selectedBranches.map(branch => branch?.name).filter(Boolean).slice(0, 2).join(', ')} and ${event.selectedBranches.length - 2} more branches`
+                        : event.creatorLevel === 'branch_admin' && event.location
+                        ? event.location
+                        : event.creatorLevel === 'branch_admin' && event.availableZones?.length > 0
+                        ? event.availableZones.length === 1 
+                          ? event.availableZones[0]?.name || `${event.availableZones.length} zone selected`
+                          : event.availableZones.length <= 4
+                          ? event.availableZones.map(zone => zone?.name).filter(Boolean).join(', ')
+                          : `${event.availableZones.map(zone => zone?.name).filter(Boolean).slice(0, 2).join(', ')} and ${event.availableZones.length - 2} more zones`
                         : event.location || 'Location TBD'
                       }
                     </small>
