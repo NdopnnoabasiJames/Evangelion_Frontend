@@ -44,13 +44,9 @@ const NotificationTab = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      console.log('🔍 [NotificationTab] Fetching events from /api/events/accessible');
       const response = await api.get('/api/events/accessible');
-      console.log('✅ [NotificationTab] Events response:', response);
-      console.log('📊 [NotificationTab] Events data:', response.data);
       // Extract the actual array from the nested response structure
       const eventsArray = response.data?.data || [];
-      console.log('📊 [NotificationTab] Events array:', eventsArray);
       setEvents(eventsArray);
     } catch (error) {
       console.error('❌ [NotificationTab] Failed to fetch events:', error);
@@ -64,15 +60,10 @@ const NotificationTab = () => {
     if (!selectedEvent) return;
     
     try {
-      console.log(`🔍 [NotificationTab] Fetching guests for event ${selectedEvent} with filter ${transportFilter}`);
       const response = await api.get(`/api/notifications/events/${selectedEvent}/guests?transportFilter=${transportFilter}`);
-      console.log('✅ [NotificationTab] Event guests response:', response);
-      console.log('👥 [NotificationTab] Guests data:', response.data);
       
       // Extract the actual array from the nested response structure
       const guestsArray = response.data?.data || response.data?.guests || response.data || [];
-      console.log('👥 [NotificationTab] Guests array:', guestsArray);
-      console.log('👥 [NotificationTab] Is guests array?', Array.isArray(guestsArray));
       
       setGuests(Array.isArray(guestsArray) ? guestsArray : []);
       setSelectedGuests([]);
@@ -84,13 +75,13 @@ const NotificationTab = () => {
 
   const fetchNotificationHistory = async () => {
     try {
-      console.log('🔍 [NotificationTab] Fetching notification history from /api/notifications/history');
       const response = await api.get('/api/notifications/history');
-      console.log('✅ [NotificationTab] Notification history response:', response);
-      console.log('📋 [NotificationTab] History data:', response.data);
-      setNotificationHistory(response.data || []);
+      
+      // Extract the actual data from the nested response structure
+      const historyData = response.data?.data || response.data || [];
+      
+      setNotificationHistory(historyData);
     } catch (error) {
-      console.error('❌ [NotificationTab] Failed to fetch notification history:', error);
       setError('Failed to fetch notification history');
     }
   };
@@ -118,26 +109,16 @@ const NotificationTab = () => {
     }
 
     try {
-      console.log('🔍 [NotificationTab] Generating preview for notification:', {
-        eventId: selectedEvent,
-        recipients: selectedGuests,
-        subject: notification.subject,
-        message: notification.message
-      });
       const response = await api.post('/api/notifications/preview', {
         eventId: selectedEvent,
         recipients: selectedGuests,
         subject: notification.subject,
         message: notification.message
       });
-      console.log('✅ [NotificationTab] Preview response:', response);
-      console.log('📊 [NotificationTab] Preview data structure:', response.data);
       // Handle the response structure - check if it's wrapped
       const previewData = response.data.data || response.data;
-      console.log('📋 [NotificationTab] Final preview data:', previewData);
       setPreview(previewData);
     } catch (error) {
-      console.error('❌ [NotificationTab] Failed to generate preview:', error);
       setError('Failed to generate preview');
     }
   };
@@ -150,22 +131,13 @@ const NotificationTab = () => {
 
     try {
       setLoading(true);
-      console.log('🔍 [NotificationTab] Sending notification:', {
-        eventId: selectedEvent,
-        recipients: selectedGuests,
-        subject: notification.subject,
-        message: notification.message,
-        timing: notification.timing
-      });
       const response = await api.post('/api/notifications', {
         eventId: selectedEvent,
         recipients: selectedGuests,
         subject: notification.subject,
         message: notification.message,
         timing: notification.timing
-      });
-      console.log('✅ [NotificationTab] Send notification response:', response);
-      
+      });      
       alert('Notification created successfully!');
       setNotification({ subject: '', message: '', timing: 'immediate' });
       setSelectedEvent(null);
