@@ -6,7 +6,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
     name: '',
     description: '',
     date: '',
-    location: '',
+    location: '', // Used by other admin types
     selectedStates: [], // For super admin state selection
     selectedBranches: [], // For state admin branch selection
     selectedZones: [] // For branch admin zone selection
@@ -101,9 +101,9 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
             name: formData.name,
             description: formData.description,
             date: formData.date,
-            location: formData.location,
-            zones: formData.selectedZones, // Base DTO expects 'zones'
-            selectedZones: formData.selectedZones // For hierarchical service
+            states: [], // Required by CreateEventDto
+            branches: [], // Required by CreateEventDto
+            selectedZones: formData.selectedZones, // For hierarchical DTO
           }
         : formData;
 
@@ -359,25 +359,12 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
                         Select the branches in your state that will participate in this event.
                       </div>                    </div>
                   ) : userRole === 'branch_admin' ? (
-                    <>
-                      {/* Location field for branch admin */}
-                      <div className="mb-3">
-                        <label htmlFor="location" className="form-label">Event Location *</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="location"
-                          name="location"
-                          value={formData.location}
-                          onChange={handleChange}
-                          placeholder="Where zones will gather for the event"
-                          required
-                        />
-                        <div className="form-text">
-                          Specify the central location where selected zones will attend the event.
-                        </div>
+                    <div className="mb-3">
+                      <div className="alert alert-info">
+                        <i className="bi bi-info-circle me-2"></i>
+                        As a Branch Admin, you can create events for selected zones in your branch.
                       </div>
-                    </>
+                    </div>
                   ) : (
                     <div className="mb-3">
                       <label htmlFor="location" className="form-label">Location</label>

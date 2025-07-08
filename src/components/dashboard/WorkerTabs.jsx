@@ -264,6 +264,7 @@ const WorkerTabs = ({ dashboardData }) => {
             loading={loading}
             error={error}
             setShowGuestModal={setShowGuestModal}
+            userRole={user?.role}
           />
         )}
       </div>

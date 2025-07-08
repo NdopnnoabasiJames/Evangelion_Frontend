@@ -7,6 +7,7 @@ import BranchesManagement from '../admin/BranchesManagement';
 import ZonesManagement from '../admin/ZonesManagement';
 import PickupStationsManagement from '../admin/PickupStationsManagement';
 import StateAdminPickupStationsTab from './tabs/StateAdminPickupStationsTab';
+import NotificationTab from './tabs/NotificationTab';
 import WorkersManagement from '../admin/WorkersManagement';
 import GuestsManagement from '../admin/GuestsManagement';
 import analyticsService from '../../services/analyticsService';
@@ -177,6 +178,16 @@ const StateAdminTabs = ({ dashboardData }) => {
             Pickup Stations
           </button>
         </li>
+        <li className="nav-item" role="presentation">
+          <button
+            className={`nav-link ${activeTab === 'notifications' ? 'active' : ''}`}
+            onClick={() => setActiveTab('notifications')}
+            type="button"
+          >
+            <i className="bi bi-envelope me-2"></i>
+            Notifications
+          </button>
+        </li>
       </ul>{/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && (
@@ -205,6 +216,7 @@ const StateAdminTabs = ({ dashboardData }) => {
         {activeTab === 'workers' && <WorkersManagement />}
         {activeTab === 'guests' && <GuestsManagement />}
         {activeTab === 'pickup-stations' && <StateAdminPickupStationsTab />}
+        {activeTab === 'notifications' && <NotificationTab />}
       </div>
     </div>
   );
