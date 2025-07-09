@@ -19,9 +19,16 @@ const NotificationTab = () => {
   });
   const [preview, setPreview] = useState(null);
   const [notificationHistory, setNotificationHistory] = useState([]);
+  const [filteredHistory, setFilteredHistory] = useState([]);
+  const [historyFilters, setHistoryFilters] = useState({
+    status: 'all',
+    type: 'all',
+    dateRange: 'all'
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [expandedMessages, setExpandedMessages] = useState(new Set());
+  const [actionLoading, setActionLoading] = useState(new Set());
 
   const timingOptions = [
     { value: 'immediate', label: 'Send Immediately' },
@@ -43,15 +50,17 @@ const NotificationTab = () => {
     }
   }, [selectedEvent, transportFilter]);
 
+  useEffect(() => {
+    applyHistoryFilters();
+  }, [notificationHistory, historyFilters]);
+
   const fetchEvents = async () => {
     try {
       setLoading(true);
       const response = await api.get('/api/events/accessible');
-      // Extract the actual array from the nested response structure
       const eventsArray = response.data?.data || [];
       setEvents(eventsArray);
     } catch (error) {
-      console.error('❌ [NotificationTab] Failed to fetch events:', error);
       setError('Failed to fetch events');
     } finally {
       setLoading(false);
@@ -63,14 +72,10 @@ const NotificationTab = () => {
     
     try {
       const response = await api.get(`/api/notifications/events/${selectedEvent}/guests?transportFilter=${transportFilter}`);
-      
-      // Extract the actual array from the nested response structure
       const guestsArray = response.data?.data || response.data?.guests || response.data || [];
-      
       setGuests(Array.isArray(guestsArray) ? guestsArray : []);
       setSelectedGuests([]);
     } catch (error) {
-      console.error('❌ [NotificationTab] Failed to fetch event guests:', error);
       setError('Failed to fetch event guests');
     }
   };
@@ -78,9 +83,12 @@ const NotificationTab = () => {
   const fetchNotificationHistory = async () => {
     try {
       const response = await api.get('/api/notifications/history');
-      
-      // Extract the actual data from the nested response structure
       const historyData = response.data?.data || response.data || [];
+      
+      // Debug: Log first notification to see structure
+      if (historyData.length > 0) {
+        console.log('Sample notification data:', historyData[0]);
+      }
       
       setNotificationHistory(historyData);
     } catch (error) {
@@ -117,9 +125,7 @@ const NotificationTab = () => {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Message copied to clipboard!');
     } catch (err) {
-      console.error('Failed to copy text: ', err);
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = text;
@@ -128,55 +134,38 @@ const NotificationTab = () => {
       textArea.select();
       try {
         document.execCommand('copy');
-        alert('Message copied to clipboard!');
       } catch (err) {
-        alert('Failed to copy message');
+        // Silently fail
       }
       document.body.removeChild(textArea);
     }
   };
 
   const generatePreview = async () => {
-    console.log('🔄 [NotificationTab] Preview button clicked!');
-    console.log('📊 [NotificationTab] Current state:', {
-      selectedEvent,
-      selectedGuestsCount: selectedGuests.length,
-      notificationType: notification.notificationType,
-      subject: notification.subject,
-      message: notification.message
-    });
-    
-    // For SMS notifications, subject is optional
     const isSubjectRequired = notification.notificationType !== 'sms';
-    console.log('🔍 [NotificationTab] Is subject required?', isSubjectRequired);
     
     if (!selectedEvent) {
-      console.log('❌ [NotificationTab] No event selected');
       setError('Please select an event');
       return;
     }
     
     if (selectedGuests.length === 0) {
-      console.log('❌ [NotificationTab] No guests selected');
       setError('Please select at least one guest');
       return;
     }
     
     if (isSubjectRequired && !notification.subject) {
-      console.log('❌ [NotificationTab] Subject required but not provided');
       setError('Please enter a subject');
       return;
     }
     
     if (!notification.message) {
-      console.log('❌ [NotificationTab] No message provided');
       setError('Please enter a message');
       return;
     }
 
     try {
-      console.log('🔍 [NotificationTab] All validations passed, generating preview...');
-      setError(''); // Clear any previous errors
+      setError('');
       
       const payload = {
         eventId: selectedEvent,
@@ -186,25 +175,15 @@ const NotificationTab = () => {
         message: notification.message
       };
       
-      console.log('🔍 [NotificationTab] Sending preview request with payload:', payload);
-      
       const response = await api.post('/api/notifications/preview', payload);
-      
-      console.log('✅ [NotificationTab] Preview response:', response);
-      console.log('📊 [NotificationTab] Preview data structure:', response.data);
-      
-      // Handle the response structure - check if it's wrapped
       const previewData = response.data.data || response.data;
-      console.log('📋 [NotificationTab] Final preview data:', previewData);
       setPreview(previewData);
     } catch (error) {
-      console.error('❌ [NotificationTab] Preview error:', error);
       setError('Failed to generate preview: ' + (error.response?.data?.message || error.message));
     }
   };
 
   const sendNotification = async () => {
-    // For SMS notifications, subject is optional
     const isSubjectRequired = notification.notificationType !== 'sms';
     
     if (!selectedEvent || selectedGuests.length === 0 || 
@@ -215,70 +194,162 @@ const NotificationTab = () => {
 
     try {
       setLoading(true);
-      setError(''); // Clear any previous errors
-      console.log('🔍 [NotificationTab] Sending notification:', {
-        eventId: selectedEvent,
-        recipients: selectedGuests,
-        notificationType: notification.notificationType,
-        subject: notification.subject,
-        message: notification.message,
-        timing: notification.timing
-      });
+      setError('');
       
       const response = await api.post('/api/notifications', {
         eventId: selectedEvent,
         recipients: selectedGuests,
         notificationType: notification.notificationType,
-        subject: notification.subject || 'Event Notification', // Default subject if not provided
+        subject: notification.subject || 'Event Notification',
         message: notification.message,
         timing: notification.timing
       });      
       
-      console.log('✅ [NotificationTab] Send notification response:', response);
-      
-      // Check the response for detailed success/failure information
-      const responseData = response.data?.data || response.data;
-      const stats = responseData?.stats || {};
-      
-      console.log('📊 [NotificationTab] Response stats:', stats);
-      
-      if (stats.hasFailures) {
-        // Partial failure - show detailed warning
-        const emailFailed = stats.failedCount || 0;
-        const smsFailed = stats.failedSmsCount || 0;
-        const emailSuccess = stats.successfulCount || 0;
-        const smsSuccess = stats.successfulSmsCount || 0;
-        
-        let message = `⚠️ Notification sent with some issues:\n`;
-        
-        if (notification.notificationType === 'email' || notification.notificationType === 'both') {
-          message += `📧 Email: ${emailSuccess} successful, ${emailFailed} failed\n`;
-        }
-        if (notification.notificationType === 'sms' || notification.notificationType === 'both') {
-          message += `📱 SMS: ${smsSuccess} successful, ${smsFailed} failed\n`;
-        }
-        
-        message += `\nCheck notification history for more details.`;
-        alert(message);
-      } else {
-        // Complete success
-        alert(`✅ ${notification.notificationType.charAt(0).toUpperCase() + notification.notificationType.slice(1)} notification sent successfully to all recipients!`);
-      }
-      
-      // Reset form
+      // Reset form and switch to history view
       setNotification({ notificationType: 'email', subject: '', message: '', timing: 'immediate' });
       setSelectedEvent(null);
       setSelectedGuests([]);
       setPreview(null);
-      fetchNotificationHistory();
+      
+      // Refresh notification history and switch to history tab
+      await fetchNotificationHistory();
+      setActiveView('history');
+      
     } catch (error) {
-      console.error('❌ [NotificationTab] Failed to send notification:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Unknown error occurred';
       setError(`Failed to send notification: ${errorMessage}`);
-      alert(`❌ Failed to send notification: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyHistoryFilters = () => {
+    let filtered = [...notificationHistory];
+
+    // Filter by status
+    if (historyFilters.status !== 'all') {
+      filtered = filtered.filter(notification => {
+        const status = notification.status?.toUpperCase();
+        const totalFailed = (notification.failedCount || 0) + (notification.failedSmsCount || 0);
+        const totalSuccess = (notification.successfulCount || 0) + (notification.successfulSmsCount || 0);
+        
+        if (historyFilters.status === 'delivered') {
+          return status === 'SENT' && totalFailed === 0;
+        } else if (historyFilters.status === 'partial') {
+          return status === 'SENT' && totalFailed > 0 && totalSuccess > 0;
+        } else if (historyFilters.status === 'failed') {
+          return status === 'FAILED' || (status === 'SENT' && totalSuccess === 0);
+        } else if (historyFilters.status === 'pending') {
+          return status === 'PENDING' || status === 'SCHEDULED';
+        } else {
+          return status === historyFilters.status.toUpperCase();
+        }
+      });
+    }
+
+    // Filter by notification type
+    if (historyFilters.type !== 'all') {
+      filtered = filtered.filter(notification => 
+        notification.notificationType?.toLowerCase() === historyFilters.type.toLowerCase()
+      );
+    }
+
+    // Filter by date range
+    if (historyFilters.dateRange !== 'all') {
+      const now = new Date();
+      const cutoffDate = new Date();
+      
+      switch (historyFilters.dateRange) {
+        case 'today':
+          cutoffDate.setHours(0, 0, 0, 0);
+          break;
+        case 'week':
+          cutoffDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          cutoffDate.setMonth(now.getMonth() - 1);
+          break;
+        default:
+          break;
+      }
+      
+      if (historyFilters.dateRange !== 'all') {
+        filtered = filtered.filter(notification => {
+          const notificationDate = new Date(notification.createdAt || notification.sentAt);
+          return notificationDate >= cutoffDate;
+        });
+      }
+    }
+
+    setFilteredHistory(filtered);
+  };
+
+  const retryNotification = async (notificationId) => {
+    const loadingSet = new Set(actionLoading);
+    loadingSet.add(notificationId);
+    setActionLoading(loadingSet);
+    
+    try {
+      const response = await api.post(`/api/notifications/${notificationId}/retry`);
+      
+      if (response.data.success) {
+        await fetchNotificationHistory();
+        setActiveView('history');
+      } else {
+        setError('Failed to retry notification');
+      }
+    } catch (error) {
+      setError('Failed to retry notification: ' + (error.response?.data?.message || error.message));
+    } finally {
+      const newLoadingSet = new Set(actionLoading);
+      newLoadingSet.delete(notificationId);
+      setActionLoading(newLoadingSet);
+    }
+  };
+
+  const deleteNotification = async (notificationId) => {
+    if (!confirm('Are you sure you want to delete this notification? This action cannot be undone.')) {
+      return;
+    }
+
+    const loadingSet = new Set(actionLoading);
+    loadingSet.add(notificationId);
+    setActionLoading(loadingSet);
+    
+    try {
+      const response = await api.delete(`/api/notifications/${notificationId}`);
+      
+      if (response.data.success) {
+        // Immediately remove from state without waiting for API call
+        setNotificationHistory(prev => prev.filter(n => n._id !== notificationId));
+        setFilteredHistory(prev => prev.filter(n => n._id !== notificationId));
+      } else {
+        setError('Failed to delete notification');
+      }
+    } catch (error) {
+      setError('Failed to delete notification: ' + (error.response?.data?.message || error.message));
+      // Refresh on error to sync state
+      await fetchNotificationHistory();
+    } finally {
+      const newLoadingSet = new Set(actionLoading);
+      newLoadingSet.delete(notificationId);
+      setActionLoading(newLoadingSet);
+    }
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    setHistoryFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setHistoryFilters({
+      status: 'all',
+      type: 'all',
+      dateRange: 'all'
+    });
   };
 
   const renderCreateView = () => (
@@ -476,6 +547,11 @@ const NotificationTab = () => {
               <i className="bi bi-send me-2"></i> {loading ? 'Sending...' : 'Send Notification'}
             </button>
           </div>
+          
+          <div className="help-text">
+            <i className="bi bi-info-circle me-1"></i>
+            <small>After sending, check the <strong>Notification History</strong> tab to view delivery status and details.</small>
+          </div>
         </>
       )}
     </div>
@@ -512,17 +588,106 @@ const NotificationTab = () => {
       <div className="history-header">
         <h3><i className="bi bi-clock-history me-2"></i>Notification History</h3>
         <div className="history-stats">
-          {Array.isArray(notificationHistory) && notificationHistory.length > 0 && (
-            <span className="total-count">
-              Total: {notificationHistory.length} notifications
-            </span>
+          {Array.isArray(filteredHistory) && (
+            <>
+              <span className="filtered-count">
+                Showing: {filteredHistory.length} of {notificationHistory.length}
+              </span>
+              {filteredHistory.length !== notificationHistory.length && (
+                <button 
+                  className="btn btn-link btn-sm"
+                  onClick={clearFilters}
+                >
+                  Clear Filters
+                </button>
+              )}
+              {/* Quick stats */}
+              {filteredHistory.length > 0 && (
+                <div className="quick-stats">
+                  <span className="stat-pill success">
+                    ✅ {filteredHistory.filter(n => {
+                      const status = n.status?.toUpperCase();
+                      const totalFailed = (n.failedCount || 0) + (n.failedSmsCount || 0);
+                      return status === 'SENT' && totalFailed === 0;
+                    }).length} Delivered
+                  </span>
+                  <span className="stat-pill warning">
+                    ⚠️ {filteredHistory.filter(n => {
+                      const status = n.status?.toUpperCase();
+                      const totalFailed = (n.failedCount || 0) + (n.failedSmsCount || 0);
+                      const totalSuccess = (n.successfulCount || 0) + (n.successfulSmsCount || 0);
+                      return status === 'SENT' && totalFailed > 0 && totalSuccess > 0;
+                    }).length} Partial
+                  </span>
+                  <span className="stat-pill danger">
+                    ❌ {filteredHistory.filter(n => {
+                      const status = n.status?.toUpperCase();
+                      const totalSuccess = (n.successfulCount || 0) + (n.successfulSmsCount || 0);
+                      return status === 'FAILED' || (status === 'SENT' && totalSuccess === 0);
+                    }).length} Failed
+                  </span>
+                  <span className="stat-pill info">
+                    ⏳ {filteredHistory.filter(n => {
+                      const status = n.status?.toUpperCase();
+                      return status === 'PENDING' || status === 'SCHEDULED';
+                    }).length} Pending
+                  </span>
+                </div>
+              )}
+            </>
           )}
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="history-filters">
+        <div className="filter-group">
+          <label>Status:</label>
+          <select 
+            value={historyFilters.status} 
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="form-control filter-select"
+          >
+            <option value="all">All Statuses</option>
+            <option value="delivered">✅ Fully Delivered</option>
+            <option value="partial">⚠️ Partially Delivered</option>
+            <option value="failed">❌ Failed</option>
+            <option value="pending">⏳ Pending</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label>Type:</label>
+          <select 
+            value={historyFilters.type} 
+            onChange={(e) => handleFilterChange('type', e.target.value)}
+            className="form-control filter-select"
+          >
+            <option value="all">All Types</option>
+            <option value="email">📧 Email Only</option>
+            <option value="sms">📱 SMS Only</option>
+            <option value="both">📧📱 Both</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label>Date Range:</label>
+          <select 
+            value={historyFilters.dateRange} 
+            onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+            className="form-control filter-select"
+          >
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
         </div>
       </div>
       
       <div className="history-list">
-        {Array.isArray(notificationHistory) && notificationHistory.length > 0 ? (
-          notificationHistory.map(notification => (
+        {Array.isArray(filteredHistory) && filteredHistory.length > 0 ? (
+          filteredHistory.map(notification => (
             <div key={notification._id} className="history-item">
               <div className="history-main">
                 <div className="history-left">
@@ -535,7 +700,10 @@ const NotificationTab = () => {
                         <i className="bi bi-phone"></i>
                       </>
                     )}
-                    {notification.notificationType || 'EMAIL'}
+                    <span className="type-text">
+                      {notification.isRetry && <i className="bi bi-arrow-clockwise me-1" title="Retry notification"></i>}
+                      {notification.notificationType || 'EMAIL'}
+                    </span>
                   </div>
                   <div className="history-content">
                     <h4 className="notification-subject">{notification.subject}</h4>
@@ -578,6 +746,8 @@ const NotificationTab = () => {
                       {notification.status === 'SENT' && <i className="bi bi-check-circle me-1"></i>}
                       {notification.status === 'FAILED' && <i className="bi bi-x-circle me-1"></i>}
                       {notification.status === 'PENDING' && <i className="bi bi-clock me-1"></i>}
+                      {notification.status === 'SCHEDULED' && <i className="bi bi-calendar-clock me-1"></i>}
+                      {notification.status === 'SENDING' && <i className="bi bi-hourglass-split me-1"></i>}
                       {notification.status}
                     </span>
                   </div>
@@ -589,12 +759,16 @@ const NotificationTab = () => {
                     </div>
                     <div className="stat-item success">
                       <span className="stat-label">Successful</span>
-                      <span className="stat-value">{notification.successfulCount || 0}</span>
+                      <span className="stat-value">
+                        {(notification.successfulCount || 0) + (notification.successfulSmsCount || 0)}
+                      </span>
                     </div>
-                    {notification.failedCount > 0 && (
+                    {((notification.failedCount || 0) + (notification.failedSmsCount || 0)) > 0 && (
                       <div className="stat-item failed">
                         <span className="stat-label">Failed</span>
-                        <span className="stat-value">{notification.failedCount}</span>
+                        <span className="stat-value">
+                          {(notification.failedCount || 0) + (notification.failedSmsCount || 0)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -614,6 +788,37 @@ const NotificationTab = () => {
                   <span>Timing: {notification.timing}</span>
                 </div>
               )}
+
+              {/* Action buttons */}
+              <div className="history-actions">
+                {/* Show retry for failed notifications or notifications with any failures */}
+                {(() => {
+                  const status = notification.status?.toUpperCase();
+                  const totalFailed = (notification.failedCount || 0) + (notification.failedSmsCount || 0);
+                  const hasFailed = status === 'FAILED' || totalFailed > 0;
+                  return hasFailed;
+                })() && (
+                  <button 
+                    className="btn btn-warning btn-sm"
+                    onClick={() => retryNotification(notification._id)}
+                    disabled={actionLoading.has(notification._id)}
+                    title="Retry failed deliveries"
+                  >
+                    <i className="bi bi-arrow-clockwise me-1"></i>
+                    {actionLoading.has(notification._id) ? 'Retrying...' : 'Retry'}
+                  </button>
+                )}
+                
+                <button 
+                  className="btn btn-outline-danger btn-sm"
+                  onClick={() => deleteNotification(notification._id)}
+                  disabled={actionLoading.has(notification._id)}
+                  title="Delete this notification"
+                >
+                  <i className="bi bi-trash me-1"></i>
+                  {actionLoading.has(notification._id) ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </div>
           ))
         ) : (
@@ -621,8 +826,28 @@ const NotificationTab = () => {
             <div className="empty-icon">
               <i className="bi bi-inbox"></i>
             </div>
-            <h4>No Notifications Yet</h4>
-            <p>{loading ? 'Loading notification history...' : 'Create your first notification to see it here'}</p>
+            <h4>
+              {historyFilters.status !== 'all' || historyFilters.type !== 'all' || historyFilters.dateRange !== 'all' 
+                ? 'No Notifications Match Your Filters' 
+                : 'No Notifications Yet'
+              }
+            </h4>
+            <p>
+              {loading 
+                ? 'Loading notification history...' 
+                : historyFilters.status !== 'all' || historyFilters.type !== 'all' || historyFilters.dateRange !== 'all'
+                  ? 'Try adjusting your filters to see more results'
+                  : 'Create your first notification to see it here'
+              }
+            </p>
+            {(historyFilters.status !== 'all' || historyFilters.type !== 'all' || historyFilters.dateRange !== 'all') && (
+              <button 
+                className="btn btn-outline-primary btn-sm"
+                onClick={clearFilters}
+              >
+                Clear All Filters
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -676,6 +676,22 @@
   box-shadow: var(--shadow-sm);
 }
 
+.notification-history .notification-type-badge .type-text {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.notification-history .notification-type-badge i[title] {
+  color: var(--warning);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .notification-history .history-content {
   flex: 1;
 }
@@ -774,6 +790,16 @@
   color: var(--warning-dark);
 }
 
+.notification-history .status-badge.sending {
+  background: var(--info-light, #cce7f0);
+  color: var(--info-dark, #0c5460);
+}
+
+.notification-history .status-badge.scheduled {
+  background: var(--purple-light);
+  color: var(--primary-purple);
+}
+
 .notification-history .recipient-stats {
   display: flex;
   flex-direction: column;
@@ -856,6 +882,149 @@
   margin: 0;
 }
 
+/* Help text styles */
+.help-text {
+  background-color: var(--info-bg, #e3f2fd);
+  border: 1px solid var(--info-border, #bbdefb);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  color: var(--info-text, #1976d2);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.help-text i {
+  color: var(--info-icon, #1976d2);
+  margin-right: 0.5rem;
+}
+
+.help-text strong {
+  font-weight: 600;
+}
+
+/* History filters */
+.history-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.filter-group label {
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  background: var(--white);
+  transition: border-color 0.2s ease;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-purple);
+  box-shadow: 0 0 0 0.125rem rgba(108, 99, 255, 0.25);
+}
+
+.filtered-count {
+  background: var(--purple-light);
+  color: var(--primary-purple);
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* History action buttons */
+.history-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+  justify-content: flex-end;
+}
+
+.history-actions .btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.history-actions .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.history-actions .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.history-actions .btn-warning {
+  background-color: var(--warning);
+  border-color: var(--warning);
+  color: var(--purple-darker);
+}
+
+.history-actions .btn-warning:hover:not(:disabled) {
+  background-color: var(--warning-dark, #e0a800);
+  border-color: var(--warning-dark, #e0a800);
+}
+
+.history-actions .btn-outline-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: transparent;
+}
+
+.history-actions .btn-outline-danger:hover:not(:disabled) {
+  background-color: var(--danger);
+  color: var(--white);
+}
+
+/* Responsive filters */
+@media (max-width: 768px) {
+  .history-filters {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .filter-group {
+    flex: none;
+  }
+  
+  .history-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .history-actions .btn {
+    justify-content: center;
+  }
+}
+
 /* Responsive Design for History */
 @media (max-width: 768px) {
   .notification-history .history-main {
@@ -882,4 +1051,40 @@
   .notification-history .stat-item {
     align-items: center;
   }
+}
+
+/* Quick Statistics Pills in Notification History */
+.quick-stats {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.stat-pill.success {
+  background: var(--success-light);
+  color: var(--success-dark);
+}
+
+.stat-pill.warning {
+  background: var(--warning-light);
+  color: var(--warning-dark);
+}
+
+.stat-pill.danger {
+  background: var(--danger-light);
+  color: var(--danger-dark);
+}
+
+.stat-pill.info {
+  background: var(--info-light, #cce7f0);
+  color: var(--info-dark, #0c5460);
 }
