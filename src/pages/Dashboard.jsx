@@ -54,7 +54,7 @@ const Dashboard = () => {
 
         // Fetch real data based on user role
         const realData = await analyticsService.getDashboardStatsByRole(
-          user.role
+          user.currentRole || user.role
         );
 
         // Add metadata
@@ -70,7 +70,7 @@ const Dashboard = () => {
         setError(err.message || "Failed to load dashboard data");
 
         // Fallback to mock data on error
-        const mockData = getDashboardMockData(user.role);
+        const mockData = getDashboardMockData(user.currentRole || user.role);
         setDashboardData(mockData);
       } finally {
         setLoading(false);
@@ -135,7 +135,7 @@ const Dashboard = () => {
     try {
       setError(null);
       const realData = await analyticsService.getDashboardStatsByRole(
-        user.role
+        user.currentRole || user.role
       );
       const dashboardData = {
         ...realData,
@@ -146,14 +146,17 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Dashboard refresh error:", err);
       // Fallback to mock data on error
-      const mockData = getDashboardMockData(user.role);
+      const mockData = getDashboardMockData(user.currentRole || user.role);
       setDashboardData(mockData);
     }
-  }; // Role-specific dashboard content
+  };  // Role-specific dashboard content
   const getDashboardContent = () => {
     if (!dashboardData) return null;
 
-    switch (user?.role) {
+    // Use currentRole if available (for role switchers), otherwise use role
+    const effectiveRole = user?.currentRole || user?.role;
+
+    switch (effectiveRole) {
       case ROLES.SUPER_ADMIN:
         return <SuperAdminTabs dashboardData={dashboardData} />;
       case ROLES.STATE_ADMIN:
@@ -243,7 +246,7 @@ const Dashboard = () => {
       <div className="container-fluid">
         <PageHeader
           {...HeaderConfigurations.dashboard(
-            user?.role,
+            user?.currentRole || user?.role, // Use effective role for header
             user?.firstName || user?.name || user?.email,
             refreshDashboard,
             userProfile?.state,

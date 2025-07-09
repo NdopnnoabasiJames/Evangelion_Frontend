@@ -100,6 +100,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser, // Add setUser to the exported context
     loading,
     isAuthenticated,
     login,

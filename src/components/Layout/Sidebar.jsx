@@ -10,8 +10,10 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Get navigation items based on user role
   const getNavItems = () => {
-    if (!user?.role) return [];
-    return NAVIGATION_ITEMS[user.role] || [];
+    // Use currentRole if available (for role switchers), otherwise use role
+    const effectiveRole = user?.currentRole || user?.role;
+    if (!effectiveRole) return [];
+    return NAVIGATION_ITEMS[effectiveRole] || [];
   };
 
   const navItems = getNavItems();
@@ -77,7 +79,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               <div>
                 <div className="fw-semibold small text-white">{user?.name || 'User'}</div>
                 <div className="small" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  {user?.role?.replace('_', ' ') || 'Role'}
+                  {(user?.currentRole || user?.role)?.replace('_', ' ') || 'Role'}
                 </div>
               </div>
             </div></div>

@@ -18,8 +18,12 @@ const Registrars = () => {
   const [error, setError] = useState(null);
 
   // Fetch registrars based on user role
+  const endpoint = user?.role === ROLES.SUPER_ADMIN 
+    ? API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_PENDING 
+    : API_ENDPOINTS.REGISTRARS.BASE;
+    
   const { data: registrarsData, loading: registrarsLoading, error: registrarsError, refetch } = useApi(
-    API_ENDPOINTS.REGISTRARS.BASE, 
+    endpoint, 
     { immediate: true }
   );
 
@@ -226,11 +230,13 @@ const RegistrarsList = ({ registrars, loading, error, canManage, onRefresh }) =>
 const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
   const { execute: approveRegistrar } = useApi(null, { immediate: false });
   const { execute: rejectRegistrar } = useApi(null, { immediate: false });
+  const { execute: revokeRoleSwitching } = useApi(null, { immediate: false });
 
   const handleApprove = async (registrarId) => {
     try {
-      await approveRegistrar(`${API_ENDPOINTS.REGISTRARS.BASE}/${registrarId}/approve`, {
-        method: 'PATCH'
+      await approveRegistrar(API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_APPROVE, {
+        method: 'POST',
+        body: { registrarId }
       });
       onRefresh();
     } catch (error) {
@@ -240,12 +246,24 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
 
   const handleReject = async (registrarId) => {
     try {
-      await rejectRegistrar(`${API_ENDPOINTS.REGISTRARS.BASE}/${registrarId}/reject`, {
-        method: 'PATCH'
+      await rejectRegistrar(API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_REJECT, {
+        method: 'POST',
+        body: { registrarId }
       });
       onRefresh();
     } catch (error) {
       console.error('Failed to reject registrar:', error);
+    }
+  };
+
+  const handleRevokeRoleSwitching = async (userId) => {
+    try {
+      await revokeRoleSwitching(`${API_ENDPOINTS.REGISTRARS.BASE}/super-admin/revoke-role-switching/${userId}`, {
+        method: 'POST'
+      });
+      onRefresh();
+    } catch (error) {
+      console.error('Failed to revoke role switching:', error);
     }
   };
 
@@ -254,48 +272,251 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
       <div className="text-center py-5">
         <i className="bi bi-clock" style={{ fontSize: '4rem', color: 'var(--accent-yellow)', opacity: 0.5 }}></i>
         <h4 className="mt-3" style={{ color: 'var(--primary-purple)' }}>No Pending Applications</h4>
-        <p className="text-muted">All registrar applications have been processed.</p>
+        <p className="text-muted">All registrar applications and role-switch requests have been processed.</p>
       </div>
     );
   }
 
+  // Separate applications by type
+  const newRegistrarApps = registrars.filter(r => r.requestType === 'new_registrar' || !r.requestType);
+  const roleSwitchRequests = registrars.filter(r => r.requestType === 'role_switch');
+
   return (
-    <div className="row g-4">
-      {registrars.map((registrar) => (
-        <div key={registrar._id} className="col-md-6 col-lg-4">
-          <div className="card h-100 shadow-sm border-0">
-            <div className="card-body">
-              <h5 className="card-title" style={{ color: 'var(--primary-purple)' }}>
-                {registrar.fullName}
-              </h5>
-              <p className="text-muted mb-2">{registrar.email}</p>
-              
-              <div className="mb-2">
-                <i className="bi bi-phone me-2 text-muted"></i>
-                <small>{registrar.phoneNumber}</small>
+    <div className="container-fluid">
+      {/* Role Switch Requests Section */}
+      {roleSwitchRequests.length > 0 && (
+        <div className="mb-5">
+          <div className="d-flex align-items-center mb-3">
+            <i className="bi bi-arrow-repeat me-2" style={{ color: 'var(--accent-yellow)' }}></i>
+            <h5 className="mb-0" style={{ color: 'var(--primary-purple)' }}>
+              Worker Role-Switch Requests ({roleSwitchRequests.length})
+            </h5>
+          </div>
+          <div className="alert alert-info">
+            <i className="bi bi-info-circle me-2"></i>
+            These are workers requesting the ability to switch between Worker and Registrar roles.
+          </div>
+          <div className="row g-4">
+            {roleSwitchRequests.map((request) => (
+              <div key={request._id} className="col-md-6 col-lg-4">
+                <div className="card h-100 shadow-sm border-0" style={{ borderLeft: '4px solid var(--accent-yellow)' }}>
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      <div>
+                        <h5 className="card-title mb-1" style={{ color: 'var(--primary-purple)' }}>
+                          {request.name}
+                        </h5>
+                        <small className="text-muted">{request.email}</small>
+                      </div>
+                      <span className="badge bg-warning">Role Switch</span>
+                    </div>
+                    
+                    <div className="mb-2">
+                      <i className="bi bi-phone me-2 text-muted"></i>
+                      <small>{request.phone}</small>
+                    </div>
+                    
+                    <div className="mb-2">
+                      <i className="bi bi-geo-alt me-2 text-muted"></i>
+                      <small>{request.branch?.name || 'No Branch'}</small>
+                    </div>
+
+                    <div className="mb-3">
+                      <i className="bi bi-clock me-2 text-muted"></i>
+                      <small>Requested: {new Date(request.roleSwitchRequestedAt).toLocaleDateString()}</small>
+                    </div>
+                    
+                    {canApprove && (
+                      <div className="d-grid gap-2">
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => handleApprove(request._id)}
+                        >
+                          <i className="bi bi-check-circle me-1"></i>
+                          Grant Role Switching
+                        </button>
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => handleReject(request._id)}
+                        >
+                          <i className="bi bi-x-circle me-1"></i>
+                          Reject Request
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              
-              <div className="mb-3">
-                <i className="bi bi-geo-alt me-2 text-muted"></i>
-                <small>{registrar.preferredZone || 'No Zone Preference'}</small>
-              </div>
-              
-              {canApprove && (
-                <ApprovalActions
-                  entityId={registrar._id}
-                  entityType="registrar"
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  approveText="Approve"
-                  rejectText="Reject"
-                  size="sm"
-                  layout="horizontal"
-                />
-              )}
-            </div>
+            ))}
           </div>
         </div>
-      ))}
+      )}
+
+      {/* New Registrar Applications Section */}
+      {newRegistrarApps.length > 0 && (
+        <div>
+          <div className="d-flex align-items-center mb-3">
+            <i className="bi bi-person-plus me-2" style={{ color: 'var(--primary-purple)' }}></i>
+            <h5 className="mb-0" style={{ color: 'var(--primary-purple)' }}>
+              New Registrar Applications ({newRegistrarApps.length})
+            </h5>
+          </div>
+          <div className="alert alert-primary">
+            <i className="bi bi-info-circle me-2"></i>
+            These are new registrar account applications.
+          </div>
+          <div className="row g-4">
+            {newRegistrarApps.map((registrar) => (
+              <div key={registrar._id} className="col-md-6 col-lg-4">
+                <div className="card h-100 shadow-sm border-0" style={{ borderLeft: '4px solid var(--primary-purple)' }}>
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      <div>
+                        <h5 className="card-title mb-1" style={{ color: 'var(--primary-purple)' }}>
+                          {registrar.name}
+                        </h5>
+                        <small className="text-muted">{registrar.email}</small>
+                      </div>
+                      <span className="badge bg-primary">New Registrar</span>
+                    </div>
+                    
+                    <div className="mb-2">
+                      <i className="bi bi-phone me-2 text-muted"></i>
+                      <small>{registrar.phone}</small>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <i className="bi bi-geo-alt me-2 text-muted"></i>
+                      <small>{registrar.branch?.name || 'No Branch'}</small>
+                    </div>
+                    
+                    {canApprove && (
+                      <ApprovalActions
+                        entityId={registrar._id}
+                        entityType="registrar"
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                        approveText="Approve"
+                        rejectText="Reject"
+                        size="sm"
+                        layout="horizontal"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Manage Existing Role Switchers */}
+      <div className="mt-5">
+        <ExistingRoleSwitchers onRevoke={handleRevokeRoleSwitching} />
+      </div>
+    </div>
+  );
+};
+
+// Component to manage existing role switchers
+const ExistingRoleSwitchers = ({ onRevoke }) => {
+  const [roleSwitchers, setRoleSwitchers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchRoleSwitchers();
+  }, []);
+
+  const fetchRoleSwitchers = async () => {
+    setLoading(true);
+    try {
+      // Fetch workers who have canSwitchRoles = true
+      const response = await fetch(`${API_ENDPOINTS.ADMIN.USERS}?canSwitchRoles=true`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+
+      if (response.ok) {
+        const users = await response.json();
+        setRoleSwitchers(Array.isArray(users) ? users : users.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching role switchers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRevoke = async (userId) => {
+    if (window.confirm('Are you sure you want to revoke role switching ability? This will force the user back to Worker role.')) {
+      await onRevoke(userId);
+      fetchRoleSwitchers(); // Refresh the list
+    }
+  };
+
+  if (loading) {
+    return <LoadingCard height="200px" />;
+  }
+
+  if (!roleSwitchers.length) {
+    return null; // Don't show section if no role switchers
+  }
+
+  return (
+    <div>
+      <div className="d-flex align-items-center mb-3">
+        <i className="bi bi-people-fill me-2" style={{ color: 'var(--success)' }}></i>
+        <h5 className="mb-0" style={{ color: 'var(--primary-purple)' }}>
+          Active Role Switchers ({roleSwitchers.length})
+        </h5>
+      </div>
+      <div className="alert alert-success">
+        <i className="bi bi-info-circle me-2"></i>
+        These workers can switch between Worker and Registrar roles. You can revoke this ability.
+      </div>
+      <div className="row g-4">
+        {roleSwitchers.map((user) => (
+          <div key={user._id} className="col-md-6 col-lg-4">
+            <div className="card h-100 shadow-sm border-0" style={{ borderLeft: '4px solid var(--success)' }}>
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h5 className="card-title mb-1" style={{ color: 'var(--primary-purple)' }}>
+                      {user.name}
+                    </h5>
+                    <small className="text-muted">{user.email}</small>
+                  </div>
+                  <span className="badge bg-success">Active Switcher</span>
+                </div>
+                
+                <div className="mb-2">
+                  <i className="bi bi-person-badge me-2 text-muted"></i>
+                  <small>Current: {user.currentRole === 'registrar' ? 'Registrar' : 'Worker'}</small>
+                </div>
+                
+                <div className="mb-2">
+                  <i className="bi bi-geo-alt me-2 text-muted"></i>
+                  <small>{user.branch?.name || 'No Branch'}</small>
+                </div>
+
+                <div className="mb-3">
+                  <i className="bi bi-clock me-2 text-muted"></i>
+                  <small>Approved: {new Date(user.roleSwitchApprovedAt).toLocaleDateString()}</small>
+                </div>
+                
+                <button
+                  className="btn btn-outline-danger btn-sm w-100"
+                  onClick={() => handleRevoke(user._id)}
+                >
+                  <i className="bi bi-x-circle me-1"></i>
+                  Revoke Role Switching
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

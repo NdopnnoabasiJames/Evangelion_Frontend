@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
 import { API_ENDPOINTS } from '../../utils/constants';
+import RoleSwitchingSection from './RoleSwitchingSection';
 
 const RegistrarTabs = ({ dashboardData }) => {
   const { user } = useAuth();
@@ -383,6 +384,15 @@ const RegistrarTabs = ({ dashboardData }) => {
           </div>
         </div>
       </div>
+      
+      {/* Role Switching Section - only show for users who can switch roles */}
+      {user?.canSwitchRoles && (
+        <div className="row mb-4">
+          <div className="col-12">
+            <RoleSwitchingSection user={user} />
+          </div>
+        </div>
+      )}
     </div>
   );
 

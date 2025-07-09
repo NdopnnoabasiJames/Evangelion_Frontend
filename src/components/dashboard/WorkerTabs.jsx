@@ -9,6 +9,7 @@ import AllEventsTab from './AllEventsTab';
 import MyEventsTab from './MyEventsTab';
 import RegisteredGuestsTab from './RegisteredGuestsTab';
 import GuestRegistrationModal from './GuestRegistrationModal';
+import RoleSwitchingSection from './RoleSwitchingSection';
 import { formatEventLocation, formatEventDateTime, getVolunteerButtonState } from '../../helpers/workerTabs.helpers';
 
 const WorkerTabs = ({ dashboardData }) => {
@@ -240,7 +241,10 @@ const WorkerTabs = ({ dashboardData }) => {
       {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && (
-          <OverviewTab user={user} overviewStats={overviewStats} />
+          <>
+            <RoleSwitchingSection user={user} />
+            <OverviewTab user={user} overviewStats={overviewStats} />
+          </>
         )}
         {activeTab === 'all-events' && (
           <AllEventsTab

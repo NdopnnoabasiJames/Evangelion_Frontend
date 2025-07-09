@@ -237,6 +237,12 @@ export const API_ENDPOINTS = {
     // State Admin specific endpoints
     STATE_ADMIN_LIST: "/api/pickup-stations/state-admin/my-stations",
   },
+  USERS: {
+    BASE: "/api/users",
+    REQUEST_REGISTRAR_ACCESS: "/api/users/request-registrar-access",
+    SWITCH_ROLE: "/api/users/switch-role",
+    REVOKE_ROLE_SWITCHING: "/api/users/revoke-role-switching",
+  },
 };
 
 // Status constants
