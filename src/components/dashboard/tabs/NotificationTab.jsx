@@ -21,6 +21,7 @@ const NotificationTab = () => {
   const [notificationHistory, setNotificationHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [expandedMessages, setExpandedMessages] = useState(new Set());
 
   const timingOptions = [
     { value: 'immediate', label: 'Send Immediately' },
@@ -103,6 +104,38 @@ const NotificationTab = () => {
     setSelectedGuests([]);
   };
 
+  const toggleMessageExpansion = (notificationId) => {
+    const newExpanded = new Set(expandedMessages);
+    if (newExpanded.has(notificationId)) {
+      newExpanded.delete(notificationId);
+    } else {
+      newExpanded.add(notificationId);
+    }
+    setExpandedMessages(newExpanded);
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Message copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Message copied to clipboard!');
+      } catch (err) {
+        alert('Failed to copy message');
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   const generatePreview = async () => {
     console.log('🔄 [NotificationTab] Preview button clicked!');
     console.log('📊 [NotificationTab] Current state:', {
@@ -182,6 +215,7 @@ const NotificationTab = () => {
 
     try {
       setLoading(true);
+      setError(''); // Clear any previous errors
       console.log('🔍 [NotificationTab] Sending notification:', {
         eventId: selectedEvent,
         recipients: selectedGuests,
@@ -201,7 +235,37 @@ const NotificationTab = () => {
       });      
       
       console.log('✅ [NotificationTab] Send notification response:', response);
-      alert(`${notification.notificationType.charAt(0).toUpperCase() + notification.notificationType.slice(1)} notification sent successfully!`);
+      
+      // Check the response for detailed success/failure information
+      const responseData = response.data?.data || response.data;
+      const stats = responseData?.stats || {};
+      
+      console.log('📊 [NotificationTab] Response stats:', stats);
+      
+      if (stats.hasFailures) {
+        // Partial failure - show detailed warning
+        const emailFailed = stats.failedCount || 0;
+        const smsFailed = stats.failedSmsCount || 0;
+        const emailSuccess = stats.successfulCount || 0;
+        const smsSuccess = stats.successfulSmsCount || 0;
+        
+        let message = `⚠️ Notification sent with some issues:\n`;
+        
+        if (notification.notificationType === 'email' || notification.notificationType === 'both') {
+          message += `📧 Email: ${emailSuccess} successful, ${emailFailed} failed\n`;
+        }
+        if (notification.notificationType === 'sms' || notification.notificationType === 'both') {
+          message += `📱 SMS: ${smsSuccess} successful, ${smsFailed} failed\n`;
+        }
+        
+        message += `\nCheck notification history for more details.`;
+        alert(message);
+      } else {
+        // Complete success
+        alert(`✅ ${notification.notificationType.charAt(0).toUpperCase() + notification.notificationType.slice(1)} notification sent successfully to all recipients!`);
+      }
+      
+      // Reset form
       setNotification({ notificationType: 'email', subject: '', message: '', timing: 'immediate' });
       setSelectedEvent(null);
       setSelectedGuests([]);
@@ -209,7 +273,9 @@ const NotificationTab = () => {
       fetchNotificationHistory();
     } catch (error) {
       console.error('❌ [NotificationTab] Failed to send notification:', error);
-      setError('Failed to send notification');
+      const errorMessage = error.response?.data?.message || error.message || 'Unknown error occurred';
+      setError(`Failed to send notification: ${errorMessage}`);
+      alert(`❌ Failed to send notification: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -473,10 +539,31 @@ const NotificationTab = () => {
                   </div>
                   <div className="history-content">
                     <h4 className="notification-subject">{notification.subject}</h4>
-                    <div className="notification-message-preview">
-                      {notification.message?.length > 100 
-                        ? `${notification.message.substring(0, 100)}...` 
-                        : notification.message}
+                    <div className="notification-message-container">
+                      <div className="notification-message-preview">
+                        {expandedMessages.has(notification._id) 
+                          ? notification.message 
+                          : notification.message?.length > 100 
+                            ? `${notification.message.substring(0, 100)}...` 
+                            : notification.message}
+                      </div>
+                      {notification.message?.length > 100 && (
+                        <div className="message-actions">
+                          <button 
+                            className="btn-link"
+                            onClick={() => toggleMessageExpansion(notification._id)}
+                          >
+                            {expandedMessages.has(notification._id) ? '🔼 Show less' : '🔽 Show full message'}
+                          </button>
+                          <button 
+                            className="btn-link"
+                            onClick={() => copyToClipboard(notification.message)}
+                            title="Copy message to clipboard"
+                          >
+                            📋 Copy
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="event-info">
                       <i className="bi bi-calendar-event me-1"></i>

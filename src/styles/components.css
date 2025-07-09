@@ -698,6 +698,34 @@
   border-left: 3px solid var(--primary-yellow);
 }
 
+.notification-history .notification-message-container {
+  margin-bottom: 0.75rem;
+}
+
+.notification-history .message-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.notification-history .btn-link {
+  background: none;
+  border: none;
+  color: var(--primary-purple);
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  padding: 0.25rem 0;
+  transition: color 0.2s ease;
+}
+
+.notification-history .btn-link:hover {
+  color: var(--purple-dark);
+  text-decoration: none;
+}
+
 .notification-history .event-info {
   display: flex;
   align-items: center;
