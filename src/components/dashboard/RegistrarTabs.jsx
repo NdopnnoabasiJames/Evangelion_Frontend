@@ -49,11 +49,14 @@ const RegistrarTabs = ({ dashboardData }) => {
       });
       
       if (response.ok) {
-        const stats = await response.json();
+        const data = await response.json();
+        // Backend returns { stats: {...}, recentActivity: [...] }
+        const stats = data.stats || data;
+        
         const normalizedStats = {
-          totalEventsVolunteered: stats.totalEventsVolunteered || stats.data?.totalEventsVolunteered || 0,
-          totalGuestsCheckedIn: stats.totalGuestsCheckedIn || stats.data?.totalGuestsCheckedIn || 0,
-          totalApprovedEvents: stats.totalApprovedEvents || stats.data?.totalApprovedEvents || 0
+          totalEventsVolunteered: stats.eventsCount || 0,
+          totalGuestsCheckedIn: stats.guestsCount || 0,
+          totalApprovedEvents: stats.assignedZones || 0
         };
         setOverviewStats(normalizedStats);
       } else {

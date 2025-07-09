@@ -222,20 +222,36 @@ export const dashboardService = {
   // Registrar Dashboard Stats
   getRegistrarDashboardStats: async () => {
     try {
-      const stats = {
-        checkinsToday: 0,
-        totalCheckins: 0,
-        pendingCheckins: 0,
-        recentActivity: "Check-in session activity",
+      const response = await api.get(API_ENDPOINTS.REGISTRARS.STATS);
+      const data = response.data;
+      
+      // Backend returns { stats: {...}, recentActivity: [...] }
+      const stats = data.stats || {};
+      
+      return {
+        checkinsToday: stats.guestsCount || 0,
+        totalCheckins: stats.guestsCount || 0,
+        totalEventsVolunteered: stats.eventsCount || 0,
+        eventsCount: stats.eventsCount || 0,
+        assignedZones: stats.assignedZones || 0,
+        guestsCount: stats.guestsCount || 0,
+        recentActivity: data.recentActivity || [],
+        isApproved: stats.isApproved || false,
+        dateJoined: stats.dateJoined || null,
+        ...stats
       };
-      return stats;
     } catch (error) {
       console.error("Error fetching registrar stats:", error);
       return {
         checkinsToday: 0,
         totalCheckins: 0,
-        pendingCheckins: 0,
-        recentActivity: "Check-in session activity",
+        totalEventsVolunteered: 0,
+        eventsCount: 0,
+        assignedZones: 0,
+        guestsCount: 0,
+        recentActivity: [],
+        isApproved: false,
+        dateJoined: null,
       };
     }
   },  // Get role-specific dashboard data
@@ -254,7 +270,11 @@ export const dashboardService = {
       case "registrar":
         return dashboardService.getRegistrarDashboardStats();
       default:
-        return dashboardService.getDashboardAnalytics();
+        // Return basic stats for unknown roles instead of calling admin endpoints
+        return {
+          message: "Dashboard data not available for this role",
+          stats: {}
+        };
     }
   },
 };

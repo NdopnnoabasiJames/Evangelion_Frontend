@@ -92,33 +92,50 @@ const RoleSwitchingSection = ({ user }) => {
       if (response.ok) {
         const result = await response.json();
         
-        // Fetch updated user profile from backend to ensure we have latest data
-        try {
-          const profileResponse = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-          });
+        // If the backend returns a new JWT token, use it
+        if (result.access_token) {
+          localStorage.setItem('authToken', result.access_token);
           
-          if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-            const normalizedUser = profileData.data || profileData;
-            
-            // Update user in auth context and localStorage with fresh data
-            setUser(normalizedUser);
-            localStorage.setItem('user', JSON.stringify(normalizedUser));
+          // Update user context with the user data returned from the backend
+          if (result.user) {
+            const updatedUser = { ...user, ...result.user, currentRole: result.currentRole };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
           } else {
-            // Fallback to local update if profile fetch fails
+            // Fallback: update just the currentRole
+            const updatedUser = { ...user, currentRole: result.currentRole };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+          }
+        } else {
+          // Fallback: Fetch updated user profile from backend if no token returned
+          try {
+            const profileResponse = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+            });
+            
+            if (profileResponse.ok) {
+              const profileData = await profileResponse.json();
+              const normalizedUser = profileData.data || profileData;
+              
+              // Update user in auth context and localStorage with fresh data
+              setUser(normalizedUser);
+              localStorage.setItem('user', JSON.stringify(normalizedUser));
+            } else {
+              // Fallback to local update if profile fetch fails
+              const updatedUser = { ...user, currentRole: newRole };
+              setUser(updatedUser);
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+          } catch (profileError) {
+            console.error('Failed to fetch updated profile:', profileError);
+            // Fallback to local update
             const updatedUser = { ...user, currentRole: newRole };
             setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
           }
-        } catch (profileError) {
-          console.error('Failed to fetch updated profile:', profileError);
-          // Fallback to local update
-          const updatedUser = { ...user, currentRole: newRole };
-          setUser(updatedUser);
-          localStorage.setItem('user', JSON.stringify(updatedUser));
         }
         
         setNotification({
@@ -129,7 +146,7 @@ const RoleSwitchingSection = ({ user }) => {
         // Force a re-render by updating the page after user context updates
         setTimeout(() => {
           window.location.reload();
-        }, 2000);
+        }, 1000);
       } else {
         const error = await response.json();
         setNotification({
