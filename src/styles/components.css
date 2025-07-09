@@ -512,155 +512,456 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid var(--border-light);
+  padding: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+  background-color: var(--background-white);
+  transition: all 0.2s ease;
 }
 
-.guest-item:last-child {
-  border-bottom: none;
+.guest-item:hover {
+  border-color: var(--primary-purple);
+  background-color: var(--purple-lightest);
 }
 
 .guest-item input[type="checkbox"] {
-  margin-right: 0.5rem;
+  accent-color: var(--primary-purple);
+  transform: scale(1.1);
+}
+
+.guest-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.guest-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.guest-contact {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .transport-badge {
-  margin-left: auto;
   padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.transport-badge:contains("Bus") {
   background-color: var(--primary-yellow);
   color: var(--purple-darker);
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-semibold);
 }
 
-.notification-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-light);
+.transport-badge:not(:contains("Bus")) {
+  background-color: var(--purple-light);
+  color: var(--white);
 }
 
-.notification-preview {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  box-shadow: var(--shadow-sm);
-  margin-top: 2rem;
+/* Responsive Design for Guest Items */
+@media (max-width: 768px) {
+  .guest-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .guest-info {
+    width: 100%;
+  }
+  
+  .transport-badge {
+    align-self: flex-end;
+  }
 }
 
-.preview-content {
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
+/* Dashboard Card Gradients */
+.bg-primary-gradient {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
 }
 
-.preview-header {
-  border-bottom: 1px solid var(--border-light);
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+.bg-success-gradient {
+  background: linear-gradient(135deg, #198754 0%, #146c43 100%);
 }
 
-.preview-message {
-  margin-bottom: 1.5rem;
+.bg-info-gradient {
+  background: linear-gradient(135deg, #0dcaf0 0%, #087990 100%);
 }
 
-.message-content {
-  background-color: var(--surface-light);
+.bg-warning-gradient {
+  background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+}
+
+.bg-purple-gradient {
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--purple-dark) 100%);
+}
+
+.bg-danger-gradient {
+  background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+}
+
+/* Notification Tab Styles */
+.notification-tab {
   padding: 1rem;
-  border-radius: var(--radius-md);
-  white-space: pre-wrap;
-  font-family: var(--font-family-mono);
 }
 
-.preview-recipients ul {
-  max-height: 200px;
-  overflow-y: auto;
-  margin: 0;
-  padding-left: 1.5rem;
-}
-
-.notification-history {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.history-item {
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  transition: all 0.2s ease-in-out;
-}
-
-.history-item:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.history-header {
+.notification-tab .tab-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-light);
 }
 
-.history-header h4 {
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-}
-
-.status-badge.sent {
-  background-color: var(--success-light);
-  color: var(--success-dark);
-}
-
-.status-badge.scheduled {
-  background-color: var(--warning-light);
-  color: var(--warning-dark);
-}
-
-.status-badge.failed {
-  background-color: var(--error-light);
-  color: var(--error-dark);
-}
-
-.history-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.notification-tab .tab-nav {
+  display: flex;
   gap: 1rem;
 }
 
-.history-details p {
-  margin: 0;
+.notification-tab .tab-nav button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-light);
+  background: var(--white);
   color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
-.history-details strong {
+.notification-tab .tab-nav button.active {
+  background-color: var(--primary-purple);
+  color: var(--white);
+  border-color: var(--primary-purple);
+}
+
+.notification-tab .tab-nav button:hover {
+  background-color: var(--purple-light);
+  color: var(--primary-purple);
+}
+
+.notification-create {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.notification-create .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.notification-create label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
-.error-message {
-  background-color: var(--error-light);
-  color: var(--error-dark);
-  padding: 1rem;
+.notification-create .form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.notification-create .form-control:focus {
+  outline: none;
+  border-color: var(--primary-purple);
+  box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+}
+
+.guest-selection-controls {
+  display: flex;
+  gap: 1rem;
   margin-bottom: 1rem;
-  border-left: 4px solid var(--error-dark);
+}
+
+.guest-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.guest-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+  background-color: var(--background-white);
+  transition: all 0.2s ease;
+}
+
+.guest-item:hover {
+  border-color: var(--primary-purple);
+  background-color: var(--purple-lightest);
+}
+
+.guest-item input[type="checkbox"] {
+  accent-color: var(--primary-purple);
+  transform: scale(1.1);
+}
+
+.guest-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.guest-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.guest-contact {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.transport-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.transport-badge:contains("Bus") {
+  background-color: var(--primary-yellow);
+  color: var(--purple-darker);
+}
+
+.transport-badge:not(:contains("Bus")) {
+  background-color: var(--purple-light);
+  color: var(--white);
+}
+
+/* Responsive Design for Guest Items */
+@media (max-width: 768px) {
+  .guest-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .guest-info {
+    width: 100%;
+  }
+  
+  .transport-badge {
+    align-self: flex-end;
+  }
+}
+
+/* Dashboard Card Gradients */
+.bg-primary-gradient {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+.bg-success-gradient {
+  background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+}
+
+.bg-info-gradient {
+  background: linear-gradient(135deg, #0dcaf0 0%, #087990 100%);
+}
+
+.bg-warning-gradient {
+  background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+}
+
+.bg-purple-gradient {
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--purple-dark) 100%);
+}
+
+.bg-danger-gradient {
+  background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+}
+
+/* Notification Tab Styles */
+.notification-tab {
+  padding: 1rem;
+}
+
+.notification-tab .tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-light);
+}
+
+.notification-tab .tab-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.notification-tab .tab-nav button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-light);
+  background: var(--white);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.notification-tab .tab-nav button.active {
+  background-color: var(--primary-purple);
+  color: var(--white);
+  border-color: var(--primary-purple);
+}
+
+.notification-tab .tab-nav button:hover {
+  background-color: var(--purple-light);
+  color: var(--primary-purple);
+}
+
+.notification-create {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.notification-create .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.notification-create label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.notification-create .form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.notification-create .form-control:focus {
+  outline: none;
+  border-color: var(--primary-purple);
+  box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+}
+
+.guest-selection-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.guest-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.guest-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+  background-color: var(--background-white);
+  transition: all 0.2s ease;
+}
+
+.guest-item:hover {
+  border-color: var(--primary-purple);
+  background-color: var(--purple-lightest);
+}
+
+.guest-item input[type="checkbox"] {
+  accent-color: var(--primary-purple);
+  transform: scale(1.1);
+}
+
+.guest-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.guest-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.guest-contact {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.transport-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.transport-badge:contains("Bus") {
+  background-color: var(--primary-yellow);
+  color: var(--purple-darker);
+}
+
+.transport-badge:not(:contains("Bus")) {
+  background-color: var(--purple-light);
+  color: var(--white);
+}
+
+/* Responsive Design for Guest Items */
+@media (max-width: 768px) {
+  .guest-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .guest-info {
+    width: 100%;
+  }
+  
+  .transport-badge {
+    align-self: flex-end;
+  }
 }

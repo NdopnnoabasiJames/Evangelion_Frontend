@@ -12,6 +12,7 @@ const NotificationTab = () => {
   const [selectedGuests, setSelectedGuests] = useState([]);
   const [transportFilter, setTransportFilter] = useState('all');
   const [notification, setNotification] = useState({
+    notificationType: 'email',
     subject: '',
     message: '',
     timing: 'immediate'
@@ -103,20 +104,38 @@ const NotificationTab = () => {
   };
 
   const generatePreview = async () => {
-    if (!selectedEvent || selectedGuests.length === 0 || !notification.subject || !notification.message) {
+    // For SMS notifications, subject is optional
+    const isSubjectRequired = notification.notificationType !== 'sms';
+    
+    if (!selectedEvent || selectedGuests.length === 0 || 
+        (isSubjectRequired && !notification.subject) || !notification.message) {
       setError('Please fill in all required fields');
       return;
     }
 
     try {
-      const response = await api.post('/api/notifications/preview', {
+      console.log('🔍 [NotificationTab] Generating preview for notification:', {
         eventId: selectedEvent,
         recipients: selectedGuests,
+        notificationType: notification.notificationType,
         subject: notification.subject,
         message: notification.message
       });
+      
+      const response = await api.post('/api/notifications/preview', {
+        eventId: selectedEvent,
+        recipients: selectedGuests,
+        notificationType: notification.notificationType,
+        subject: notification.subject || 'Event Notification', // Default subject if not provided
+        message: notification.message
+      });
+      
+      console.log('✅ [NotificationTab] Preview response:', response);
+      console.log('📊 [NotificationTab] Preview data structure:', response.data);
+      
       // Handle the response structure - check if it's wrapped
       const previewData = response.data.data || response.data;
+      console.log('📋 [NotificationTab] Final preview data:', previewData);
       setPreview(previewData);
     } catch (error) {
       setError('Failed to generate preview');
@@ -124,22 +143,38 @@ const NotificationTab = () => {
   };
 
   const sendNotification = async () => {
-    if (!selectedEvent || selectedGuests.length === 0 || !notification.subject || !notification.message) {
+    // For SMS notifications, subject is optional
+    const isSubjectRequired = notification.notificationType !== 'sms';
+    
+    if (!selectedEvent || selectedGuests.length === 0 || 
+        (isSubjectRequired && !notification.subject) || !notification.message) {
       setError('Please fill in all required fields');
       return;
     }
 
     try {
       setLoading(true);
-      const response = await api.post('/api/notifications', {
+      console.log('🔍 [NotificationTab] Sending notification:', {
         eventId: selectedEvent,
         recipients: selectedGuests,
+        notificationType: notification.notificationType,
         subject: notification.subject,
         message: notification.message,
         timing: notification.timing
+      });
+      
+      const response = await api.post('/api/notifications', {
+        eventId: selectedEvent,
+        recipients: selectedGuests,
+        notificationType: notification.notificationType,
+        subject: notification.subject || 'Event Notification', // Default subject if not provided
+        message: notification.message,
+        timing: notification.timing
       });      
-      alert('Notification created successfully!');
-      setNotification({ subject: '', message: '', timing: 'immediate' });
+      
+      console.log('✅ [NotificationTab] Send notification response:', response);
+      alert(`${notification.notificationType.charAt(0).toUpperCase() + notification.notificationType.slice(1)} notification sent successfully!`);
+      setNotification({ notificationType: 'email', subject: '', message: '', timing: 'immediate' });
       setSelectedEvent(null);
       setSelectedGuests([]);
       setPreview(null);
@@ -218,7 +253,11 @@ const NotificationTab = () => {
                       checked={selectedGuests.includes(guest._id)}
                       onChange={() => handleGuestSelection(guest._id)}
                     />
-                    <span>{guest.name} - {guest.email}</span>
+                    <div className="guest-info">
+                      <span className="guest-name">{guest.name}</span>
+                      <span className="guest-contact">📧 {guest.email}</span>
+                      <span className="guest-contact">📱 {guest.phone || 'No phone'}</span>
+                    </div>
                     <span className="transport-badge">
                       {guest.transportPreference === 'church_bus' ? 'Bus' : 'Private'}
                     </span>
@@ -234,25 +273,80 @@ const NotificationTab = () => {
 
           {/* Notification Details */}
           <div className="form-group">
-            <label>Subject:</label>
+            <label>Notification Type:</label>
+            <div className="notification-type-selection">
+              <div className="radio-group">
+                <label className="radio-label">
+                  <input 
+                    type="radio" 
+                    value="email" 
+                    checked={notification.notificationType === 'email'}
+                    onChange={(e) => setNotification({...notification, notificationType: e.target.value})}
+                  />
+                  <span className="radio-text">📧 Email Only</span>
+                </label>
+                <label className="radio-label">
+                  <input 
+                    type="radio" 
+                    value="sms" 
+                    checked={notification.notificationType === 'sms'}
+                    onChange={(e) => setNotification({...notification, notificationType: e.target.value})}
+                  />
+                  <span className="radio-text">📱 SMS Only</span>
+                </label>
+                <label className="radio-label">
+                  <input 
+                    type="radio" 
+                    value="both" 
+                    checked={notification.notificationType === 'both'}
+                    onChange={(e) => setNotification({...notification, notificationType: e.target.value})}
+                  />
+                  <span className="radio-text">📧Email & 📱SMS</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Subject{notification.notificationType === 'sms' ? ' (Optional for SMS)' : ''}:</label>
             <input
               type="text"
               value={notification.subject}
               onChange={(e) => setNotification({...notification, subject: e.target.value})}
               className="form-control"
-              placeholder="Enter email subject..."
+              placeholder={notification.notificationType === 'sms' ? 'Subject (optional for SMS)' : 'Enter email subject...'}
+              required={notification.notificationType !== 'sms'}
             />
           </div>
 
           <div className="form-group">
-            <label>Message:</label>
+            <label>
+              Message:
+              {(notification.notificationType === 'sms' || notification.notificationType === 'both') && (
+                <span className={`character-count ${notification.message.length > 160 ? 'over-limit' : ''}`}>
+                  {notification.message.length}/160 characters
+                  {notification.message.length > 160 && ' (Will be truncated for SMS)'}
+                </span>
+              )}
+            </label>
             <textarea
               value={notification.message}
               onChange={(e) => setNotification({...notification, message: e.target.value})}
               className="form-control"
               rows="6"
-              placeholder="Enter your message..."
+              placeholder={
+                notification.notificationType === 'sms' 
+                  ? 'Enter your SMS message (recommended: 160 characters or less)...'
+                  : notification.notificationType === 'both'
+                  ? 'Enter your message (SMS will be truncated to 160 characters)...'
+                  : 'Enter your message...'
+              }
             />
+            {(notification.notificationType === 'sms' || notification.notificationType === 'both') && (
+              <small className="form-text text-muted">
+                📱 SMS messages over 160 characters will be automatically truncated with "..." added.
+              </small>
+            )}
           </div>
 
           <div className="form-group">

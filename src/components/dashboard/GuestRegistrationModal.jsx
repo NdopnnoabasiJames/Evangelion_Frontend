@@ -144,8 +144,14 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
                     className="form-control"
                     value={guestForm.phone}
                     onChange={(e) => setGuestForm({ ...guestForm, phone: e.target.value })}
+                    placeholder="+234 806 123 4567"
+                    pattern="^\+?[\d\s\-\(\)]{10,15}$"
+                    title="Please enter a valid phone number (10-15 digits, can include +, spaces, hyphens, parentheses)"
                     required
                   />
+                  <div className="form-text">
+                    📱 Include country code (e.g., +234 for Nigeria) for SMS notifications
+                  </div>
                 </div>
                 <div className="col-md-6 mb-3">
                   <label className="form-label">Email Address</label>
