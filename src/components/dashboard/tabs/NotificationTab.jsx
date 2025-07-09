@@ -104,31 +104,58 @@ const NotificationTab = () => {
   };
 
   const generatePreview = async () => {
+    console.log('🔄 [NotificationTab] Preview button clicked!');
+    console.log('📊 [NotificationTab] Current state:', {
+      selectedEvent,
+      selectedGuestsCount: selectedGuests.length,
+      notificationType: notification.notificationType,
+      subject: notification.subject,
+      message: notification.message
+    });
+    
     // For SMS notifications, subject is optional
     const isSubjectRequired = notification.notificationType !== 'sms';
+    console.log('🔍 [NotificationTab] Is subject required?', isSubjectRequired);
     
-    if (!selectedEvent || selectedGuests.length === 0 || 
-        (isSubjectRequired && !notification.subject) || !notification.message) {
-      setError('Please fill in all required fields');
+    if (!selectedEvent) {
+      console.log('❌ [NotificationTab] No event selected');
+      setError('Please select an event');
+      return;
+    }
+    
+    if (selectedGuests.length === 0) {
+      console.log('❌ [NotificationTab] No guests selected');
+      setError('Please select at least one guest');
+      return;
+    }
+    
+    if (isSubjectRequired && !notification.subject) {
+      console.log('❌ [NotificationTab] Subject required but not provided');
+      setError('Please enter a subject');
+      return;
+    }
+    
+    if (!notification.message) {
+      console.log('❌ [NotificationTab] No message provided');
+      setError('Please enter a message');
       return;
     }
 
     try {
-      console.log('🔍 [NotificationTab] Generating preview for notification:', {
-        eventId: selectedEvent,
-        recipients: selectedGuests,
-        notificationType: notification.notificationType,
-        subject: notification.subject,
-        message: notification.message
-      });
+      console.log('🔍 [NotificationTab] All validations passed, generating preview...');
+      setError(''); // Clear any previous errors
       
-      const response = await api.post('/api/notifications/preview', {
+      const payload = {
         eventId: selectedEvent,
         recipients: selectedGuests,
         notificationType: notification.notificationType,
-        subject: notification.subject || 'Event Notification', // Default subject if not provided
+        subject: notification.subject || 'Event Notification',
         message: notification.message
-      });
+      };
+      
+      console.log('🔍 [NotificationTab] Sending preview request with payload:', payload);
+      
+      const response = await api.post('/api/notifications/preview', payload);
       
       console.log('✅ [NotificationTab] Preview response:', response);
       console.log('📊 [NotificationTab] Preview data structure:', response.data);
@@ -138,7 +165,8 @@ const NotificationTab = () => {
       console.log('📋 [NotificationTab] Final preview data:', previewData);
       setPreview(previewData);
     } catch (error) {
-      setError('Failed to generate preview');
+      console.error('❌ [NotificationTab] Preview error:', error);
+      setError('Failed to generate preview: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -415,29 +443,99 @@ const NotificationTab = () => {
 
   const renderHistory = () => (
     <div className="notification-history">
-      <h3>Notification History</h3>
+      <div className="history-header">
+        <h3><i className="bi bi-clock-history me-2"></i>Notification History</h3>
+        <div className="history-stats">
+          {Array.isArray(notificationHistory) && notificationHistory.length > 0 && (
+            <span className="total-count">
+              Total: {notificationHistory.length} notifications
+            </span>
+          )}
+        </div>
+      </div>
+      
       <div className="history-list">
         {Array.isArray(notificationHistory) && notificationHistory.length > 0 ? (
           notificationHistory.map(notification => (
             <div key={notification._id} className="history-item">
-              <div className="history-header">
-                <h4>{notification.subject}</h4>
-                <span className={`status-badge ${notification.status}`}>
-                  {notification.status}
-                </span>
+              <div className="history-main">
+                <div className="history-left">
+                  <div className="notification-type-badge">
+                    {notification.notificationType === 'SMS' && <i className="bi bi-phone"></i>}
+                    {notification.notificationType === 'EMAIL' && <i className="bi bi-envelope"></i>}
+                    {notification.notificationType === 'BOTH' && (
+                      <>
+                        <i className="bi bi-envelope"></i>
+                        <i className="bi bi-phone"></i>
+                      </>
+                    )}
+                    {notification.notificationType || 'EMAIL'}
+                  </div>
+                  <div className="history-content">
+                    <h4 className="notification-subject">{notification.subject}</h4>
+                    <div className="notification-message-preview">
+                      {notification.message?.length > 100 
+                        ? `${notification.message.substring(0, 100)}...` 
+                        : notification.message}
+                    </div>
+                    <div className="event-info">
+                      <i className="bi bi-calendar-event me-1"></i>
+                      <strong>{notification.eventId?.name || 'Unknown Event'}</strong>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="history-right">
+                  <div className="status-section">
+                    <span className={`status-badge ${notification.status?.toLowerCase()}`}>
+                      {notification.status === 'SENT' && <i className="bi bi-check-circle me-1"></i>}
+                      {notification.status === 'FAILED' && <i className="bi bi-x-circle me-1"></i>}
+                      {notification.status === 'PENDING' && <i className="bi bi-clock me-1"></i>}
+                      {notification.status}
+                    </span>
+                  </div>
+                  
+                  <div className="recipient-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Total Recipients</span>
+                      <span className="stat-value">{notification.totalRecipients || 0}</span>
+                    </div>
+                    <div className="stat-item success">
+                      <span className="stat-label">Successful</span>
+                      <span className="stat-value">{notification.successfulCount || 0}</span>
+                    </div>
+                    {notification.failedCount > 0 && (
+                      <div className="stat-item failed">
+                        <span className="stat-label">Failed</span>
+                        <span className="stat-value">{notification.failedCount}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="timestamp">
+                    <i className="bi bi-clock me-1"></i>
+                    {notification.sentAt 
+                      ? new Date(notification.sentAt).toLocaleString() 
+                      : 'Not sent yet'}
+                  </div>
+                </div>
               </div>
-              <div className="history-details">
-                <p><strong>Event:</strong> {notification.eventId?.name}</p>
-                <p><strong>Recipients:</strong> {notification.totalRecipients}</p>
-                <p><strong>Successful:</strong> {notification.successfulCount}</p>
-                <p><strong>Failed:</strong> {notification.failedCount}</p>
-                <p><strong>Sent:</strong> {notification.sentAt ? new Date(notification.sentAt).toLocaleString() : 'Not sent'}</p>
-              </div>
+              
+              {notification.timing && (
+                <div className="timing-info">
+                  <i className="bi bi-stopwatch me-1"></i>
+                  <span>Timing: {notification.timing}</span>
+                </div>
+              )}
             </div>
           ))
         ) : (
           <div className="empty-state">
-            {loading ? 'Loading notification history...' : 'No notification history found'}
+            <div className="empty-icon">
+              <i className="bi bi-inbox"></i>
+            </div>
+            <h4>No Notifications Yet</h4>
+            <p>{loading ? 'Loading notification history...' : 'Create your first notification to see it here'}</p>
           </div>
         )}
       </div>
