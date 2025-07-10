@@ -13,9 +13,10 @@ const RegistrarTabs = ({ dashboardData }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [overviewStats, setOverviewStats] = useState({
+    totalEvents: 0,
     totalEventsVolunteered: 0,
-    totalGuestsCheckedIn: 0,
-    totalApprovedEvents: 0
+    totalRegisteredGuests: 0,
+    totalCheckedInGuests: 0
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -50,20 +51,25 @@ const RegistrarTabs = ({ dashboardData }) => {
       
       if (response.ok) {
         const data = await response.json();
-        // Backend returns { stats: {...}, recentActivity: [...] }
-        const stats = data.stats || data;
+        
+        const actualData = data.data || data;
+        const stats = actualData.stats || actualData;
         
         const normalizedStats = {
-          totalEventsVolunteered: stats.eventsCount || 0,
-          totalGuestsCheckedIn: stats.guestsCount || 0,
-          totalApprovedEvents: stats.assignedZones || 0
+          totalEvents: stats.eventsCount || 0,                        // My Events (approved events)
+          totalEventsVolunteered: stats.totalEventsVolunteered || 0,  // Total volunteer requests
+          totalRegisteredGuests: stats.guestsCount || 0,              // Guests registered by registrar
+          totalCheckedInGuests: stats.guestsCheckedInCount || 0       // Guests checked in by registrar
         };
+        
         setOverviewStats(normalizedStats);
       } else {
+        const errorText = await response.text();
+        console.error('[RegistrarTabs] Failed to load statistics, status:', response.status, 'Error:', errorText);
         setError(`Failed to load statistics: ${response.status}`);
       }
     } catch (err) {
-      console.error('Error loading overview stats:', err);
+      console.error('[RegistrarTabs] Error loading overview stats:', err);
       setError('Failed to load overview statistics');
     } finally {
       setLoading(false);
@@ -353,7 +359,7 @@ const RegistrarTabs = ({ dashboardData }) => {
 
       {/* Stats Cards */}
       <div className="row">
-        <div className="col-md-4">
+        <div className="col-md-3">
           <div className="card border-0 shadow-sm">
             <div className="card-body text-center">
               <div className="display-6 text-primary mb-2">
@@ -364,25 +370,36 @@ const RegistrarTabs = ({ dashboardData }) => {
             </div>
           </div>
         </div>
-        <div className="col-md-4">
-          <div className="card border-0 shadow-sm">
-            <div className="card-body text-center">
-              <div className="display-6 text-success mb-2">
-                <i className="bi bi-check-circle"></i>
-              </div>
-              <h3 className="mb-1">{overviewStats.totalGuestsCheckedIn}</h3>
-              <p className="text-muted mb-0">Total Guests Checked In</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-4">
+        <div className="col-md-3">
           <div className="card border-0 shadow-sm">
             <div className="card-body text-center">
               <div className="display-6 text-info mb-2">
                 <i className="bi bi-calendar-check"></i>
               </div>
-              <h3 className="mb-1">{overviewStats.totalApprovedEvents}</h3>
-              <p className="text-muted mb-0">Approved Events</p>
+              <h3 className="mb-1">{overviewStats.totalEvents}</h3>
+              <p className="text-muted mb-0">My Events</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body text-center">
+              <div className="display-6 text-warning mb-2">
+                <i className="bi bi-person-plus"></i>
+              </div>
+              <h3 className="mb-1">{overviewStats.totalRegisteredGuests}</h3>
+              <p className="text-muted mb-0">Total Registered Guests</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body text-center">
+              <div className="display-6 text-success mb-2">
+                <i className="bi bi-check-circle"></i>
+              </div>
+              <h3 className="mb-1">{overviewStats.totalCheckedInGuests}</h3>
+              <p className="text-muted mb-0">Total Guests Checked In</p>
             </div>
           </div>
         </div>

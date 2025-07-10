@@ -20,6 +20,7 @@ const WorkerTabs = ({ dashboardData }) => {
   const [registeredGuests, setRegisteredGuests] = useState([]);
   const [overviewStats, setOverviewStats] = useState({
     totalEvents: 0,
+    totalEventsVolunteered: 0,
     totalRegisteredGuests: 0,
     totalCheckedInGuests: 0
   });
@@ -49,7 +50,7 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Loading overview stats...');
+      
       // Fetch worker statistics
       const response = await fetch(API_ENDPOINTS.WORKERS.STATS, {
         headers: {
@@ -57,28 +58,30 @@ const WorkerTabs = ({ dashboardData }) => {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
-      
-      console.log('Stats response status:', response.status);
-      
+            
       if (response.ok) {
-        const stats = await response.json();
-        console.log('Received stats:', stats);
+        const data = await response.json();
+        
+        // Backend returns { data: { totalEvents, totalRegisteredGuests, totalCheckedInGuests } }
+        // Handle both direct and wrapped responses
+        const stats = data.data || data;
         
         // Ensure stats has the expected structure
         const normalizedStats = {
-          totalEvents: stats.totalEvents || stats.data?.totalEvents || 0,
-          totalRegisteredGuests: stats.totalRegisteredGuests || stats.data?.totalRegisteredGuests || 0,
-          totalCheckedInGuests: stats.totalCheckedInGuests || stats.data?.totalCheckedInGuests || 0
+          totalEvents: stats.totalEvents || 0,                           // Approved events (participated)
+          totalEventsVolunteered: stats.totalEventsVolunteered || 0,     // Total volunteer requests
+          totalRegisteredGuests: stats.totalRegisteredGuests || 0,       // Guests registered by worker
+          totalCheckedInGuests: stats.totalCheckedInGuests || 0          // Checked-in guests
         };
         
-        console.log('Normalized stats:', normalizedStats);
         setOverviewStats(normalizedStats);
       } else {
-        console.error('Failed to fetch worker stats, status:', response.status);
+        const errorText = await response.text();
+        console.error('[WorkerTabs] Failed to fetch worker stats, status:', response.status, 'Error:', errorText);
         setError(`Failed to load statistics: ${response.status}`);
       }
     } catch (err) {
-      console.error('Error loading overview stats:', err);
+      console.error('[WorkerTabs] Error loading overview stats:', err);
       setError('Failed to load overview statistics');
     } finally {
       setLoading(false);
@@ -131,18 +134,15 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Loading registered guests...');
       const response = await fetch(`${API_ENDPOINTS.WORKERS.MY_GUESTS}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       
-      console.log('Guests response status:', response.status);
       
       if (response.ok) {
         const guests = await response.json();
-        console.log('Received guests data:', guests);
         
         // Ensure we always set an array
         let guestsArray = [];
@@ -154,7 +154,6 @@ const WorkerTabs = ({ dashboardData }) => {
           guestsArray = guests.guests;
         }
         
-        console.log('Setting guests array:', guestsArray);
         setRegisteredGuests(guestsArray);
       } else {
         console.error('Failed to fetch guests, status:', response.status);
