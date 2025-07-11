@@ -1,5 +1,7 @@
 import api from "./api";
 import { API_ENDPOINTS } from "../utils/constants";
+import { systemMetricsService } from "./systemMetricsService";
+import { analyticsService } from "./analyticsService";
 
 /**
  * Service for role-specific dashboard statistics
@@ -295,8 +297,7 @@ export const dashboardStatsService = {
   getDashboardStatsByRole: async (userRole) => {
     switch (userRole) {
       case "super_admin":
-        // Dynamically import to avoid circular dependency
-        const { systemMetricsService } = await import("./systemMetricsService");
+        // Use static import
         return systemMetricsService.getEnhancedSuperAdminStats();
       case "state_admin":
         return dashboardStatsService.getStateAdminDashboardStats();
@@ -309,8 +310,7 @@ export const dashboardStatsService = {
       case "registrar":
         return dashboardStatsService.getRegistrarDashboardStats();
       default:
-        // Dynamically import to avoid circular dependency
-        const { analyticsService } = await import("./analyticsService");
+        // Use static import
         return analyticsService.getDashboardAnalytics();
     }
   },

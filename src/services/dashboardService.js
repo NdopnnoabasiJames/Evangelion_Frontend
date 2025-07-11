@@ -1,5 +1,6 @@
 import api from "./api";
 import { API_ENDPOINTS } from "../utils/constants";
+import { systemMetricsService } from "./systemMetricsService";
 
 export const dashboardService = {
   // Get current user profile with populated state/branch information
@@ -258,8 +259,7 @@ export const dashboardService = {
   getDashboardStatsByRole: async (userRole) => {
     switch (userRole) {
       case "super_admin":
-        // Dynamically import to avoid circular dependency
-        const { systemMetricsService } = await import("./systemMetricsService");
+        // Use static import
         return systemMetricsService.getEnhancedSuperAdminStats();
       case "state_admin":
         return dashboardService.getStateAdminDashboardStats();

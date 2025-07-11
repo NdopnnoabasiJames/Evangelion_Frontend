@@ -24,15 +24,27 @@ export default defineConfig({
   },
   build: {
     // Optimize bundle size and chunking
-    chunkSizeWarningLimit: 800, // Increase warning limit to 800KB
+    chunkSizeWarningLimit: 1000, // Increase warning limit to 1000KB (1MB) for admin dashboards
     rollupOptions: {
       output: {
         manualChunks: {
           // Separate vendor libraries into their own chunks
           'react-vendor': ['react', 'react-dom'],
           'chart-vendor': ['chart.js', 'react-chartjs-2'],
-          'bootstrap-vendor': ['bootstrap']
+          'bootstrap-vendor': ['bootstrap'],
+          // Separate admin components and services
+          'admin-vendor': ['src/services/analyticsService.js', 'src/services/systemMetricsService.js']
         }
+      }
+    },
+    // Enable source maps for better debugging
+    sourcemap: false, // Disable in production for smaller bundles
+    // Minify options
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.log in production
+        drop_debugger: true
       }
     }
   }
