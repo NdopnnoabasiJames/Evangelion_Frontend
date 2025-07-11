@@ -1,0 +1,37 @@
+<svg width="32" height="32" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for the symbol -->
+    <radialGradient id="compactGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffcd06;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffa500;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Glow effect -->
+    <filter id="compactGlow">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="20" cy="20" r="18" fill="none" stroke="url(#compactGradient)" stroke-width="2" opacity="0.8"/>
+  
+  <!-- Stylized "E" letter -->
+  <g fill="url(#compactGradient)" filter="url(#compactGlow)">
+    <!-- Main vertical bar -->
+    <rect x="12" y="8" width="3" height="24" rx="1"/>
+    <!-- Top horizontal bar -->
+    <rect x="12" y="8" width="12" height="3" rx="1"/>
+    <!-- Middle horizontal bar -->
+    <rect x="12" y="18.5" width="10" height="3" rx="1"/>
+    <!-- Bottom horizontal bar -->
+    <rect x="12" y="29" width="12" height="3" rx="1"/>
+  </g>
+  
+  <!-- Accent details -->
+  <circle cx="28" cy="12" r="1" fill="#ffcd06" opacity="0.7"/>
+  <circle cx="30" cy="28" r="1" fill="#ffcd06" opacity="0.7"/>
+</svg>
