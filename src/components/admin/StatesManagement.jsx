@@ -379,7 +379,6 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                       <th>Zones</th>
                       <th>Created</th>
                       <th>Status</th>
-                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -440,23 +439,6 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                           <span className={`badge ${state.isActive ? 'bg-success' : 'bg-warning'}`}>
                             {state.isActive ? 'Active' : 'Inactive'}
                           </span>
-                        </td>
-                        <td>
-                          <div className="btn-group btn-group-sm">
-                            <button
-                              className="btn btn-outline-primary"
-                              onClick={() => setEditingState(state)}
-                              title="Edit state"
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </button>
-                            <button
-                              className="btn btn-outline-info"
-                              title="View details"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </button>
-                          </div>
                         </td>
                       </tr>
                     ))}

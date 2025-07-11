@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ZonesTable = ({ zones, onEdit, onDelete }) => {
+const ZonesTable = ({ zones }) => {
   return (
     <div className="table-responsive">
       <table className="table table-hover">
@@ -12,7 +12,6 @@ const ZonesTable = ({ zones, onEdit, onDelete }) => {
             <th><i className="bi bi-box"></i> Pickup Stations</th>
             <th><i className="bi bi-info-circle"></i> Status</th>
             <th><i className="bi bi-calendar"></i> Created</th>
-            <th><i className="bi bi-gear"></i> Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -59,24 +58,6 @@ const ZonesTable = ({ zones, onEdit, onDelete }) => {
                   <i className="bi bi-calendar me-1"></i>
                   {zone.createdAt ? new Date(zone.createdAt).toLocaleDateString() : 'N/A'}
                 </small>
-              </td>
-              <td>
-                <div className="btn-group btn-group-sm">
-                  <button
-                    className="btn btn-outline-primary"
-                    onClick={() => onEdit(zone)}
-                    title="Edit zone"
-                  >
-                    <i className="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    className="btn btn-outline-danger"
-                    onClick={() => onDelete(zone)}
-                    title="Delete zone"
-                  >
-                    <i className="bi bi-trash"></i>
-                  </button>
-                </div>
               </td>
             </tr>
           ))}

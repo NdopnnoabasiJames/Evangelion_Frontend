@@ -605,8 +605,6 @@ const ZonesManagement = () => {
             {filteredZones.length > 0 ? (
               <ZonesTable
                 zones={filteredZones}
-                onEdit={openEditModal}
-                onDelete={handleDeleteZone}
               />
             ) : (
               <div className="text-center text-muted py-5">No zones found.</div>
@@ -632,10 +630,6 @@ const ZonesManagement = () => {
               ) : pendingZones.length > 0 ? (
                 <PendingZonesTable
                   zones={pendingZones}
-                  onEdit={openEditModal}
-                  onDelete={handleDeleteZone}
-                  onApprove={handleApproveZone}
-                  onReject={handleRejectZone}
                   user={user}
                 />
               ) : (
@@ -645,10 +639,6 @@ const ZonesManagement = () => {
               pendingZones.length > 0 ? (
                 <PendingZonesTable
                   zones={pendingZones}
-                  onEdit={openEditModal}
-                  onDelete={handleDeleteZone}
-                  onApprove={handleApproveZone}
-                  onReject={handleRejectZone}
                   user={user}
                 />
               ) : (
@@ -673,8 +663,6 @@ const ZonesManagement = () => {
             {rejectedZones.length > 0 ? (
               <ZonesTable
                 zones={rejectedZones}
-                onEdit={openEditModal}
-                onDelete={handleDeleteZone}
               />
             ) : (
               <div className="text-center text-muted py-5">No rejected zones.</div>

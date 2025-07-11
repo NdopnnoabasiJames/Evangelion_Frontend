@@ -1,6 +1,6 @@
 import React from 'react';
 
-const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, getUniqueStates, error, setEditingBranch, handleDeleteBranch }) => (
+const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, getUniqueStates, error }) => (
   <>
     {error && (
       <div className="alert alert-danger">
@@ -99,7 +99,6 @@ const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, ge
                 <th>Score</th>
                 <th>Zones</th>
                 <th>Status</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -160,19 +159,6 @@ const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, ge
                     <span className={`badge ${branch.isActive ? 'bg-success' : 'bg-warning'}`}>
                       {branch.isActive ? 'Active' : 'Inactive'}
                     </span>
-                  </td>
-                  <td>
-                    <div className="btn-group btn-group-sm">
-                      <button className="btn btn-outline-primary" onClick={() => setEditingBranch(branch)} title="Edit branch">
-                        <i className="bi bi-pencil"></i>
-                      </button>
-                      <button className="btn btn-outline-danger" onClick={() => handleDeleteBranch(branch._id)} title="Delete branch">
-                        <i className="bi bi-trash"></i>
-                      </button>
-                      <button className="btn btn-outline-info" title="View details">
-                        <i className="bi bi-eye"></i>
-                      </button>
-                    </div>
                   </td>
                 </tr>
               ))}

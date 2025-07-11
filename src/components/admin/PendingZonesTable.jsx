@@ -1,7 +1,7 @@
 import React from 'react';
 import { ROLES } from '../../utils/constants';
 
-const PendingZonesTable = ({ zones, onEdit, onDelete, onApprove, onReject, user }) => {
+const PendingZonesTable = ({ zones, user }) => {
   // Ensure zones is always an array
   const safeZones = Array.isArray(zones) ? zones : [];
 
@@ -18,14 +18,12 @@ const PendingZonesTable = ({ zones, onEdit, onDelete, onApprove, onReject, user 
             <th><i className="bi bi-box"></i> Pickup Stations</th>
             <th><i className="bi bi-info-circle"></i> Status</th>
             <th><i className="bi bi-calendar"></i> Created</th>
-            {/* Only show Actions column for super admin */}
-            {user?.role === ROLES.SUPER_ADMIN && <th><i className="bi bi-gear"></i> Actions</th>}
           </tr>
         </thead>
         <tbody>
           {safeZones.length === 0 ? (
             <tr>
-              <td colSpan={user?.role === ROLES.SUPER_ADMIN ? 7 : 6} className="text-center text-muted">
+              <td colSpan={6} className="text-center text-muted">
                 <i className="bi bi-inbox me-2"></i>No pending zones to display.
               </td>
             </tr>
@@ -73,27 +71,6 @@ const PendingZonesTable = ({ zones, onEdit, onDelete, onApprove, onReject, user 
                     {zone.createdAt ? new Date(zone.createdAt).toLocaleDateString() : 'N/A'}
                   </small>
                 </td>
-                {/* Only show Actions for super admin */}
-                {user?.role === ROLES.SUPER_ADMIN && (
-                  <td>
-                    <div className="btn-group btn-group-sm">
-                      <button
-                        className="btn btn-outline-success"
-                        onClick={() => onApprove && onApprove(zone)}
-                        title="Approve zone"
-                      >
-                        <i className="bi bi-check-circle"></i> Approve
-                      </button>
-                      <button
-                        className="btn btn-outline-danger"
-                        onClick={() => onReject && onReject(zone)}
-                        title="Reject zone"
-                      >
-                        <i className="bi bi-x-circle"></i> Reject
-                      </button>
-                    </div>
-                  </td>
-                )}
               </tr>
             ))
           )}

@@ -31,7 +31,6 @@ const BranchesManagement = () => {
   const { execute: fetchBranches } = useApi(null, { immediate: false });
   const { execute: createBranch, error: createError } = useApi(null, { immediate: false });
   const { execute: updateBranch, error: updateError } = useApi(null, { immediate: false });
-  const { execute: deleteBranch } = useApi(null, { immediate: false });
 
   const loadBranches = async () => {
     try {
@@ -265,34 +264,6 @@ const BranchesManagement = () => {
       throw error; // Let the modal handle the error display
     }
   };
-  const handleDeleteBranch = async (branchId) => {
-    if (!window.confirm('Are you sure you want to delete this branch? This action cannot be undone.')) {
-      return;
-    }
-
-    try {      // Use appropriate endpoint based on user role
-      const endpoint = user?.role === ROLES.SUPER_ADMIN 
-        ? `${API_ENDPOINTS.BRANCHES.DELETE}/${branchId}`
-        : `${API_ENDPOINTS.BRANCHES.STATE_ADMIN_DELETE}/${branchId}`;
-        
-      await deleteBranch(endpoint, {
-        method: 'DELETE'
-      });
-
-      if (window.showNotification) {
-        window.showNotification('Branch deleted successfully!', 'success');
-      }
-
-      loadBranches(); // Refresh the list
-    } catch (error) {
-      if (window.showNotification) {
-        window.showNotification(
-          error.response?.data?.message || error.message || 'Failed to delete branch',
-          'error'
-        );
-      }
-    }
-  };
 
   const handleApproveBranch = async (branchId) => {
     try {
@@ -481,8 +452,6 @@ const BranchesManagement = () => {
                 clearFilters={clearFilters}
                 getUniqueStates={getUniqueStates}
                 error={error}
-                setEditingBranch={setEditingBranch}
-                handleDeleteBranch={handleDeleteBranch}
               />
             </>
           )}
@@ -508,7 +477,6 @@ const BranchesManagement = () => {
                       <th><i className="bi bi-info-circle"></i> Status</th>
                       {user?.role === ROLES.SUPER_ADMIN && <th><i className="bi bi-flag"></i> State</th>}
                       <th><i className="bi bi-calendar"></i> Created</th>
-                      {user?.role === ROLES.SUPER_ADMIN && <th><i className="bi bi-gear"></i> Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -519,12 +487,6 @@ const BranchesManagement = () => {
                         <td><span className={`badge bg-warning text-dark`}><i className="bi bi-hourglass-split me-1"></i> {branch.status}</span></td>
                         {user?.role === ROLES.SUPER_ADMIN && <td><i className="bi bi-flag text-info me-1"></i> {branch.stateId?.name}</td>}
                         <td><i className="bi bi-calendar text-muted me-1"></i> {formatDate(branch.createdAt)}</td>
-                        {user?.role === ROLES.SUPER_ADMIN && (
-                          <td>
-                            <button className="btn btn-success btn-sm me-2" onClick={() => handleApproveBranch(branch._id)}><i className="bi bi-check-circle me-1"></i>Approve</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleRejectBranch(branch._id)}><i className="bi bi-x-circle me-1"></i>Reject</button>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -554,7 +516,6 @@ const BranchesManagement = () => {
                       <th>Location</th>
                       {user?.role === ROLES.SUPER_ADMIN && <th>State</th>}
                       <th>Created</th>
-                      {user?.role === ROLES.SUPER_ADMIN && <th>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -564,11 +525,6 @@ const BranchesManagement = () => {
                         <td>{branch.location}</td>
                         {user?.role === ROLES.SUPER_ADMIN && <td>{branch.stateId?.name}</td>}
                         <td>{formatDate(branch.createdAt)}</td>
-                        {user?.role === ROLES.SUPER_ADMIN && (
-                          <td>
-                            <button className="btn btn-success btn-sm" onClick={() => handleApproveBranch(branch._id)}>Approve</button>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
