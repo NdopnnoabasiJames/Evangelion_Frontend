@@ -1,8 +1,6 @@
 // API Configuration
-// Use proxy in development - Vite will proxy /api to backend
-export const API_BASE_URL = import.meta.env.PROD
-  ? import.meta.env.VITE_API_BASE_URL
-  : "";
+// Use Railway deployment URL for both production and development
+export const API_BASE_URL = "https://evangelion-production-173f.up.railway.app";
 
 // User Roles (matching backend)
 export const ROLES = {

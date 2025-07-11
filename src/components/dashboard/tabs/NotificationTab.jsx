@@ -15,7 +15,8 @@ const NotificationTab = () => {
     notificationType: 'email',
     subject: '',
     message: '',
-    timing: 'immediate'
+    timing: 'immediate',
+    customScheduleDate: ''
   });
   const [preview, setPreview] = useState(null);
   const [notificationHistory, setNotificationHistory] = useState([]);
@@ -36,7 +37,8 @@ const NotificationTab = () => {
     { value: '6_hours', label: '6 Hours Before Event' },
     { value: '1_day', label: '1 Day Before Event' },
     { value: '3_days', label: '3 Days Before Event' },
-    { value: '1_week', label: '1 Week Before Event' }
+    { value: '1_week', label: '1 Week Before Event' },
+    { value: 'custom', label: 'Custom Date & Time' }
   ];
 
   useEffect(() => {
@@ -192,21 +194,40 @@ const NotificationTab = () => {
       return;
     }
 
+    // Validate custom schedule date if timing is custom
+    if (notification.timing === 'custom' && !notification.customScheduleDate) {
+      setError('Please select a custom schedule date and time');
+      return;
+    }
+
+    // Validate that custom date is in the future
+    if (notification.timing === 'custom' && new Date(notification.customScheduleDate) <= new Date()) {
+      setError('Custom schedule date must be in the future');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
       
-      const response = await api.post('/api/notifications', {
+      const requestBody = {
         eventId: selectedEvent,
         recipients: selectedGuests,
         notificationType: notification.notificationType,
         subject: notification.subject || 'Event Notification',
         message: notification.message,
         timing: notification.timing
-      });      
+      };
+
+      // Add custom schedule date if timing is custom
+      if (notification.timing === 'custom') {
+        requestBody.customScheduleDate = notification.customScheduleDate;
+      }
+      
+      const response = await api.post('/api/notifications', requestBody);      
       
       // Reset form and switch to history view
-      setNotification({ notificationType: 'email', subject: '', message: '', timing: 'immediate' });
+      setNotification({ notificationType: 'email', subject: '', message: '', timing: 'immediate', customScheduleDate: '' });
       setSelectedEvent(null);
       setSelectedGuests([]);
       setPreview(null);
@@ -529,6 +550,24 @@ const NotificationTab = () => {
             </select>
           </div>
 
+          {/* Custom Date/Time Picker - Show only when timing is 'custom' */}
+          {notification.timing === 'custom' && (
+            <div className="form-group">
+              <label>Custom Schedule Date & Time:</label>
+              <input
+                type="datetime-local"
+                value={notification.customScheduleDate}
+                onChange={(e) => setNotification({...notification, customScheduleDate: e.target.value})}
+                className="form-control"
+                min={new Date().toISOString().slice(0, 16)} // Prevent past dates
+                required
+              />
+              <small className="form-text text-muted">
+                Select the exact date and time when you want the notification to be sent.
+              </small>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="notification-actions">
             <button 
@@ -786,6 +825,11 @@ const NotificationTab = () => {
                 <div className="timing-info">
                   <i className="bi bi-stopwatch me-1"></i>
                   <span>Timing: {notification.timing}</span>
+                  {notification.timing === 'custom' && notification.customScheduleDate && (
+                    <span className="ms-2 text-muted">
+                      (Scheduled: {new Date(notification.customScheduleDate).toLocaleString()})
+                    </span>
+                  )}
                 </div>
               )}
 
