@@ -120,7 +120,7 @@ const StateAdminTabs = ({ dashboardData }) => {
             type="button"
           >
             <i className="bi bi-shield-check me-2"></i>
-            Branch Admins
+            Branch Pastors
             {pendingBranchAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingBranchAdmins.length}

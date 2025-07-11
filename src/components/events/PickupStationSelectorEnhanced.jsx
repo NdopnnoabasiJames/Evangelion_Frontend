@@ -36,7 +36,7 @@ const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) 
       };// Extract zone ID properly - handle both string and object formats      const zoneId = typeof userZone === 'string' ? userZone : (userZone?._id || userZone?.id);
       
       if (!zoneId) {
-        throw new Error('Zone ID not found. Please ensure you are logged in as a zonal admin.');
+        throw new Error('Zone ID not found. Please ensure you are logged in as a zonal coordinator.');
       }
       
       const result = await createStation(`/api/pickup-stations/zone/${zoneId}/create`, {

@@ -56,9 +56,9 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
             <i className="fas fa-clock me-2"></i>
             Pending Approval
           </h6>          <span className="badge bg-warning text-dark">
-            {admin.role === 'zonal_admin' ? 'Zonal Admin' : 
+            {admin.role === 'zonal_admin' ? 'Zonal Coordinator' : 
              admin.role === 'state_admin' ? 'State Admin' : 
-             admin.role === 'branch_admin' ? 'Branch Admin' : 
+             admin.role === 'branch_admin' ? 'Branch Pastor' : 
              'Admin'}
           </span>
         </div>

@@ -95,7 +95,7 @@ const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, ge
                 <th>Rank</th>
                 <th>Branch Name</th>
                 <th>Location</th>
-                <th>Branch Admin</th>
+                <th>Branch Pastor</th>
                 <th>Score</th>
                 <th>Zones</th>
                 <th>Status</th>

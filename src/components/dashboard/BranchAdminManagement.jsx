@@ -38,11 +38,11 @@ const BranchAdminManagement = ({
 
   return (
     <div>
-      {/* Pending Branch Admins Section */}
+      {/* Pending Branch Pastors Section */}
       <div className="mb-5">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
-            <h5 className="mb-1">Pending Branch Admin Registrations</h5>
+            <h5 className="mb-1">Pending Branch Pastor Registrations</h5>
             <p className="text-muted mb-0">
               {pendingBranchAdmins.length} registration{pendingBranchAdmins.length !== 1 ? 's' : ''} awaiting approval
             </p>
@@ -62,7 +62,7 @@ const BranchAdminManagement = ({
             <div className="card-body text-center py-5">
               <i className="fas fa-check-circle fa-3x text-success mb-3"></i>
               <h4>No Pending Approvals</h4>
-              <p className="text-muted">All Branch Admin registrations have been processed.</p>
+              <p className="text-muted">All Branch Pastor registrations have been processed.</p>
             </div>
           </div>
         ) : (
@@ -78,11 +78,11 @@ const BranchAdminManagement = ({
         )}
       </div>
 
-      {/* Approved Branch Admins Section */}
+      {/* Approved Branch Pastors Section */}
       <div>
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
-            <h5 className="mb-1">Approved Branch Admins</h5>
+            <h5 className="mb-1">Approved Branch Pastors</h5>
             <p className="text-muted mb-0">
               {approvedBranchAdmins.length} approved admin{approvedBranchAdmins.length !== 1 ? 's' : ''} currently active
             </p>
@@ -114,8 +114,8 @@ const BranchAdminManagement = ({
           <div className="card">
             <div className="card-body text-center py-5">
               <i className="fas fa-users fa-3x text-muted mb-3"></i>
-              <h4>No Approved Branch Admins</h4>
-              <p className="text-muted">No Branch Admins have been approved yet.</p>
+              <h4>No Approved Branch Pastors</h4>
+              <p className="text-muted">No Branch Pastors have been approved yet.</p>
             </div>
           </div>
         ) : (

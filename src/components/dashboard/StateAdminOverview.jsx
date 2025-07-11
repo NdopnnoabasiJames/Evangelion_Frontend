@@ -91,7 +91,7 @@ const StateAdminOverview = ({
                 <div className="col-md-6">
                   <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                     <div>
-                      <h6 className="mb-1">Branch Admins</h6>
+                      <h6 className="mb-1">Branch Pastors</h6>
                       <h4 className="mb-0 text-success">{approvedBranchAdmins.length}</h4>
                     </div>
                     <i className="bi bi-person-badge fs-2 text-success"></i>
@@ -125,7 +125,7 @@ const StateAdminOverview = ({
                   onClick={onManageBranchAdmins}
                 >
                   <i className="bi bi-person-check me-2"></i>
-                  Manage Branch Admins
+                  Manage Branch Pastors
                 </button>
                 <button className="btn btn-outline-primary">
                   <i className="bi bi-calendar-plus me-2"></i>

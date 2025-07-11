@@ -91,10 +91,10 @@ const Register = () => {
 
   const roleOptions = [
     { value: 'state_admin', label: 'State Admin', requiresApproval: 'Super Admin' },
-    { value: 'branch_admin', label: 'Branch Admin', requiresApproval: 'State Admin' },
-    { value: 'zonal_admin', label: 'Zonal Admin', requiresApproval: 'Branch Admin' },
-    { value: 'worker', label: 'Worker', requiresApproval: 'Branch Admin' },
-    { value: 'registrar', label: 'Registrar', requiresApproval: 'Branch Admin' }
+    { value: 'branch_admin', label: 'Branch Pastor', requiresApproval: 'State Admin' },
+    { value: 'zonal_admin', label: 'Zonal Coordinator', requiresApproval: 'Branch Pastor' },
+    { value: 'worker', label: 'Worker', requiresApproval: 'Branch Pastor' },
+    { value: 'registrar', label: 'Registrar', requiresApproval: 'Branch Pastor' }
   ];
 
   const handleInputChange = (e) => {

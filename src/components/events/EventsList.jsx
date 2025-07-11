@@ -93,7 +93,7 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                 </p>
               )}
               
-              {/* Delegation Progress for Super Admin and Branch Admin Events */}
+              {/* Delegation Progress for Super Admin and Branch Pastor Events */}
               {(event.creatorLevel === 'super_admin' || event.creatorLevel === 'branch_admin') && (
                 <div className="mb-3">
                   <small className="text-muted d-block mb-1">

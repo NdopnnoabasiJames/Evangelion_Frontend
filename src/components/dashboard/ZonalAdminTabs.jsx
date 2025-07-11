@@ -291,7 +291,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
             <h4 className="mt-3">No Events Found</h4>
             <p className="text-muted">
               No events have been delegated to your zone yet.<br/>
-              Events delegated by branch admins will appear here.
+              Events delegated by branch pastors will appear here.
             </p>
             <div className="mt-3">
               <small className="text-muted">

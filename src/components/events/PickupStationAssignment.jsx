@@ -29,7 +29,7 @@ const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete 
     return (
       <div className="alert alert-warning" role="alert">
         <i className="bi bi-exclamation-triangle me-2"></i>
-        Pickup station assignment is only available for Zonal Admins.
+        Pickup station assignment is only available for Zonal Coordinators.
       </div>
     );
   }

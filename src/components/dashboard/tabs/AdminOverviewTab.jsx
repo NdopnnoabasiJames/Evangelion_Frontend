@@ -107,7 +107,7 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
                 <div className="col-md-6">
                   <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                     <div>
-                      <h6 className="mb-1">Branch Admins</h6>
+                      <h6 className="mb-1">Branch Pastors</h6>
                       <h4 className="mb-0 text-success">{dashboardData?.adminsByRole?.branchAdmins || 0}</h4>
                     </div>
                     <i className="fas fa-building fa-2x text-success"></i>
@@ -116,7 +116,7 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
                 <div className="col-md-6">
                   <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                     <div>
-                      <h6 className="mb-1">Zonal Admins</h6>
+                      <h6 className="mb-1">Zonal Coordinators</h6>
                       <h4 className="mb-0 text-info">{dashboardData?.adminsByRole?.zonalAdmins || 0}</h4>
                     </div>
                     <i className="fas fa-layer-group fa-2x text-info"></i>
@@ -179,58 +179,6 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
                     style={{width: `${Math.min(100, (dashboardData?.totalGuests || 0) / 10)}%`}}
                   ></div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="row g-4">
-        <div className="col-lg-12">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <i className="fas fa-bolt me-2"></i>
-                Quick Actions
-              </h5>
-            </div>
-            <div className="card-body">
-              <div className="d-grid gap-2 d-md-flex">
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => setActiveTab('admin-management')}
-                >
-                  <i className="fas fa-user-check me-2"></i>
-                  Manage Admins
-                </button>
-                <button 
-                  className="btn btn-success"
-                  onClick={() => {
-                    setActiveTab('events');
-                  }}
-                >
-                  <i className="fas fa-calendar me-2"></i>
-                  Manage Events
-                </button>
-                <button className="btn btn-outline-primary">
-                  <i className="fas fa-download me-2"></i>
-                  Export System Report
-                </button>
-                <button 
-                  className="btn btn-outline-secondary"
-                  onClick={() => setActiveTab('states')}
-                >
-                  <i className="fas fa-map me-2"></i>
-                  Manage States
-                </button>
-                <button 
-                  className="btn btn-outline-info"
-                  onClick={() => setActiveTab('branches')}
-                >
-                  <i className="fas fa-building me-2"></i>
-                  Manage Branches
-                </button>
               </div>
             </div>
           </div>

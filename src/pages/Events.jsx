@@ -27,7 +27,7 @@ const Events = () => {
     { immediate: true }
   );
 
-  // Fetch events needing delegation for State/Branch Admins
+  // Fetch events needing delegation for State/Branch Pastors
   const { data: eventsNeedingBranchSelection, refetch: refetchBranchSelection } = useApi(
     user?.role === 'state_admin' ? API_ENDPOINTS.EVENTS.NEEDING_BRANCH_SELECTION : null,
     { immediate: user?.role === 'state_admin' }
@@ -218,7 +218,7 @@ const Events = () => {
             </TabPane>
           )}
 
-          {/* Pending Registrar Requests for Branch Admins */}
+          {/* Pending Registrar Requests for Branch Pastors */}
           {canApprovePendingRegistrars && (
             <TabPane tabId="pending-registrars" title="Pending Registrars">
               <PendingRegistrarRequests />

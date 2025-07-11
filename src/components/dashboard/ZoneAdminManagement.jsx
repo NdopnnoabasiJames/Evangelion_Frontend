@@ -27,7 +27,7 @@ const ZoneAdminManagement = () => {
       await approveAdmin(`${API_ENDPOINTS.ADMIN.APPROVE_ZONE_ADMIN}/${adminId}`, {
         method: 'POST',
         body: {
-          approvedBy: 'Branch Admin',
+          approvedBy: 'Branch Pastor',
           approvedAt: new Date().toISOString()
         }
       });
@@ -49,7 +49,7 @@ const ZoneAdminManagement = () => {
       await rejectAdmin(`${API_ENDPOINTS.ADMIN.REJECT_ZONE_ADMIN}/${adminId}`, {
         method: 'POST',
         body: {
-          reason: 'Request rejected by branch admin'
+          reason: 'Request rejected by branch pastor'
         }
       });
       

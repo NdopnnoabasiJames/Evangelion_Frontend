@@ -152,7 +152,7 @@ const ZonesManagement = () => {
       { key: 'name', label: 'Zone Name' },
       { key: 'branch', label: 'Branch' },
       { key: 'state', label: 'State' },
-      { key: 'zonalAdmin', label: 'Zonal Admin' },
+      { key: 'zonalAdmin', label: 'Zonal Coordinator' },
       { key: 'adminEmail', label: 'Admin Email' },
       { key: 'pickupStations', label: 'Pickup Stations' },
       { key: 'status', label: 'Status' },

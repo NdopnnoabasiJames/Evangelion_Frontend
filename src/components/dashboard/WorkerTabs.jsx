@@ -182,7 +182,7 @@ const WorkerTabs = ({ dashboardData }) => {
           alert('Successfully volunteered! You can now register guests for this event.');
           loadMyEvents(); // Refresh My Events tab
         } else {
-          alert('Volunteer request submitted! Waiting for branch admin approval.');
+          alert('Volunteer request submitted! Waiting for branch pastor approval.');
         }
         loadAllEvents(); // Refresh All Events to update button states
       } else {

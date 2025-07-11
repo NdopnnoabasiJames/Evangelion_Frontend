@@ -317,7 +317,7 @@ const BranchesManagement = () => {
       { key: 'name', label: 'Branch Name' },
       { key: 'location', label: 'Location' },
       { key: 'state', label: 'State' },
-      { key: 'branchAdmin', label: 'Branch Admin' },
+      { key: 'branchAdmin', label: 'Branch Pastor' },
       { key: 'adminEmail', label: 'Admin Email' },
       { key: 'zonesCount', label: 'Zones' },
       { key: 'workersCount', label: 'Workers' },

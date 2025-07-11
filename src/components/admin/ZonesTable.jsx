@@ -8,7 +8,7 @@ const ZonesTable = ({ zones }) => {
           <tr>
             <th><i className="bi bi-geo-alt"></i> Zone Name</th>
             <th><i className="bi bi-building"></i> Branch</th>
-            <th><i className="bi bi-person"></i> Zonal Admin</th>
+            <th><i className="bi bi-person"></i> Zonal Coordinator</th>
             <th><i className="bi bi-box"></i> Pickup Stations</th>
             <th><i className="bi bi-info-circle"></i> Status</th>
             <th><i className="bi bi-calendar"></i> Created</th>

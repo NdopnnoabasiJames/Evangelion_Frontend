@@ -364,7 +364,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
                       <div className="mb-3">
                         <div className="alert alert-info">
                           <i className="bi bi-info-circle me-2"></i>
-                          As a Branch Admin, you can create events for selected zones in your branch.
+                          As a Branch Pastor, you can create events for selected zones in your branch.
                         </div>
                       </div>
                       <div className="mb-3">
@@ -399,7 +399,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
                     </div>
                   )}
                 </div>
-              </div>              {/* Zone Selection for Branch Admin */}
+              </div>              {/* Zone Selection for Branch Pastor */}
               {userRole === 'branch_admin' && (
                 <div className="mb-3">
                   <label className="form-label">Zone Selection *</label>
