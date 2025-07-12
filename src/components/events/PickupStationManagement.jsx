@@ -9,6 +9,8 @@ const PickupStationManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingStation, setEditingStation] = useState(null);
 
   const { execute: fetchStations } = useApi(null, { immediate: false });
   const { execute: createStation } = useApi(null, { immediate: false });
@@ -92,6 +94,64 @@ const PickupStationManagement = () => {
     }
   };
 
+  const handleEditStation = (station) => {
+    setEditingStation(station);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateStation = async (formData) => {
+    try {
+      // Only include fields that have values
+      const updateDto = {};
+      
+      if (formData.location && formData.location.trim()) {
+        updateDto.location = formData.location.trim();
+      }
+      
+      if (formData.capacity && formData.capacity.toString().trim()) {
+        updateDto.capacity = parseInt(formData.capacity);
+      }
+      
+      if (formData.departureTime) {
+        updateDto.departureTime = formData.departureTime;
+      }
+      
+      // Only include contactInfo if there are contact details
+      if (formData.contactPhone || formData.contactEmail) {
+        updateDto.contactInfo = {};
+        if (formData.contactPhone && formData.contactPhone.trim()) {
+          updateDto.contactInfo.phone = formData.contactPhone.trim();
+        }
+        if (formData.contactEmail && formData.contactEmail.trim()) {
+          updateDto.contactInfo.email = formData.contactEmail.trim();
+        }
+      }
+      
+      if (formData.facilities && formData.facilities.trim()) {
+        updateDto.facilities = formData.facilities.split(',').map(f => f.trim()).filter(f => f);
+      }
+      
+      if (formData.notes && formData.notes.trim()) {
+        updateDto.notes = formData.notes.trim();
+      }
+
+      await updateStation(`/api/pickup-stations/${editingStation._id}`, {
+        method: 'PATCH',
+        body: updateDto
+      });
+
+      setShowEditModal(false);
+      setEditingStation(null);
+      fetchPickupStations(); // Refresh the list
+      
+      if (window.showNotification) {
+        window.showNotification('Pickup station updated successfully!', 'success');
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
   if (loading) {
     return (
       <div className="row g-4">
@@ -172,7 +232,10 @@ const PickupStationManagement = () => {
                       </button>
                       <ul className="dropdown-menu">
                         <li>
-                          <button className="dropdown-item">
+                          <button 
+                            className="dropdown-item"
+                            onClick={() => handleEditStation(station)}
+                          >
                             <i className="bi bi-pencil me-2"></i>
                             Edit
                           </button>
@@ -268,6 +331,20 @@ const PickupStationManagement = () => {
           show={showCreateModal}
           onHide={() => setShowCreateModal(false)}
           onStationCreated={handleCreateStation}
+          userZone={user?.zone}
+        />
+      )}
+
+      {/* Edit Pickup Station Modal */}
+      {showEditModal && editingStation && (
+        <EditPickupStationModal 
+          show={showEditModal}
+          onHide={() => {
+            setShowEditModal(false);
+            setEditingStation(null);
+          }}
+          onStationUpdated={handleUpdateStation}
+          station={editingStation}
           userZone={user?.zone}
         />
       )}
@@ -475,6 +552,221 @@ const CreatePickupStationModal = ({ show, onHide, onStationCreated, userZone }) 
                   <>
                     <i className="bi bi-check me-2"></i>
                     Create Station
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Edit Pickup Station Modal Component
+const EditPickupStationModal = ({ show, onHide, onStationUpdated, station, userZone }) => {
+  const [formData, setFormData] = useState({
+    location: '',
+    capacity: '',
+    departureTime: '08:00',
+    contactPhone: '',
+    contactEmail: '',
+    facilities: '',
+    notes: ''
+  });
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Initialize form data when station prop changes
+  useEffect(() => {
+    if (station) {
+      setFormData({
+        location: station.location || '',
+        capacity: station.capacity || station.defaultCapacity || '',
+        departureTime: station.departureTime || '08:00',
+        contactPhone: station.contactInfo?.phone || '',
+        contactEmail: station.contactInfo?.email || '',
+        facilities: Array.isArray(station.facilities) ? station.facilities.join(', ') : '',
+        notes: station.notes || ''
+      });
+    }
+  }, [station]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUpdating(true);
+    setError(null);
+
+    try {
+      await onStationUpdated(formData);
+      onHide();
+    } catch (error) {
+      setError(error.message || 'Failed to update pickup station');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  if (!show) return null;
+
+  return (
+    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <div className="modal-dialog modal-lg">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">
+              <i className="bi bi-pencil me-2"></i>
+              Edit Pickup Station
+            </h5>
+            <button type="button" className="btn-close" onClick={onHide}></button>
+          </div>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="modal-body">
+              {error && (
+                <div className="alert alert-danger">
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  {error}
+                </div>
+              )}
+
+              <div className="row">
+                <div className="col-md-8 mb-3">
+                  <label className="form-label">
+                    <i className="bi bi-geo-alt me-1"></i>
+                    Location Name *
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="e.g., Central Bus Park, Mall Entrance"
+                    required
+                  />
+                  <div className="form-text">Enter a descriptive name for the pickup location</div>
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">
+                    <i className="bi bi-people me-1"></i>
+                    Default Capacity
+                  </label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    name="capacity"
+                    value={formData.capacity}
+                    onChange={handleChange}
+                    min="1"
+                    max="200"
+                    placeholder="Optional"
+                  />
+                  <div className="form-text">Leave empty if not applicable</div>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">
+                    <i className="bi bi-clock me-1"></i>
+                    Default Departure Time
+                  </label>
+                  <input
+                    type="time"
+                    className="form-control"
+                    name="departureTime"
+                    value={formData.departureTime}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">
+                    <i className="bi bi-telephone me-1"></i>
+                    Contact Phone
+                  </label>
+                  <input
+                    type="tel"
+                    className="form-control"
+                    name="contactPhone"
+                    value={formData.contactPhone}
+                    onChange={handleChange}
+                    placeholder="e.g., +234 800 123 4567"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">
+                  <i className="bi bi-envelope me-1"></i>
+                  Contact Email
+                </label>
+                <input
+                  type="email"
+                  className="form-control"
+                  name="contactEmail"
+                  value={formData.contactEmail}
+                  onChange={handleChange}
+                  placeholder="e.g., pickup@church.org"
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">
+                  <i className="bi bi-building me-1"></i>
+                  Available Facilities
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="facilities"
+                  value={formData.facilities}
+                  onChange={handleChange}
+                  placeholder="e.g., Restrooms, Parking, Waiting Area (comma-separated)"
+                />
+                <div className="form-text">Enter facilities available at this location (optional)</div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">
+                  <i className="bi bi-chat-text me-1"></i>
+                  Additional Notes
+                </label>
+                <textarea
+                  className="form-control"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  rows="2"
+                  placeholder="Any additional information about this pickup station..."
+                ></textarea>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={onHide}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={updating || !formData.location.trim()}>
+                {updating ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check me-2"></i>
+                    Update Station
                   </>
                 )}
               </button>

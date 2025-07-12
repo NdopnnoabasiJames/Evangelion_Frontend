@@ -212,7 +212,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
               </div>
               <div className="card-body">
                 <div className="row g-3">
-                  <div className="col-md-3">
+                  <div className="col-md-4">
                     <button 
                       className="btn btn-outline-primary w-100"
                       onClick={() => setActiveTab('pickup-stations')}
@@ -221,7 +221,7 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                       Manage Pickup Stations
                     </button>
                   </div>
-                  <div className="col-md-3">
+                  <div className="col-md-4">
                     <button 
                       className="btn btn-outline-success w-100"
                       onClick={() => setActiveTab('registrars')}
@@ -230,19 +230,13 @@ const ZonalAdminTabs = ({ dashboardData }) => {
                       View Registrars
                     </button>
                   </div>
-                  <div className="col-md-3">
+                  <div className="col-md-4">
                     <button 
                       className="btn btn-outline-info w-100"
                       onClick={() => setActiveTab('events')}
                     >
                       <i className="bi bi-calendar-event me-2"></i>
                       Manage Events
-                    </button>
-                  </div>
-                  <div className="col-md-3">
-                    <button className="btn btn-outline-warning w-100">
-                      <i className="bi bi-bar-chart-line me-2"></i>
-                      View Reports
                     </button>
                   </div>
                 </div>

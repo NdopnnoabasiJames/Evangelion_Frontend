@@ -338,14 +338,15 @@ const NotificationTab = () => {
     setActionLoading(loadingSet);
     
     try {
-      const response = await api.delete(`/api/notifications/${notificationId}`);
+      await api.delete(`/api/notifications/${notificationId}`);
       
-      if (response.data.success) {
-        // Immediately remove from state without waiting for API call
-        setNotificationHistory(prev => prev.filter(n => n._id !== notificationId));
-        setFilteredHistory(prev => prev.filter(n => n._id !== notificationId));
-      } else {
-        setError('Failed to delete notification');
+      // Always remove from state immediately after successful API call
+      setNotificationHistory(prev => prev.filter(n => n._id !== notificationId));
+      setFilteredHistory(prev => prev.filter(n => n._id !== notificationId));
+      
+      // Show success message
+      if (window.showNotification) {
+        window.showNotification('Notification deleted successfully!', 'success');
       }
     } catch (error) {
       setError('Failed to delete notification: ' + (error.response?.data?.message || error.message));

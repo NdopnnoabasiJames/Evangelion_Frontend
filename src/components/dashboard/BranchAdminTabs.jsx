@@ -12,6 +12,7 @@ import NotificationTab from './tabs/NotificationTab';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 import workerService from '../../services/workerService';
+import api from '../../services/api';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 const BranchAdminTabs = ({ dashboardData }) => {
@@ -92,11 +93,17 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
+      
       const data = await workerService.getPendingWorkers();
-      setPendingWorkers(data);
+      setPendingWorkers(data || []);
     } catch (err) {
-      console.error('Error loading pending workers:', err);
-      setError(err.message || 'Failed to load pending workers');
+      console.log('📋 Error details:', {
+        message: err.message,
+        status: err.status,
+        response: err.response,
+        stack: err.stack
+      });
+      setError(`Failed to load pending workers: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -104,21 +111,24 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.PENDING, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+      console.log('🔄 Loading pending registrars for branch admin:', user?.email);
+      console.log(' User details:', { role: user?.role, branch: user?.branch });
+      console.log('🌐 Making request to:', API_ENDPOINTS.REGISTRARS.PENDING);
       
-      if (response.ok) {
-        const data = await response.json();
-        const registrarsArray = Array.isArray(data) ? data : data.data || [];
-        setPendingRegistrars(registrarsArray);      } else {
-        setError('Failed to load pending registrars');
-      }
+      const response = await api.get(API_ENDPOINTS.REGISTRARS.PENDING);
+      console.log('✅ Pending registrars response:', response.data);
+      
+      const registrarsArray = Array.isArray(response.data) ? response.data : response.data.data || [];
+      console.log('📋 Processed registrars array:', registrarsArray);
+      setPendingRegistrars(registrarsArray);
     } catch (err) {
-      console.error('Error loading pending registrars:', err);
-      setError(err.message || 'Failed to load pending registrars');
+      console.error('❌ Error loading pending registrars:', err);
+      console.log('📋 Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+      setError(`Failed to load pending registrars: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
