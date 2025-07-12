@@ -9,7 +9,21 @@ import BranchesTable from './BranchesTable';
 import { exportToExcel } from '../../utils/exportUtils';
 
 const BranchesManagement = () => {
-  const { user } = useAuth();
+  c      </div>
+      
+      {/* Create/Edit Branch Modal */}
+      {(showCreateModal || editingBranch) && (
+        <BranchModal
+          branch={editingBranch}
+          onHide={() => {
+            setShowCreateModal(false);
+            setEditingBranch(null);
+          }}
+          onSubmit={editingBranch ? handleUpdateBranch : handleCreateBranch}
+        />
+      )}
+    </div>
+  );= useAuth();
   const [branches, setBranches] = useState([]);
   const [filteredBranches, setFilteredBranches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -386,26 +400,22 @@ const BranchesManagement = () => {
 
   if (loading) {
     return (
-      <div className="responsive-container">
-        <div className="card">
-          <div className="card-body text-center py-5">
-            <div className="spinner-border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-            <p className="mt-3 text-muted">Loading branches...</p>
+      <div className="card">
+        <div className="card-body text-center py-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
           </div>
+          <p className="mt-3 text-muted">Loading branches...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container-fluid">
-      <div className="row">
-        <div className="col-12">
-          <div className="card">
-        <div className="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-          <div className="mb-2 mb-md-0">
+    <div className="responsive-container">
+      <div className="card">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <div>
             <h5 className="mb-0">
               <i className="bi bi-building me-2"></i>
               Branches Management
@@ -423,7 +433,7 @@ const BranchesManagement = () => {
         <div className="card-body">
           {/* Sub-tabs for Super Admin and State Admin: Pending Approval and Rejected */}
           {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.STATE_ADMIN) && (
-            <ul className="nav nav-tabs nav-tabs-responsive mb-3">
+            <ul className="nav nav-tabs mb-3">
               <li className="nav-item">
                 <button className={`nav-link${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>All</button>
               </li>
@@ -550,9 +560,7 @@ const BranchesManagement = () => {
           onSubmit={editingBranch ? handleUpdateBranch : handleCreateBranch}
         />
       )}
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

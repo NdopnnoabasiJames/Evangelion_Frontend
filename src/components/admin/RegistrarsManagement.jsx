@@ -274,7 +274,10 @@ const RegistrarsManagement = () => {
   }
 
   return (
-    <div className="card">
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <div className="card">
       <div className="card-header">
         <h5 className="mb-0">
           <i className="bi bi-people-fill me-2"></i>
@@ -495,6 +498,9 @@ const RegistrarsManagement = () => {
             </div>
           </>
         )}
+        </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -400,10 +400,8 @@ const BranchesManagement = () => {
   }
 
   return (
-    <div className="container-fluid">
-      <div className="row">
-        <div className="col-12">
-          <div className="card">
+    <div className="responsive-container">
+      <div className="card">
         <div className="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
           <div className="mb-2 mb-md-0">
             <h5 className="mb-0">
@@ -550,8 +548,6 @@ const BranchesManagement = () => {
           onSubmit={editingBranch ? handleUpdateBranch : handleCreateBranch}
         />
       )}
-        </div>
-      </div>
     </div>
   );
 };

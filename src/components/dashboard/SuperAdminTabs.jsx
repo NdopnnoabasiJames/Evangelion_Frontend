@@ -112,9 +112,9 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const renderRegistrars = () => <RegistrarsManagement />;
 
   return (
-    <div>
+    <div className="responsive-container">
       {/* Tab Navigation */}
-      <ul className="nav nav-tabs mb-4" role="tablist">
+      <ul className="nav nav-tabs nav-tabs-responsive mb-4" role="tablist">
         <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}

@@ -458,23 +458,28 @@ const ZonesManagement = () => {
   }
 
   return (
-    <div className="card">
-      <div className="card-header d-flex justify-content-between align-items-center">
-        <h5 className="mb-0">
-          <i className="bi bi-geo-alt me-2"></i>
-          Zones Management
-        </h5>
-        <button
-          className="btn btn-primary"
-          onClick={openCreateModal}
-        >
-          <i className="bi bi-plus-circle me-2"></i>
-          Add Zone
-        </button>
-      </div>
-      <div className="card-body">
-        {/* Subtabs */}
-        <ul className="nav nav-tabs mb-3">
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <div className="card">
+        <div className="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+          <div className="mb-2 mb-md-0">
+            <h5 className="mb-0">
+              <i className="bi bi-geo-alt me-2"></i>
+              Zones Management
+            </h5>
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={openCreateModal}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Add Zone
+          </button>
+        </div>
+        <div className="card-body">
+          {/* Subtabs */}
+          <ul className="nav nav-tabs nav-tabs-responsive mb-3">
           <li className="nav-item">
             <button className={`nav-link${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>
               All
@@ -573,7 +578,7 @@ const ZonesManagement = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <small className="text-muted">
             {activeTab === 'all' && (
-              <>Showing {filteredZones.length} of {zones.length} zofnes</>
+              <>Showing {filteredZones.length} of {zones.length} zones</>
             )}
             {activeTab === 'pending' && (
               <>Showing {pendingZones.length} pending zone{pendingZones.length !== 1 ? 's' : ''}</>
@@ -750,6 +755,9 @@ const ZonesManagement = () => {
           </div>
         </div>
       )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
