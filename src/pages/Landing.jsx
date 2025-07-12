@@ -24,6 +24,9 @@ const Landing = () => {
             type="button" 
             data-bs-toggle="collapse" 
             data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
             style={{ borderColor: 'var(--primary-yellow)' }}
           >
             <span className="navbar-toggler-icon"></span>

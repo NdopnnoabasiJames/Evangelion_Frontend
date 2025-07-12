@@ -35,11 +35,12 @@ const PasswordInput = ({
       <div className="position-relative">
         <input
           type={showPassword ? 'text' : 'password'}
-          className={`form-control pe-5 ${error ? 'is-invalid' : ''} ${className}`}
+          className={`form-control ${error ? 'is-invalid' : ''} ${className}`}
           id={id}
           placeholder={placeholder}
           required={required}
           disabled={disabled}
+          style={{ paddingRight: '45px' }}
           {...inputProps}
         />
         <button
@@ -50,7 +51,11 @@ const PasswordInput = ({
           style={{ 
             zIndex: 5,
             color: 'var(--bs-secondary)',
-            textDecoration: 'none'
+            textDecoration: 'none',
+            pointerEvents: 'auto',
+            width: '40px',
+            height: '100%',
+            right: '0'
           }}
           tabIndex={-1}
           aria-label={showPassword ? 'Hide password' : 'Show password'}
