@@ -44,6 +44,8 @@ const BranchAdminTabs = ({ dashboardData }) => {
       loadBranchStatistics();
       loadPendingWorkers(); // Also load workers for overview stats
       loadPendingRegistrars(); // Also load registrars for overview stats
+      loadPendingZonalAdmins(); // Load zonal admin data for overview stats
+      loadApprovedZonalAdmins(); // Load approved zonal admin data for overview stats
     }
   }, [activeTab]);
   const loadBranchStatistics = async () => {
