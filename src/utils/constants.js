@@ -1,7 +1,6 @@
 // API Configuration
 // Use local development server for development, Railway for production
-export const API_BASE_URL = "http://localhost:3031"  // Local development
-  // "https://evangelion-production-173f.up.railway.app";  // Production
+export const API_BASE_URL = "https://evangelion-production-173f.up.railway.app";  // Production
 
 // User Roles (matching backend)
 export const ROLES = {
