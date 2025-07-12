@@ -26,7 +26,8 @@ const Layout = ({ children }) => {
           style={{
             marginTop: '56px', // Account for fixed header
             marginLeft: window.innerWidth >= 992 && !sidebarCollapsed ? '250px' : '0',
-            transition: 'margin-left 0.3s ease'
+            transition: 'margin-left 0.3s ease',
+            width: '100%'
           }}
         >
           {children}
