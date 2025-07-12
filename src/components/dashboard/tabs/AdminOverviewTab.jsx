@@ -96,7 +96,7 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
             <div className="card-body">
               <div className="row g-3">
                 <div className="col-md-6">
-                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                  <div className="d-flex justify-content-between  p-3 bg-light rounded">
                     <div>
                       <h6 className="mb-1">State Admins</h6>
                       <h4 className="mb-0 text-primary">{dashboardData?.adminsByRole?.stateAdmins || 0}</h4>
@@ -105,7 +105,7 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
                   </div>
                 </div>
                 <div className="col-md-6">
-                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                  <div className="d-flex justify-content-between  p-3 bg-light rounded">
                     <div>
                       <h6 className="mb-1">Branch Pastors</h6>
                       <h4 className="mb-0 text-success">{dashboardData?.adminsByRole?.branchAdmins || 0}</h4>
@@ -114,7 +114,7 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
                   </div>
                 </div>
                 <div className="col-md-6">
-                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                  <div className="d-flex justify-content-between  p-3 bg-light rounded">
                     <div>
                       <h6 className="mb-1">Zonal Coordinators</h6>
                       <h4 className="mb-0 text-info">{dashboardData?.adminsByRole?.zonalAdmins || 0}</h4>
@@ -123,7 +123,7 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
                   </div>
                 </div>
                 <div className="col-md-6">
-                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                  <div className="d-flex justify-content-between  p-3 bg-light rounded">
                     <div>
                       <h6 className="mb-1">Workers</h6>
                       <h4 className="mb-0 text-secondary">{dashboardData?.adminsByRole?.workers || 0}</h4>

@@ -196,10 +196,6 @@ button:focus-visible {
 /* Mobile-first breakpoints */
 @media (max-width: 575.98px) {
   /* Small phones (xs) */
-  .container-fluid {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
   
   /* Typography adjustments */
   h1.h3, .h3 {
@@ -234,6 +230,18 @@ button:focus-visible {
   /* Table responsiveness */
   .table-responsive {
     font-size: 0.875rem;
+  }
+  
+  /* Give tables more breathing room */
+  .table th,
+  .table td {
+    padding: 1rem 0.75rem !important;
+    white-space: nowrap;
+  }
+  
+  .table th {
+    font-weight: 600;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
   }
   
   /* Statistics cards */
@@ -373,7 +381,7 @@ button:focus-visible {
   }
   
   .table td, .table th {
-    padding: 1rem 0.75rem;
+    padding: 1.25rem 1rem !important;
   }
 }
 
@@ -585,7 +593,31 @@ button:focus-visible {
 
 .table-responsive table {
   margin-bottom: 0;
-  min-width: 600px; /* Ensure table has minimum width for readability */
+  min-width: 800px; /* Increased from 600px for more breathing room */
+}
+
+/* Enhanced table spacing for better readability */
+.table th,
+.table td {
+  padding: 1.25rem 1rem !important;
+  vertical-align: middle;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--bs-gray-700);
+  background-color: rgba(var(--bs-primary-rgb), 0.05);
+  border-bottom: 2px solid var(--bs-border-color);
+}
+
+.table td {
+  font-size: 0.875rem;
+  border-bottom: 1px solid rgba(var(--bs-border-color), 0.5);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.03);
 }
 
 /* Fix horizontal scroll for mobile tables */
@@ -637,6 +669,13 @@ button:focus-visible {
   
   .table-responsive table {
     margin-bottom: 0;
+    min-width: 700px; /* Reduced from 800px on mobile but still spacious */
+  }
+  
+  /* Mobile table spacing - still comfortable but optimized */
+  .table th,
+  .table td {
+    padding: 1rem 0.875rem !important;
   }
   
   /* Ensure cards and containers don't overflow */
