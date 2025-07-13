@@ -176,10 +176,8 @@ const GuestsManagement = () => {
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'checked_in': return 'bg-success';
-      case 'confirmed': return 'bg-info';
       case 'invited': return 'bg-secondary';
       case 'no_show': return 'bg-danger';
-      case 'cancelled': return 'bg-warning';
       default: return 'bg-secondary';
     }
   };

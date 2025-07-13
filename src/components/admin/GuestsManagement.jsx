@@ -182,10 +182,8 @@ const GuestsManagement = () => {
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'checked_in': return 'bg-success';
-      case 'confirmed': return 'bg-info';
       case 'invited': return 'bg-secondary';
       case 'no_show': return 'bg-danger';
-      case 'cancelled': return 'bg-warning';
       default: return 'bg-secondary';
     }
   };
@@ -282,10 +280,8 @@ const GuestsManagement = () => {
                     >
                       <option value="all">All Status</option>
                       <option value="invited">Invited</option>
-                      <option value="confirmed">Confirmed</option>
                       <option value="checked_in">Checked In</option>
                       <option value="no_show">No Show</option>
-                      <option value="cancelled">Cancelled</option>
                     </select>
                   </div>
 

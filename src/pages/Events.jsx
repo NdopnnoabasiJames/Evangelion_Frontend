@@ -18,6 +18,7 @@ const Events = () => {
   const [activeTab, setActiveTab] = useState(user?.role === 'registrar' ? 'volunteer-events' : 'list');
   const [events, setEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
+  const [editingEvent, setEditingEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -72,6 +73,20 @@ const Events = () => {
     refetch();
     if (refetchBranchSelection) refetchBranchSelection();
     if (refetchZoneSelection) refetchZoneSelection();
+  };
+
+  const handleEditEvent = (event) => {
+    setEditingEvent(event);
+    setActiveTab('create');
+  };
+
+  const handleEventCreatedOrUpdated = () => {
+    setEditingEvent(null);
+    setActiveTab('list');
+    // Small delay to ensure backend has processed the event
+    setTimeout(() => {
+      refreshAllData();
+    }, 500);
   };
 
   if (loading) {
@@ -179,10 +194,13 @@ const Events = () => {
           subtitle={`Manage events and activities${user?.role ? ` as ${user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : ''}`}
           actions={canCreateEvents ? [
             {
-              label: 'Create Event',
+              label: editingEvent ? 'Create New Event' : 'Create Event',
               icon: 'bi-plus-circle',
               variant: 'primary',
-              onClick: () => setActiveTab('create')
+              onClick: () => {
+                setEditingEvent(null);
+                setActiveTab('create');
+              }
             }
           ] : []}
         />
@@ -212,8 +230,10 @@ const Events = () => {
                 onRefresh={refreshAllData}
                 onCreateEvent={canCreateEvents ? () => {
                   console.log('Events page: Switching to create tab');
+                  setEditingEvent(null);
                   setActiveTab('create');
                 } : null}
+                onEditEvent={canEditEvents ? handleEditEvent : null}
               />
             </TabPane>
           )}
@@ -234,16 +254,11 @@ const Events = () => {
               />
             </TabPane>
           )}          {canCreateEvents && (
-            <TabPane tabId="create" title="Create Event">
+            <TabPane tabId="create" title={editingEvent ? "Edit Event" : "Create Event"}>
               <HierarchicalEventCreation 
                 userRole={user?.role}
-                onEventCreated={() => {
-                  setActiveTab('list');
-                  // Small delay to ensure backend has processed the event
-                  setTimeout(() => {
-                    refreshAllData();
-                  }, 500);
-                }}
+                editingEvent={editingEvent}
+                onEventCreated={handleEventCreatedOrUpdated}
               />
             </TabPane>
           )}          {canViewPickupStations && (

@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBadge } from '../../utils/statusUtils.jsx';
 import { ErrorDisplay, EmptyState } from '../common/Loading';
 
-const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent }) => {
+const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent, onEditEvent }) => {
   if (error) {
     return (
       <ErrorDisplay 
@@ -122,6 +122,7 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                 {canEdit && (
                   <button 
                     className="btn btn-sm btn-outline-primary"
+                    onClick={() => onEditEvent && onEditEvent(event)}
                     aria-label={`Edit ${event.name}`}
                   >
                     <i className="bi bi-pencil"></i>

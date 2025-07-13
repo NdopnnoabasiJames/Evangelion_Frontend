@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 
-const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [formData, setFormData] = useState({
+const HierarchicalEventCreation = ({ userRole, onEventCreated, editingEvent }) => {  const [formData, setFormData] = useState({
     name: '',
     description: '',
     date: '',
@@ -26,7 +26,46 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
     immediate: userRole === 'branch_admin' 
   });
 
+  // Effect to populate form when editing an event
+  useEffect(() => {
+    if (editingEvent) {
+      const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toISOString().slice(0, 16); // Format for datetime-local input
+      };
+
+      setFormData({
+        name: editingEvent.name || '',
+        description: editingEvent.description || '',
+        date: formatDate(editingEvent.date),
+        location: editingEvent.location || '',
+        selectedStates: editingEvent.availableStates?.map(state => state._id || state) || [],
+        selectedBranches: editingEvent.availableBranches?.map(branch => branch._id || branch) || [],
+        selectedZones: editingEvent.availableZones?.map(zone => zone._id || zone) || []
+      });
+    } else {
+      // Reset form when not editing
+      setFormData({
+        name: '',
+        description: '',
+        date: '',
+        location: '',
+        selectedStates: [],
+        selectedBranches: [],
+        selectedZones: []
+      });
+    }
+  }, [editingEvent]);
+
   const getEventEndpoint = () => {
+    const isUpdate = editingEvent && editingEvent._id;
+    
+    if (isUpdate) {
+      // For updates, use the generic update endpoint
+      return `/api/events/${editingEvent._id}`;
+    }
+    
+    // For creation, use role-specific endpoints
     const endpoint = (() => {
       switch (userRole) {
         case 'super_admin':
@@ -109,14 +148,14 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
         : formData;
 
       await createEvent(getEventEndpoint(), {
-        method: 'POST',
+        method: editingEvent ? 'PATCH' : 'POST',
         body: submitData
       });
       
       onEventCreated();
     } catch (error) {
-      console.error('Failed to create event:', error);
-      setError(error.message || 'Failed to create event');
+      console.error(`Failed to ${editingEvent ? 'update' : 'create'} event:`, error);
+      setError(error.message || `Failed to ${editingEvent ? 'update' : 'create'} event`);
     } finally {
       setCreating(false);
     }
@@ -195,7 +234,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
         <div className="card shadow-sm border-0">
           <div className="card-header bg-white border-0">
             <h5 className="mb-0" style={{ color: 'var(--primary-purple)' }}>
-              Create New Event as {userRole?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {editingEvent ? 'Edit Event' : 'Create New Event'} as {userRole?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </h5>
           </div>
           
@@ -505,10 +544,10 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
                   {creating ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      Creating...
+                      {editingEvent ? 'Updating...' : 'Creating...'}
                     </>
                   ) : (
-                    'Create Event'
+                    editingEvent ? 'Update Event' : 'Create Event'
                   )}
                 </button>
               </div>
