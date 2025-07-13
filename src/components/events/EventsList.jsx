@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBadge } from '../../utils/statusUtils.jsx';
 import { ErrorDisplay, EmptyState } from '../common/Loading';
 
-const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent, onEditEvent }) => {
+const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent }) => {
   if (error) {
     return (
       <ErrorDisplay 
@@ -93,7 +93,7 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent,
                 </p>
               )}
               
-              {/* Delegation Progress for Super Admin and Branch Pastor Events */}
+              {/* Delegation Progress for Super Admin and Branch Admin Events */}
               {(event.creatorLevel === 'super_admin' || event.creatorLevel === 'branch_admin') && (
                 <div className="mb-3">
                   <small className="text-muted d-block mb-1">
@@ -122,7 +122,6 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent,
                 {canEdit && (
                   <button 
                     className="btn btn-sm btn-outline-primary"
-                    onClick={() => onEditEvent && onEditEvent(event)}
                     aria-label={`Edit ${event.name}`}
                   >
                     <i className="bi bi-pencil"></i>

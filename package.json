@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "dev:check": "npm run check-backend && vite",
-    "dev:prod": "curl -f https://evangelion-production-173f.up.railway.app/api/states || echo ' ✅ Production backend is running'",
     "check-backend": "curl -f http://localhost:3031/api/states || echo ' ✅ Backend running on port 3031'",
     "test-connection": "node test-connection.js",
     "build": "vite build",

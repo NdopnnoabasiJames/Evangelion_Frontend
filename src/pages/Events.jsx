@@ -18,7 +18,6 @@ const Events = () => {
   const [activeTab, setActiveTab] = useState(user?.role === 'registrar' ? 'volunteer-events' : 'list');
   const [events, setEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
-  const [editingEvent, setEditingEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -28,7 +27,7 @@ const Events = () => {
     { immediate: true }
   );
 
-  // Fetch events needing delegation for State/Branch Pastors
+  // Fetch events needing delegation for State/Branch Admins
   const { data: eventsNeedingBranchSelection, refetch: refetchBranchSelection } = useApi(
     user?.role === 'state_admin' ? API_ENDPOINTS.EVENTS.NEEDING_BRANCH_SELECTION : null,
     { immediate: user?.role === 'state_admin' }
@@ -73,20 +72,6 @@ const Events = () => {
     refetch();
     if (refetchBranchSelection) refetchBranchSelection();
     if (refetchZoneSelection) refetchZoneSelection();
-  };
-
-  const handleEditEvent = (event) => {
-    setEditingEvent(event);
-    setActiveTab('create');
-  };
-
-  const handleEventCreatedOrUpdated = () => {
-    setEditingEvent(null);
-    setActiveTab('list');
-    // Small delay to ensure backend has processed the event
-    setTimeout(() => {
-      refreshAllData();
-    }, 500);
   };
 
   if (loading) {
@@ -194,13 +179,10 @@ const Events = () => {
           subtitle={`Manage events and activities${user?.role ? ` as ${user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : ''}`}
           actions={canCreateEvents ? [
             {
-              label: editingEvent ? 'Create New Event' : 'Create Event',
+              label: 'Create Event',
               icon: 'bi-plus-circle',
               variant: 'primary',
-              onClick: () => {
-                setEditingEvent(null);
-                setActiveTab('create');
-              }
+              onClick: () => setActiveTab('create')
             }
           ] : []}
         />
@@ -230,15 +212,13 @@ const Events = () => {
                 onRefresh={refreshAllData}
                 onCreateEvent={canCreateEvents ? () => {
                   console.log('Events page: Switching to create tab');
-                  setEditingEvent(null);
                   setActiveTab('create');
                 } : null}
-                onEditEvent={canEditEvents ? handleEditEvent : null}
               />
             </TabPane>
           )}
 
-          {/* Pending Registrar Requests for Branch Pastors */}
+          {/* Pending Registrar Requests for Branch Admins */}
           {canApprovePendingRegistrars && (
             <TabPane tabId="pending-registrars" title="Pending Registrars">
               <PendingRegistrarRequests />
@@ -254,11 +234,16 @@ const Events = () => {
               />
             </TabPane>
           )}          {canCreateEvents && (
-            <TabPane tabId="create" title={editingEvent ? "Edit Event" : "Create Event"}>
+            <TabPane tabId="create" title="Create Event">
               <HierarchicalEventCreation 
                 userRole={user?.role}
-                editingEvent={editingEvent}
-                onEventCreated={handleEventCreatedOrUpdated}
+                onEventCreated={() => {
+                  setActiveTab('list');
+                  // Small delay to ensure backend has processed the event
+                  setTimeout(() => {
+                    refreshAllData();
+                  }, 500);
+                }}
               />
             </TabPane>
           )}          {canViewPickupStations && (
