@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
 import workerService from '../../services/workerService';
+import api from '../../services/api';
 import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 import GuestRegistrationForm from '../guests/GuestRegistrationForm';
 import OverviewTab from './OverviewTab';
@@ -51,37 +52,29 @@ const WorkerTabs = ({ dashboardData }) => {
     setError(null);
     try {
       
-      // Fetch worker statistics
-      const response = await fetch(API_ENDPOINTS.WORKERS.STATS, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-            
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Backend returns { data: { totalEvents, totalRegisteredGuests, totalCheckedInGuests } }
-        // Handle both direct and wrapped responses
-        const stats = data.data || data;
-        
-        // Ensure stats has the expected structure
-        const normalizedStats = {
-          totalEvents: stats.totalEvents || 0,                           // Approved events (participated)
-          totalEventsVolunteered: stats.totalEventsVolunteered || 0,     // Total volunteer requests
-          totalRegisteredGuests: stats.totalRegisteredGuests || 0,       // Guests registered by worker
-          totalCheckedInGuests: stats.totalCheckedInGuests || 0          // Checked-in guests
-        };
-        
-        setOverviewStats(normalizedStats);
-      } else {
-        const errorText = await response.text();
-        console.error('[WorkerTabs] Failed to fetch worker stats, status:', response.status, 'Error:', errorText);
-        setError(`Failed to load statistics: ${response.status}`);
-      }
+      // Fetch worker statistics using API service
+      console.log('🔍 [WorkerTabs] Fetching worker stats from:', API_ENDPOINTS.WORKERS.STATS);
+      const response = await api.get(API_ENDPOINTS.WORKERS.STATS);
+      
+      // Backend returns { data: { totalEvents, totalRegisteredGuests, totalCheckedInGuests } }
+      // Handle both direct and wrapped responses
+      const stats = response.data.data || response.data;
+      
+      console.log('📊 [WorkerTabs] Raw stats response:', stats);
+      
+      // Ensure stats has the expected structure
+      const normalizedStats = {
+        totalEvents: stats.totalEvents || 0,                           // Approved events (participated)
+        totalEventsVolunteered: stats.totalEventsVolunteered || 0,     // Total volunteer requests
+        totalRegisteredGuests: stats.totalRegisteredGuests || 0,       // Guests registered by worker
+        totalCheckedInGuests: stats.totalCheckedInGuests || 0          // Checked-in guests
+      };
+      
+      console.log('📈 [WorkerTabs] Normalized stats:', normalizedStats);
+      setOverviewStats(normalizedStats);
     } catch (err) {
       console.error('[WorkerTabs] Error loading overview stats:', err);
+      console.error('[WorkerTabs] Error details:', err.response?.data);
       setError('Failed to load overview statistics');
     } finally {
       setLoading(false);
@@ -91,16 +84,8 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.ALL_EVENTS}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        const events = await response.json();
-        setAllEvents(Array.isArray(events) ? events : events.data || []);
-      }
+      const response = await api.get(API_ENDPOINTS.WORKERS.ALL_EVENTS);
+      setAllEvents(Array.isArray(response.data) ? response.data : response.data.data || []);
     } catch (err) {
       console.error('Error loading all events:', err);
       setError('Failed to load events');
@@ -113,16 +98,8 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.MY_EVENTS}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        const events = await response.json();
-        setMyEvents(Array.isArray(events) ? events : events.data || []);
-      }
+      const response = await api.get(API_ENDPOINTS.WORKERS.MY_EVENTS);
+      setMyEvents(Array.isArray(response.data) ? response.data : response.data.data || []);
     } catch (err) {
       console.error('Error loading my events:', err);
       setError('Failed to load branch events');
@@ -134,34 +111,23 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.MY_GUESTS}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+      const response = await api.get(API_ENDPOINTS.WORKERS.MY_GUESTS);
+      const guests = response.data;
       
-      
-      if (response.ok) {
-        const guests = await response.json();
-        
-        // Ensure we always set an array
-        let guestsArray = [];
-        if (Array.isArray(guests)) {
-          guestsArray = guests;
-        } else if (guests && Array.isArray(guests.data)) {
-          guestsArray = guests.data;
-        } else if (guests && guests.guests && Array.isArray(guests.guests)) {
-          guestsArray = guests.guests;
-        }
-        
-        setRegisteredGuests(guestsArray);
-      } else {
-        console.error('Failed to fetch guests, status:', response.status);
-        setError(`Failed to load guests: ${response.status}`);
-        setRegisteredGuests([]); // Ensure it's still an array
+      // Ensure we always set an array
+      let guestsArray = [];
+      if (Array.isArray(guests)) {
+        guestsArray = guests;
+      } else if (guests && Array.isArray(guests.data)) {
+        guestsArray = guests.data;
+      } else if (guests && guests.guests && Array.isArray(guests.guests)) {
+        guestsArray = guests.guests;
       }
+      
+      setRegisteredGuests(guestsArray);
     } catch (err) {
       console.error('Error loading registered guests:', err);
+      console.error('Error details:', err.response?.data);
       setError('Failed to load registered guests');
       setRegisteredGuests([]); // Ensure it's still an array
     } finally {
@@ -170,14 +136,10 @@ const WorkerTabs = ({ dashboardData }) => {
   };
   const handleVolunteerForEvent = async (eventId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.BASE}/events/${eventId}/volunteer`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-        if (response.ok) {
-        const result = await response.json();
+      const response = await api.post(`${API_ENDPOINTS.WORKERS.BASE}/events/${eventId}/volunteer`);
+      
+      if (response.status === 200 || response.status === 201) {
+        const result = response.data;
         if (result?.message?.includes('approved')) {
           alert('Successfully volunteered! You can now register guests for this event.');
           loadMyEvents(); // Refresh My Events tab
@@ -185,13 +147,11 @@ const WorkerTabs = ({ dashboardData }) => {
           alert('Volunteer request submitted! Waiting for branch pastor approval.');
         }
         loadAllEvents(); // Refresh All Events to update button states
-      } else {
-        const error = await response.json();
-        alert(`Failed to volunteer: ${error.message || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error volunteering for event:', err);
-      alert('Failed to volunteer for event');
+      const errorMessage = err.response?.data?.message || 'Unknown error';
+      alert(`Failed to volunteer: ${errorMessage}`);
     }
   };
 

@@ -7,14 +7,14 @@ export default defineConfig({
   server: {
     port: 5173, // Frontend development server port
     proxy: {
-      // Proxy API requests to backend
+      // Proxy API requests to backend in development only
       '/api': {
         target: 'http://localhost:3031',
         changeOrigin: true,
         secure: false,
         // Don't rewrite the path - keep /api prefix as your backend expects it
       },
-      // Proxy auth requests to backend
+      // Proxy auth requests to backend in development only
       '/auth': {
         target: 'http://localhost:3031',
         changeOrigin: true,

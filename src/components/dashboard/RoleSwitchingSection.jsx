@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import api from '../../services/api';
 
 const RoleSwitchingSection = ({ user }) => {
   const { setUser } = useAuth();
@@ -42,32 +43,20 @@ const RoleSwitchingSection = ({ user }) => {
   const requestRegistrarAccess = async () => {
     setLoading(true);
     try {
-      const response = await fetch(API_ENDPOINTS.USERS.REQUEST_REGISTRAR_ACCESS, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+      console.log('🔄 [RoleSwitch] Requesting registrar access...');
+      const response = await api.post(API_ENDPOINTS.USERS.REQUEST_REGISTRAR_ACCESS);
 
-      if (response.ok) {
-        setHasRequestedAccess(true);
-        setNotification({
-          type: 'success',
-          message: 'Registrar access request submitted successfully! Please wait for admin approval.'
-        });
-      } else {
-        const error = await response.json();
-        setNotification({
-          type: 'error',
-          message: error.message || 'Failed to submit request'
-        });
-      }
+      setHasRequestedAccess(true);
+      setNotification({
+        type: 'success',
+        message: 'Registrar access request submitted successfully! Please wait for admin approval.'
+      });
     } catch (err) {
       console.error('Error requesting registrar access:', err);
+      console.error('Error details:', err.response?.data);
       setNotification({
         type: 'error',
-        message: 'Failed to submit request. Please try again.'
+        message: err.response?.data?.message || 'Failed to submit request. Please try again.'
       });
     } finally {
       setLoading(false);
@@ -80,85 +69,60 @@ const RoleSwitchingSection = ({ user }) => {
       const currentEffectiveRole = user?.currentRole || user?.role;
       const newRole = currentEffectiveRole === ROLES.WORKER ? ROLES.REGISTRAR : ROLES.WORKER;
       
-      const response = await fetch(API_ENDPOINTS.USERS.SWITCH_ROLE, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify({ targetRole: newRole }) // Changed from newRole to targetRole
+      console.log('🔄 [RoleSwitch] Switching role from', currentEffectiveRole, 'to', newRole);
+      const response = await api.post(API_ENDPOINTS.USERS.SWITCH_ROLE, { targetRole: newRole });
+      
+      const result = response.data;
+      
+      // If the backend returns a new JWT token, use it
+      if (result.access_token) {
+        localStorage.setItem('authToken', result.access_token);
+        
+        // Update user context with the user data returned from the backend
+        if (result.user) {
+          const updatedUser = { ...user, ...result.user, currentRole: result.currentRole };
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        } else {
+          // Fallback: update just the currentRole
+          const updatedUser = { ...user, currentRole: result.currentRole };
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      } else {
+        // Fallback: Fetch updated user profile from backend if no token returned
+        try {
+          const profileResponse = await api.get(API_ENDPOINTS.AUTH.PROFILE);
+          const profileData = profileResponse.data;
+          const normalizedUser = profileData.data || profileData;
+          
+          // Update user in auth context and localStorage with fresh data
+          setUser(normalizedUser);
+          localStorage.setItem('user', JSON.stringify(normalizedUser));
+        } catch (profileError) {
+          console.error('Failed to fetch updated profile:', profileError);
+          // Fallback to local update
+          const updatedUser = { ...user, currentRole: newRole };
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      }
+      
+      setNotification({
+        type: 'success',
+        message: `Successfully switched to ${newRole === ROLES.WORKER ? 'Worker' : 'Registrar'} role!`
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        
-        // If the backend returns a new JWT token, use it
-        if (result.access_token) {
-          localStorage.setItem('authToken', result.access_token);
-          
-          // Update user context with the user data returned from the backend
-          if (result.user) {
-            const updatedUser = { ...user, ...result.user, currentRole: result.currentRole };
-            setUser(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-          } else {
-            // Fallback: update just the currentRole
-            const updatedUser = { ...user, currentRole: result.currentRole };
-            setUser(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-          }
-        } else {
-          // Fallback: Fetch updated user profile from backend if no token returned
-          try {
-            const profileResponse = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-              }
-            });
-            
-            if (profileResponse.ok) {
-              const profileData = await profileResponse.json();
-              const normalizedUser = profileData.data || profileData;
-              
-              // Update user in auth context and localStorage with fresh data
-              setUser(normalizedUser);
-              localStorage.setItem('user', JSON.stringify(normalizedUser));
-            } else {
-              // Fallback to local update if profile fetch fails
-              const updatedUser = { ...user, currentRole: newRole };
-              setUser(updatedUser);
-              localStorage.setItem('user', JSON.stringify(updatedUser));
-            }
-          } catch (profileError) {
-            console.error('Failed to fetch updated profile:', profileError);
-            // Fallback to local update
-            const updatedUser = { ...user, currentRole: newRole };
-            setUser(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-          }
-        }
-        
-        setNotification({
-          type: 'success',
-          message: `Successfully switched to ${newRole === ROLES.WORKER ? 'Worker' : 'Registrar'} role!`
-        });
-
-        // Force a re-render by updating the page after user context updates
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } else {
-        const error = await response.json();
-        setNotification({
-          type: 'error',
-          message: error.message || 'Failed to switch role'
-        });
-      }
+      // Force a re-render by updating the page after user context updates
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       console.error('Error switching role:', err);
+      console.error('Error details:', err.response?.data);
       setNotification({
         type: 'error',
-        message: 'Failed to switch role. Please try again.'
+        message: err.response?.data?.message || 'Failed to switch role. Please try again.'
       });
     } finally {
       setLoading(false);

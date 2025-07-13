@@ -1,6 +1,10 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
 
+// Debug logging for API URL
+console.log('🌐 API Base URL:', API_BASE_URL);
+console.log('🏗️ Environment:', import.meta.env.MODE);
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -16,6 +20,10 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Debug log for requests
+    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    
     return config;
   },
   (error) => {
