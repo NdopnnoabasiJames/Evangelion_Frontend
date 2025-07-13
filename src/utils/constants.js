@@ -1,6 +1,7 @@
 // API Configuration
 // Use proxy in development - Vite will proxy /api to backend
-export const API_BASE_URL = 'http://localhost:3031'
+export const API_BASE_URL = 'https://evangelion-production-173f.up.railway.app';  // Production
+// export const API_BASE_URL = 'http://localhost:3031';  // Development 
 
 // User Roles (matching backend)
 export const ROLES = {
