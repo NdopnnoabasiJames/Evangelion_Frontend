@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
 import workerService from '../../services/workerService';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 import GuestRegistrationForm from '../guests/GuestRegistrationForm';
 import OverviewTab from './OverviewTab';
 import AllEventsTab from './AllEventsTab';
@@ -91,7 +91,7 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.ALL_EVENTS}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.ALL_EVENTS}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -113,7 +113,7 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.MY_EVENTS}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.MY_EVENTS}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -134,7 +134,7 @@ const WorkerTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.MY_GUESTS}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.MY_GUESTS}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -170,7 +170,7 @@ const WorkerTabs = ({ dashboardData }) => {
   };
   const handleVolunteerForEvent = async (eventId) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/events/${eventId}/volunteer`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.BASE}/events/${eventId}/volunteer`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`

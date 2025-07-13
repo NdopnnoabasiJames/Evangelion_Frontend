@@ -8,7 +8,7 @@ import { TabbedInterface, TabPane } from '../components/common/TabNavigation';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatusBadge } from '../utils/statusUtils.jsx';
 import { ApprovalActions, ActionConfigurations } from '../components/common/ActionButtons.jsx';
-import { API_ENDPOINTS, ROLES, STATUS } from '../utils/constants';
+import { API_ENDPOINTS, ROLES, STATUS, API_BASE_URL } from '../utils/constants';
 
 const Registrars = () => {
   const { user } = useAuth();
@@ -431,7 +431,7 @@ const ExistingRoleSwitchers = ({ onRevoke }) => {
     setLoading(true);
     try {
       // Fetch workers who have canSwitchRoles = true
-      const response = await fetch(`${API_ENDPOINTS.ADMIN.USERS}?canSwitchRoles=true`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}?canSwitchRoles=true`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }

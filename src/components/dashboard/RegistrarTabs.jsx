@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 import RoleSwitchingSection from './RoleSwitchingSection';
 
 const RegistrarTabs = ({ dashboardData }) => {
@@ -124,7 +124,7 @@ const RegistrarTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/guests`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/guests`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -144,7 +144,7 @@ const RegistrarTabs = ({ dashboardData }) => {
 
   const handleVolunteerForEvent = async (eventId) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/volunteer`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/volunteer`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -166,7 +166,7 @@ const RegistrarTabs = ({ dashboardData }) => {
 
   const handleCheckInGuest = async (guestId) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.REGISTRARS.VOLUNTEER_CHECKIN}/${selectedEvent._id}/guests/${guestId}/checkin`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.VOLUNTEER_CHECKIN}/${selectedEvent._id}/guests/${guestId}/checkin`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`

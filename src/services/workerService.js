@@ -1,4 +1,4 @@
-import { API_ENDPOINTS } from '../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../utils/constants';
 
 class WorkerService {
   async getPendingWorkers() {
@@ -6,7 +6,7 @@ class WorkerService {
       const token = localStorage.getItem('authToken');
       console.log('Fetching pending workers...');
       
-      const response = await fetch(API_ENDPOINTS.WORKERS.PENDING, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.PENDING}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -52,7 +52,7 @@ class WorkerService {
   async approveWorker(workerId) {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/approve/${workerId}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.BASE}/approve/${workerId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ class WorkerService {
   async rejectWorker(workerId) {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/reject/${workerId}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.BASE}/reject/${workerId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ import Layout from '../components/Layout/Layout';
 import { TabbedInterface, TabPane, TabConfigurations } from '../components/common/TabNavigation';
 import PageHeader, { HeaderConfigurations } from '../components/common/PageHeader';
 import { StatisticsGrid, StatisticsCardTypes } from '../components/common/StatisticsCard';
-import { API_ENDPOINTS } from '../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../utils/constants';
 
 const CheckIn = () => {
   const { user } = useAuth();
@@ -43,7 +43,7 @@ const CheckIn = () => {
 
   const fetchCheckInStats = async () => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.REGISTRARS.STATISTICS}/${selectedEvent}/statistics`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.STATISTICS}/${selectedEvent}/statistics`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

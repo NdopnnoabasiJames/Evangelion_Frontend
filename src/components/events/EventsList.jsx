@@ -2,7 +2,15 @@ import React from 'react';
 import { StatusBadge } from '../../utils/statusUtils.jsx';
 import { ErrorDisplay, EmptyState } from '../common/Loading';
 
-const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent }) => {
+const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent, onEditEvent }) => {
+  
+  const handleEditClick = (event) => {
+    if (onEditEvent) {
+      onEditEvent(event);
+    } else {
+      console.error('onEditEvent is not defined!');
+    }
+  };
   if (error) {
     return (
       <ErrorDisplay 
@@ -123,6 +131,7 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent 
                   <button 
                     className="btn btn-sm btn-outline-primary"
                     aria-label={`Edit ${event.name}`}
+                    onClick={() => handleEditClick(event)}
                   >
                     <i className="bi bi-pencil"></i>
                     <span className="d-none d-lg-inline ms-1">Edit</span>

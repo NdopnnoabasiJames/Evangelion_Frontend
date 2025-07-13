@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
 import { StatusBadge } from '../../utils/statusUtils';
-import { API_ENDPOINTS, STATUS } from '../../utils/constants';
+import { API_ENDPOINTS, STATUS, API_BASE_URL } from '../../utils/constants';
 import workerService from '../../services/workerService';
 
 const WorkerManagement = () => {
@@ -129,7 +129,7 @@ const WorkerManagement = () => {
     setActionLoading(prev => ({ ...prev, [requestId]: 'approving' }));
     
     try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/admin/volunteer-requests/${eventId}/${requestId}/approve`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.BASE}/admin/volunteer-requests/${eventId}/${requestId}/approve`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -168,7 +168,7 @@ const WorkerManagement = () => {
     setActionLoading(prev => ({ ...prev, [requestId]: 'rejecting' }));
     
     try {
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/admin/volunteer-requests/${eventId}/${requestId}/reject`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.BASE}/admin/volunteer-requests/${eventId}/${requestId}/reject`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

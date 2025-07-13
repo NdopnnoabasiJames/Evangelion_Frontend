@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 
 const GuestRegistrationModal = ({ onClose, onSuccess }) => {
   const [guestForm, setGuestForm] = useState({
@@ -95,7 +95,7 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
       if (guestForm.transportPreference === 'church_bus' && guestForm.pickupStation) {
         requestBody.pickupStation = guestForm.pickupStation;
       }
-      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/events/register-guest`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.BASE}/events/register-guest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

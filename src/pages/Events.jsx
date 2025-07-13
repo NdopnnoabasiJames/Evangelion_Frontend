@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import Layout from '../components/Layout/Layout';
@@ -20,6 +20,7 @@ const Events = () => {
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
 
   // Fetch events based on user role
   const { data: eventsData, loading: eventsLoading, error: eventsError, refetch } = useApi(
@@ -59,6 +60,14 @@ const Events = () => {
       setPendingEvents(pendingArray);
     }
   }, [eventsNeedingBranchSelection, eventsNeedingZoneSelection, user?.role]);
+
+  const handleEditEvent = useCallback((event) => {
+    console.log('✅ handleEditEvent called with event:', event.name);
+    setEditingEvent(event);
+    setActiveTab('edit');
+    console.log('✅ Set activeTab to edit');
+  }, []);
+
   // Role-based permissions
   const canCreateEvents = ['super_admin', 'state_admin', 'branch_admin', 'zonal_admin'].includes(user?.role);
   const canEditEvents = ['super_admin', 'state_admin', 'branch_admin'].includes(user?.role);
@@ -160,6 +169,14 @@ const Events = () => {
         label: 'Create Event',
         icon: 'bi-plus-circle'
       });
+    }
+
+    if (canEditEvents && editingEvent) {
+      baseTabs.push({
+        key: 'edit',
+        label: 'Edit Event',
+        icon: 'bi-pencil-square'
+      });
     }    if (canViewPickupStations) {
       baseTabs.push({
         key: 'pickup-stations',
@@ -210,6 +227,7 @@ const Events = () => {
                 error={error}
                 canEdit={canEditEvents}
                 onRefresh={refreshAllData}
+                onEditEvent={handleEditEvent}
                 onCreateEvent={canCreateEvents ? () => {
                   console.log('Events page: Switching to create tab');
                   setActiveTab('create');
@@ -238,6 +256,23 @@ const Events = () => {
               <HierarchicalEventCreation 
                 userRole={user?.role}
                 onEventCreated={() => {
+                  setActiveTab('list');
+                  // Small delay to ensure backend has processed the event
+                  setTimeout(() => {
+                    refreshAllData();
+                  }, 500);
+                }}
+              />
+            </TabPane>
+          )}
+
+          {canEditEvents && editingEvent && (
+            <TabPane tabId="edit" title="Edit Event">
+              <HierarchicalEventCreation 
+                userRole={user?.role}
+                editingEvent={editingEvent}
+                onEventCreated={() => {
+                  setEditingEvent(null);
                   setActiveTab('list');
                   // Small delay to ensure backend has processed the event
                   setTimeout(() => {

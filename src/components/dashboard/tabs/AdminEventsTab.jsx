@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LoadingCard } from '../../common/Loading';
 import { TabbedInterface, TabPane } from '../../common/TabNavigation';
 import EventsList from '../../events/EventsList';
@@ -16,6 +16,13 @@ const AdminEventsTab = ({
   refetchHierarchicalEvents,
   user
 }) => {
+  const [editingEvent, setEditingEvent] = useState(null);
+  
+  const handleEditEvent = (event) => {
+    console.log('✅ Admin handleEditEvent called with event:', event.name);
+    setEditingEvent(event);
+    setEventActiveTab('edit');
+  };
   const eventTabs = [
     {
       key: 'list',
@@ -27,6 +34,11 @@ const AdminEventsTab = ({
       label: 'Create Event',
       icon: 'bi-plus-circle'
     },
+    ...(editingEvent ? [{
+      key: 'edit',
+      label: 'Edit Event',
+      icon: 'bi-pencil-square'
+    }] : []),
     {
       key: 'hierarchical',
       label: 'Hierarchical Events',
@@ -76,6 +88,7 @@ const AdminEventsTab = ({
                 canManage={true} // Super admin can manage all events
                 canEdit={true}
                 canDelete={true}
+                onEditEvent={handleEditEvent}
                 onRefresh={() => {
                   refetchEvents();
                   refetchHierarchicalEvents();
@@ -99,6 +112,22 @@ const AdminEventsTab = ({
             />
           </TabPane>
 
+          {editingEvent && (
+            <TabPane tabId="edit" title="Edit Event">
+              <HierarchicalEventCreation 
+                userRole={user?.role || 'super_admin'}
+                editingEvent={editingEvent}
+                onEventCreated={() => {
+                  setEditingEvent(null);
+                  refetchEvents();
+                  refetchHierarchicalEvents();
+                  // Switch back to list tab after editing
+                  setEventActiveTab('list');
+                }}
+              />
+            </TabPane>
+          )}
+
           <TabPane tabId="hierarchical" title="Hierarchical Events">
             <div className="mb-3">
               <h6>System-wide Event Overview</h6>
@@ -113,6 +142,7 @@ const AdminEventsTab = ({
                 canEdit={true}
                 canDelete={true}
                 showHierarchy={true}
+                onEditEvent={handleEditEvent}
                 onRefresh={refetchHierarchicalEvents}
                 onCreateEvent={() => {
                   setEventActiveTab('create');

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
 
-const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [formData, setFormData] = useState({
+const HierarchicalEventCreation = ({ userRole, onEventCreated, editingEvent }) => {  const [formData, setFormData] = useState({
     name: '',
     description: '',
     date: '',
@@ -10,7 +10,44 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
     selectedStates: [], // For super admin state selection
     selectedBranches: [], // For state admin branch selection
     selectedZones: [] // For branch admin zone selection
-  });const [creating, setCreating] = useState(false);
+  });
+
+  // Populate form data when editing
+  useEffect(() => {
+    if (editingEvent) {
+      
+      // Format date for datetime-local input (yyyy-MM-ddThh:mm)
+      let formattedDate = '';
+      if (editingEvent.date) {
+        const eventDate = new Date(editingEvent.date);
+        if (!isNaN(eventDate.getTime())) {
+          // Convert to local datetime string in the format required by datetime-local input
+          const year = eventDate.getFullYear();
+          const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+          const day = String(eventDate.getDate()).padStart(2, '0');
+          const hours = String(eventDate.getHours()).padStart(2, '0');
+          const minutes = String(eventDate.getMinutes()).padStart(2, '0');
+          formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+      }
+
+      // Extract IDs from available objects for form population
+      const selectedStateIds = editingEvent.availableStates?.map(state => state._id) || [];
+      const selectedBranchIds = editingEvent.availableBranches?.map(branch => branch._id) || [];
+      const selectedZoneIds = editingEvent.availableZones?.map(zone => zone._id) || [];
+
+
+      setFormData({
+        name: editingEvent.name || '',
+        description: editingEvent.description || '',
+        date: formattedDate,
+        location: editingEvent.location || '',
+        selectedStates: selectedStateIds,
+        selectedBranches: selectedBranchIds,
+        selectedZones: selectedZoneIds
+      });
+    }
+  }, [editingEvent]);const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
 
   const { execute: createEvent } = useApi(null, { immediate: false });  // Load states for super admin
@@ -27,6 +64,22 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
   });
 
   const getEventEndpoint = () => {
+    if (editingEvent) {
+      // For editing, use the appropriate update endpoint based on user role
+      switch (userRole) {
+        case 'super_admin':
+          return `${API_ENDPOINTS.ADMIN.CREATE_SUPER_ADMIN_EVENT}/${editingEvent._id}`;
+        case 'state_admin':
+          return `${API_ENDPOINTS.ADMIN.CREATE_STATE_ADMIN_EVENT}/${editingEvent._id}`;
+        case 'branch_admin':
+          return `${API_ENDPOINTS.ADMIN.CREATE_BRANCH_ADMIN_EVENT}/${editingEvent._id}`;
+        case 'zonal_admin':
+          return `${API_ENDPOINTS.ADMIN.CREATE_ZONAL_ADMIN_EVENT}/${editingEvent._id}`;
+        default:
+          return `/api/events/${editingEvent._id}`;
+      }
+    }
+    
     const endpoint = (() => {
       switch (userRole) {
         case 'super_admin':
@@ -57,7 +110,8 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
         return [];
     }
   };const handleSubmit = async (e) => {
-    e.preventDefault();    
+    e.preventDefault();
+    
     // Validate state selection for super admin
     if (userRole === 'super_admin' && formData.selectedStates.length === 0) {
       setError('Please select at least one state');
@@ -109,14 +163,14 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
         : formData;
 
       await createEvent(getEventEndpoint(), {
-        method: 'POST',
+        method: editingEvent ? 'PUT' : 'POST',
         body: submitData
       });
       
       onEventCreated();
     } catch (error) {
-      console.error('Failed to create event:', error);
-      setError(error.message || 'Failed to create event');
+      console.error(`Failed to ${editingEvent ? 'update' : 'create'} event:`, error);
+      setError(error.message || `Failed to ${editingEvent ? 'update' : 'create'} event`);
     } finally {
       setCreating(false);
     }
@@ -195,7 +249,7 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
         <div className="card shadow-sm border-0">
           <div className="card-header bg-white border-0">
             <h5 className="mb-0" style={{ color: 'var(--primary-purple)' }}>
-              Create New Event as {userRole?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {editingEvent ? 'Edit Event' : 'Create New Event'} as {userRole?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </h5>
           </div>
           
@@ -505,10 +559,10 @@ const HierarchicalEventCreation = ({ userRole, onEventCreated }) => {  const [fo
                   {creating ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      Creating...
+                      {editingEvent ? 'Updating...' : 'Creating...'}
                     </>
                   ) : (
-                    'Create Event'
+                    editingEvent ? 'Update Event' : 'Create Event'
                   )}
                 </button>
               </div>

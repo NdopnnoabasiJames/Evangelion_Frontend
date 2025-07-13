@@ -1,4 +1,5 @@
 // Helper functions for Guests.jsx
+import { API_BASE_URL } from '../utils/constants';
 
 export const getStatusBadge = (status) => {
   const statusColors = {
@@ -69,7 +70,7 @@ export const fetchPickupStationsHelper = async ({
   if (!user?.branch?._id) return;
   try {
     setLoadingPickupStations(true);
-    const response = await fetch(`${API_ENDPOINTS.PICKUP_STATIONS.BY_BRANCH}/${user.branch._id}`, {
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.PICKUP_STATIONS.BY_BRANCH}/${user.branch._id}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
