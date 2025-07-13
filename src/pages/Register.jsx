@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import PasswordInput from '../components/common/PasswordInput';
-import { API_ENDPOINTS, ROLES } from '../utils/constants';
+import { API_ENDPOINTS, ROLES, API_BASE_URL } from '../utils/constants';
 import { useApi } from '../hooks/useApi';
 import authDebug from '../utils/authDebug';
 import logo from '../assets/evangelion-logo.svg';
@@ -187,7 +187,7 @@ const Register = () => {
       };
 
       const endpoint = getRegistrationEndpoint();
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
