@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
-import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
+import { API_ENDPOINTS } from '../../utils/constants';
+import api from '../../services/api';
 import RoleSwitchingSection from './RoleSwitchingSection';
 
 const RegistrarTabs = ({ dashboardData }) => {
@@ -42,34 +43,27 @@ const RegistrarTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.STATS, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+      console.log('🔍 [RegistrarTabs] Fetching registrar stats from:', API_ENDPOINTS.REGISTRARS.STATS);
+      const response = await api.get(API_ENDPOINTS.REGISTRARS.STATS);
       
-      if (response.ok) {
-        const data = await response.json();
-        
-        const actualData = data.data || data;
-        const stats = actualData.stats || actualData;
-        
-        const normalizedStats = {
-          totalEvents: stats.eventsCount || 0,                        // My Events (approved events)
-          totalEventsVolunteered: stats.totalEventsVolunteered || 0,  // Total volunteer requests
-          totalRegisteredGuests: stats.guestsCount || 0,              // Guests registered by registrar
-          totalCheckedInGuests: stats.guestsCheckedInCount || 0       // Guests checked in by registrar
-        };
-        
-        setOverviewStats(normalizedStats);
-      } else {
-        const errorText = await response.text();
-        console.error('[RegistrarTabs] Failed to load statistics, status:', response.status, 'Error:', errorText);
-        setError(`Failed to load statistics: ${response.status}`);
-      }
+      const data = response.data;
+      const actualData = data.data || data;
+      const stats = actualData.stats || actualData;
+      
+      console.log('📊 [RegistrarTabs] Raw stats response:', stats);
+      
+      const normalizedStats = {
+        totalEvents: stats.eventsCount || 0,                        // My Events (approved events)
+        totalEventsVolunteered: stats.totalEventsVolunteered || 0,  // Total volunteer requests
+        totalRegisteredGuests: stats.guestsCount || 0,              // Guests registered by registrar
+        totalCheckedInGuests: stats.guestsCheckedInCount || 0       // Guests checked in by registrar
+      };
+      
+      console.log('📈 [RegistrarTabs] Normalized stats:', normalizedStats);
+      setOverviewStats(normalizedStats);
     } catch (err) {
       console.error('[RegistrarTabs] Error loading overview stats:', err);
+      console.error('[RegistrarTabs] Error details:', err.response?.data);
       setError('Failed to load overview statistics');
     } finally {
       setLoading(false);
@@ -80,16 +74,8 @@ const RegistrarTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.ALL_EVENTS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        const events = await response.json();
-        setAllEvents(Array.isArray(events) ? events : events.data || []);
-      }
+      const response = await api.get(API_ENDPOINTS.REGISTRARS.ALL_EVENTS);
+      setAllEvents(Array.isArray(response.data) ? response.data : response.data.data || []);
     } catch (err) {
       console.error('Error loading all events:', err);
       setError('Failed to load events');
@@ -102,16 +88,8 @@ const RegistrarTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.MY_EVENTS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        const events = await response.json();
-        setMyEvents(Array.isArray(events) ? events : events.data || []);
-      }
+      const response = await api.get(API_ENDPOINTS.REGISTRARS.MY_EVENTS);
+      setMyEvents(Array.isArray(response.data) ? response.data : response.data.data || []);
     } catch (err) {
       console.error('Error loading my events:', err);
       setError('Failed to load my events');
@@ -124,16 +102,8 @@ const RegistrarTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/guests`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        const guests = await response.json();
-        setEventGuests(Array.isArray(guests) ? guests : guests.data || []);
-      }
+      const response = await api.get(`${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/guests`);
+      setEventGuests(Array.isArray(response.data) ? response.data : response.data.data || []);
     } catch (err) {
       console.error('Error loading event guests:', err);
       setError('Failed to load event guests');
@@ -144,47 +114,28 @@ const RegistrarTabs = ({ dashboardData }) => {
 
   const handleVolunteerForEvent = async (eventId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/volunteer`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        alert('Successfully volunteered for event!');
-        loadAllEvents(); // Refresh the events list
-      } else {
-        const error = await response.json();
-        alert(`Failed to volunteer: ${error.message}`);
-      }
+      const response = await api.post(`${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/volunteer`);
+      alert('Successfully volunteered for event!');
+      loadAllEvents(); // Refresh the events list
     } catch (err) {
       console.error('Error volunteering for event:', err);
-      alert('Error volunteering for event');
+      const errorMessage = err.response?.data?.message || 'Error volunteering for event';
+      alert(`Failed to volunteer: ${errorMessage}`);
     }
   };
 
   const handleCheckInGuest = async (guestId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.VOLUNTEER_CHECKIN}/${selectedEvent._id}/guests/${guestId}/checkin`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+      const response = await api.post(`${API_ENDPOINTS.REGISTRARS.VOLUNTEER_CHECKIN}/${selectedEvent._id}/guests/${guestId}/checkin`);
       
-      if (response.ok) {
-        // Refresh the guest list
-        loadEventGuests(selectedEvent._id);
-        // Refresh stats
-        loadOverviewStats();
-      } else {
-        const error = await response.json();
-        alert(`Failed to check in guest: ${error.message}`);
-      }
+      // Refresh the guest list
+      loadEventGuests(selectedEvent._id);
+      // Refresh stats
+      loadOverviewStats();
     } catch (err) {
       console.error('Error checking in guest:', err);
-      alert('Error checking in guest');
+      const errorMessage = err.response?.data?.message || 'Error checking in guest';
+      alert(`Failed to check in guest: ${errorMessage}`);
     }
   };
 
