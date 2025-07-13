@@ -12,7 +12,6 @@ import NotificationTab from './tabs/NotificationTab';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 import workerService from '../../services/workerService';
-import api from '../../services/api';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 const BranchAdminTabs = ({ dashboardData }) => {
@@ -44,8 +43,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
       loadBranchStatistics();
       loadPendingWorkers(); // Also load workers for overview stats
       loadPendingRegistrars(); // Also load registrars for overview stats
-      loadPendingZonalAdmins(); // Load zonal admin data for overview stats
-      loadApprovedZonalAdmins(); // Load approved zonal admin data for overview stats
     }
   }, [activeTab]);
   const loadBranchStatistics = async () => {
@@ -75,7 +72,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
       setPendingZonalAdmins(data || []);
     } catch (err) {
       console.error('Error loading pending zonal admins:', err);
-      setError(err.message || 'Failed to load pending zonal coordinators');
+      setError(err.message || 'Failed to load pending zonal admins');
     } finally {
       setLoading(false);
     }
@@ -88,24 +85,18 @@ const BranchAdminTabs = ({ dashboardData }) => {
       setApprovedZonalAdmins(data || []);
     } catch (err) {
       console.error('Error loading approved zonal admins:', err);
-      setApprovedError(err.message || 'Failed to load approved zonal coordinators');
+      setApprovedError(err.message || 'Failed to load approved zonal admins');
     } finally {
       setApprovedLoading(false);
     }  };  const loadPendingWorkers = async () => {
     setLoading(true);
     setError(null);
     try {
-      
       const data = await workerService.getPendingWorkers();
-      setPendingWorkers(data || []);
+      setPendingWorkers(data);
     } catch (err) {
-      console.log('📋 Error details:', {
-        message: err.message,
-        status: err.status,
-        response: err.response,
-        stack: err.stack
-      });
-      setError(`Failed to load pending workers: ${err.message || 'Unknown error'}`);
+      console.error('Error loading pending workers:', err);
+      setError(err.message || 'Failed to load pending workers');
     } finally {
       setLoading(false);
     }
@@ -113,24 +104,21 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔄 Loading pending registrars for branch admin:', user?.email);
-      console.log(' User details:', { role: user?.role, branch: user?.branch });
-      console.log('🌐 Making request to:', API_ENDPOINTS.REGISTRARS.PENDING);
-      
-      const response = await api.get(API_ENDPOINTS.REGISTRARS.PENDING);
-      console.log('✅ Pending registrars response:', response.data);
-      
-      const registrarsArray = Array.isArray(response.data) ? response.data : response.data.data || [];
-      console.log('📋 Processed registrars array:', registrarsArray);
-      setPendingRegistrars(registrarsArray);
-    } catch (err) {
-      console.error('❌ Error loading pending registrars:', err);
-      console.log('📋 Error details:', {
-        message: err.message,
-        status: err.response?.status,
-        data: err.response?.data
+      const response = await fetch(API_ENDPOINTS.REGISTRARS.PENDING, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
       });
-      setError(`Failed to load pending registrars: ${err.message || 'Unknown error'}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const registrarsArray = Array.isArray(data) ? data : data.data || [];
+        setPendingRegistrars(registrarsArray);      } else {
+        setError('Failed to load pending registrars');
+      }
+    } catch (err) {
+      console.error('Error loading pending registrars:', err);
+      setError(err.message || 'Failed to load pending registrars');
     } finally {
       setLoading(false);
     }
@@ -157,10 +145,10 @@ const BranchAdminTabs = ({ dashboardData }) => {
         }]);
       }
       
-      alert('Zonal Coordinator approved successfully!');
+      alert('Zonal Admin approved successfully!');
     } catch (err) {
       console.error('Error approving zonal admin:', err);
-      alert('Failed to approve zonal coordinator: ' + (err.message || 'Unknown error'));
+      alert('Failed to approve zonal admin: ' + (err.message || 'Unknown error'));
     }
   };
 
@@ -171,10 +159,10 @@ const BranchAdminTabs = ({ dashboardData }) => {
       // Remove from pending list
       setPendingZonalAdmins(prev => prev.filter(admin => (admin._id || admin.id) !== adminId));
       
-      alert('Zonal Coordinator rejection recorded successfully!');
+      alert('Zonal Admin rejection recorded successfully!');
     } catch (err) {
       console.error('Error rejecting zonal admin:', err);
-      alert('Failed to reject zonal coordinator: ' + (err.message || 'Unknown error'));
+      alert('Failed to reject zonal admin: ' + (err.message || 'Unknown error'));
     }
   };
 
@@ -261,13 +249,13 @@ const BranchAdminTabs = ({ dashboardData }) => {
                 <div className="col-md-3 col-6">
                   <div className="border-end">
                     <h3 className="text-primary">{pendingZonalAdmins.length}</h3>
-                    <p className="text-muted mb-0">Pending Zonal Coordinators</p>
+                    <p className="text-muted mb-0">Pending Zonal Admins</p>
                   </div>
                 </div>
                 <div className="col-md-3 col-6">
                   <div className="border-end">
                     <h3 className="text-success">{approvedZonalAdmins.length}</h3>
-                    <p className="text-muted mb-0">Active Zonal Coordinators</p>
+                    <p className="text-muted mb-0">Active Zonal Admins</p>
                   </div>
                 </div>                <div className="col-md-3 col-6">
                   <div className="border-end">
@@ -337,9 +325,9 @@ const BranchAdminTabs = ({ dashboardData }) => {
                 <i className="fas fa-user-plus text-success"></i>
               </div>
               <div className="flex-grow-1 ms-3">
-                <h6 className="mb-1">Branch Pastor Dashboard Accessed</h6>
+                <h6 className="mb-1">Branch Admin Dashboard Accessed</h6>
                 <p className="text-muted mb-0 small">
-                  You accessed the branch pastor dashboard
+                  You accessed the branch admin dashboard
                 </p>
               </div>
               <small className="text-muted">Just now</small>
@@ -349,9 +337,9 @@ const BranchAdminTabs = ({ dashboardData }) => {
                   <i className="fas fa-clock text-warning"></i>
                 </div>
                 <div className="flex-grow-1 ms-3">
-                  <h6 className="mb-1">Pending Zonal Coordinator Approvals</h6>
+                  <h6 className="mb-1">Pending Zonal Admin Approvals</h6>
                   <p className="text-muted mb-0 small">
-                    {pendingZonalAdmins.length} zonal coordinator{pendingZonalAdmins.length !== 1 ? 's' : ''} awaiting approval
+                    {pendingZonalAdmins.length} zonal admin{pendingZonalAdmins.length !== 1 ? 's' : ''} awaiting approval
                   </p>
                 </div>
                 <small className="text-muted">Today</small>
@@ -405,11 +393,11 @@ const BranchAdminTabs = ({ dashboardData }) => {
 
     return (
       <div className="space-y-6">
-        {/* Pending Zonal Coordinators Section */}
+        {/* Pending Zonal Admins Section */}
         <div>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
-              <h5 className="mb-1">Pending Zonal Coordinator Approvals</h5>
+              <h5 className="mb-1">Pending Zonal Admin Approvals</h5>
               <p className="text-muted mb-0">
                 {pendingZonalAdmins.length} application{pendingZonalAdmins.length !== 1 ? 's' : ''} awaiting your review
               </p>
@@ -429,7 +417,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
               <div className="card-body text-center py-5">
                 <i className="fas fa-check-circle fa-3x text-success mb-3"></i>
                 <h4>No Pending Approvals</h4>
-                <p className="text-muted">All Zonal Coordinator registrations have been processed.</p>
+                <p className="text-muted">All Zonal Admin registrations have been processed.</p>
               </div>
             </div>          ) : (
             pendingZonalAdmins.map(admin => (
@@ -444,11 +432,11 @@ const BranchAdminTabs = ({ dashboardData }) => {
           )}
         </div>
 
-        {/* Approved Zonal Coordinators Section */}
+        {/* Approved Zonal Admins Section */}
         <div>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
-              <h5 className="mb-1">Approved Zonal Coordinators</h5>
+              <h5 className="mb-1">Approved Zonal Admins</h5>
               <p className="text-muted mb-0">
                 {approvedZonalAdmins.length} approved admin{approvedZonalAdmins.length !== 1 ? 's' : ''} currently active
               </p>
@@ -480,8 +468,8 @@ const BranchAdminTabs = ({ dashboardData }) => {
             <div className="card">
               <div className="card-body text-center py-5">
                 <i className="fas fa-users fa-3x text-muted mb-3"></i>
-                <h4>No Approved Zonal Coordinators</h4>
-                <p className="text-muted">No Zonal Coordinators have been approved yet.</p>
+                <h4>No Approved Zonal Admins</h4>
+                <p className="text-muted">No Zonal Admins have been approved yet.</p>
               </div>
             </div>
           ) : (

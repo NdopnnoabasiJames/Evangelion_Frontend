@@ -112,7 +112,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const renderRegistrars = () => <RegistrarsManagement />;
 
   return (
-    <div className="responsive-container">
+    <div className="admin-tabs-container">
       {/* Tab Navigation */}
       <ul className="nav nav-tabs nav-tabs-responsive mb-4" role="tablist">
         <li className="nav-item" role="presentation">

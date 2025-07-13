@@ -1,57 +1,96 @@
 import { API_ENDPOINTS } from '../utils/constants';
-import api from './api';
 
 class WorkerService {
   async getPendingWorkers() {
     try {
-      console.log('🔄 WorkerService.getPendingWorkers called');
-      console.log('🌐 Making request to:', API_ENDPOINTS.WORKERS.PENDING);
+      const token = localStorage.getItem('authToken');
+      console.log('Fetching pending workers...');
       
-      const response = await api.get(API_ENDPOINTS.WORKERS.PENDING);
-      console.log('✅ Workers data received:', response.data);
-      
-      return Array.isArray(response.data) ? response.data : response.data.data || [];
-    } catch (error) {
-      console.error('❌ Error fetching pending workers:', error);
-      console.error('📋 Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data
+      const response = await fetch(API_ENDPOINTS.WORKERS.PENDING, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.data || [];
+    } catch (error) {
+      console.error('Error fetching pending workers:', error);
       throw error;
     }
   }
 
   async getApprovedWorkers() {
     try {
-      console.log('🔄 WorkerService.getApprovedWorkers called');
+      const token = localStorage.getItem('authToken');
+      console.log('Fetching approved workers...');
       
-      const response = await api.get(API_ENDPOINTS.WORKERS.APPROVED);
-      console.log('✅ Approved workers data received:', response.data);
-      
-      return Array.isArray(response.data) ? response.data : response.data.data || [];
+      const response = await fetch(API_ENDPOINTS.WORKERS.APPROVED, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.data || [];
     } catch (error) {
-      console.error('❌ Error fetching approved workers:', error);
+      console.error('Error fetching approved workers:', error);
       throw error;
     }
   }
 
   async approveWorker(workerId) {
     try {
-      const response = await api.post(`${API_ENDPOINTS.WORKERS.BASE}/approve/${workerId}`);
-      return response.data;
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/approve/${workerId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error approving worker:', error);
+      console.error('Error approving worker:', error);
       throw error;
     }
   }
 
   async rejectWorker(workerId) {
     try {
-      const response = await api.delete(`${API_ENDPOINTS.WORKERS.BASE}/reject/${workerId}`);
-      return response.data;
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_ENDPOINTS.WORKERS.BASE}/reject/${workerId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error rejecting worker:', error);
+      console.error('Error rejecting worker:', error);
       throw error;
     }
   }

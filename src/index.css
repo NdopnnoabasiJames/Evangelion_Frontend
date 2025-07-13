@@ -196,6 +196,10 @@ button:focus-visible {
 /* Mobile-first breakpoints */
 @media (max-width: 575.98px) {
   /* Small phones (xs) */
+  .container-fluid {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
   
   /* Typography adjustments */
   h1.h3, .h3 {
@@ -230,18 +234,6 @@ button:focus-visible {
   /* Table responsiveness */
   .table-responsive {
     font-size: 0.875rem;
-  }
-  
-  /* Give tables more breathing room */
-  .table th,
-  .table td {
-    padding: 1rem 0.75rem !important;
-    white-space: nowrap;
-  }
-  
-  .table th {
-    font-weight: 600;
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
   }
   
   /* Statistics cards */
@@ -381,7 +373,7 @@ button:focus-visible {
   }
   
   .table td, .table th {
-    padding: 1.25rem 1rem !important;
+    padding: 1rem 0.75rem;
   }
 }
 
@@ -520,24 +512,29 @@ button:focus-visible {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
-  padding: 0;
 }
 
-/* Ensure child elements don't cause overflow */
-.responsive-container > * {
-  max-width: 100%;
-  overflow-x: hidden;
+/* Table responsive improvements */
+.table-responsive {
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: 1px solid var(--bs-border-color);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Tab navigation responsive improvements */
+.table-responsive table {
+  margin-bottom: 0;
+  min-width: 600px; /* Ensure table has minimum width for readability */
+}
+
+/* Tab navigation improvements */
 .nav-tabs-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   white-space: nowrap;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--bs-border-color);
 }
 
 .nav-tabs-responsive::-webkit-scrollbar {
@@ -550,85 +547,6 @@ button:focus-visible {
 
 .nav-tabs-responsive .nav-link {
   white-space: nowrap;
-  min-width: fit-content;
-}
-
-/* Ensure cards within responsive containers don't overflow */
-.responsive-container .card {
-  overflow: hidden;
-  width: 100%;
-  max-width: 100%;
-}
-
-.responsive-container .card-body {
-  overflow-x: auto;
-  padding: 1rem;
-}
-
-/* Fix for admin tab content */
-.tab-content {
-  overflow-x: hidden;
-  width: 100%;
-}
-
-.tab-content > * {
-  max-width: 100%;
-}
-
-/* Management components wrapper fix */
-.w-100 {
-  max-width: 100% !important;
-  overflow-x: hidden;
-}
-
-/* Table responsive improvements */
-.table-responsive {
-  border-radius: 0.375rem;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  border: 1px solid var(--bs-border-color);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  max-width: 100%;
-}
-
-.table-responsive table {
-  margin-bottom: 0;
-  min-width: 800px; /* Increased from 600px for more breathing room */
-}
-
-/* Enhanced table spacing for better readability */
-.table th,
-.table td {
-  padding: 1.25rem 1rem !important;
-  vertical-align: middle;
-}
-
-.table th {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--bs-gray-700);
-  background-color: rgba(var(--bs-primary-rgb), 0.05);
-  border-bottom: 2px solid var(--bs-border-color);
-}
-
-.table td {
-  font-size: 0.875rem;
-  border-bottom: 1px solid rgba(var(--bs-border-color), 0.5);
-}
-
-.table-hover tbody tr:hover {
-  background-color: rgba(var(--bs-primary-rgb), 0.03);
-}
-
-/* Fix horizontal scroll for mobile tables */
-@media (max-width: 767.98px) {
-  .table-responsive {
-    margin-left: -0.75rem;
-    margin-right: -0.75rem;
-    border-left: 0;
-    border-right: 0;
-    border-radius: 0;
-  }
 }
 @media (max-width: 767.98px) {
   .navbar-nav .nav-link {
@@ -669,13 +587,6 @@ button:focus-visible {
   
   .table-responsive table {
     margin-bottom: 0;
-    min-width: 700px; /* Reduced from 800px on mobile but still spacious */
-  }
-  
-  /* Mobile table spacing - still comfortable but optimized */
-  .table th,
-  .table td {
-    padding: 1rem 0.875rem !important;
   }
   
   /* Ensure cards and containers don't overflow */
