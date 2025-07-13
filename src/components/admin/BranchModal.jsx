@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useApi } from '../../hooks/useApi';
+import { API_ENDPOINTS } from '../../utils/constants';
 
 const BranchModal = ({ branch, onHide, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -6,10 +8,31 @@ const BranchModal = ({ branch, onHide, onSubmit }) => {
     location: '',
     phone: '',
     email: '',
+    stateId: '',
     isActive: true
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [states, setStates] = useState([]);
+  const [loadingStates, setLoadingStates] = useState(false);
+  
+  const { execute } = useApi();
+
+  // Fetch states on component mount
+  useEffect(() => {
+    const fetchStates = async () => {
+      setLoadingStates(true);
+      try {
+        const response = await execute(API_ENDPOINTS.STATES.LIST);
+        setStates(response.data || []);
+      } catch (error) {
+        console.error('Failed to fetch states:', error);
+      } finally {
+        setLoadingStates(false);
+      }
+    };
+    fetchStates();
+  }, []); // Remove execute from dependencies
 
   const isEditing = !!branch;
   // Reset form data when branch changes (for editing)
@@ -20,6 +43,7 @@ const BranchModal = ({ branch, onHide, onSubmit }) => {
         location: branch.location || '',
         phone: branch.phone || '',
         email: branch.email || '',
+        stateId: branch.stateId || '',
         isActive: branch.isActive ?? true
       });
     } else {
@@ -28,6 +52,7 @@ const BranchModal = ({ branch, onHide, onSubmit }) => {
         location: '',
         phone: '',
         email: '',
+        stateId: '',
         isActive: true
       });
     }
@@ -43,6 +68,7 @@ const BranchModal = ({ branch, onHide, onSubmit }) => {
         location: formData.location.trim(),
         phone: formData.phone.trim(),
         email: formData.email.trim() || undefined,
+        stateId: formData.stateId,
         isActive: formData.isActive
       };
       await onSubmit(submitData);
@@ -81,6 +107,35 @@ const BranchModal = ({ branch, onHide, onSubmit }) => {
                   {error}
                 </div>
               )}
+              
+              {/* State Selection - Only for creating new branches */}
+              {!isEditing && (
+                <div className="mb-3">
+                  <label className="form-label">
+                    <i className="bi bi-geo-alt me-1"></i>
+                    State *
+                  </label>
+                  <select
+                    className="form-select"
+                    name="stateId"
+                    value={formData.stateId}
+                    onChange={handleChange}
+                    required
+                    disabled={loadingStates}
+                  >
+                    <option value="">
+                      {loadingStates ? 'Loading states...' : 'Select a state'}
+                    </option>
+                    {states.map(state => (
+                      <option key={state._id} value={state._id}>
+                        {state.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="form-text">Choose the state this branch belongs to</div>
+                </div>
+              )}
+              
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label className="form-label">

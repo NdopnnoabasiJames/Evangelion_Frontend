@@ -11,12 +11,14 @@ const ZonesManagement = () => {
   const { user } = useAuth();
   const [zones, setZones] = useState([]);
   const [filteredZones, setFilteredZones] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingZone, setEditingZone] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    branchId: '',
     isActive: true
   });
   const [activeTab, setActiveTab] = useState('all');
@@ -30,6 +32,7 @@ const ZonesManagement = () => {
   });
 
   const { execute: fetchZones } = useApi(null, { immediate: false });
+  const { execute: fetchBranches } = useApi(null, { immediate: false });
   const { execute: createZone, error: createError } = useApi(null, { immediate: false });
   const { execute: updateZone, error: updateError } = useApi(null, { immediate: false });
   const { execute: deleteZone } = useApi(null, { immediate: false });
@@ -38,6 +41,7 @@ const ZonesManagement = () => {
 
   useEffect(() => {
     loadZones();
+    loadBranches();
   }, []);
 
   // Filter zones based on search and filter criteria
@@ -107,6 +111,15 @@ const ZonesManagement = () => {
       setError(error.response?.data?.message || error.message || 'Failed to load zones');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadBranches = async () => {
+    try {
+      const response = await fetchBranches(API_ENDPOINTS.BRANCHES.LIST);
+      setBranches(response?.data || response || []);
+    } catch (error) {
+      console.error('Failed to load branches:', error);
     }
   };
   // Filter helper functions
@@ -347,6 +360,7 @@ const ZonesManagement = () => {
   const resetForm = () => {
     setFormData({
       name: '',
+      branchId: '',
       isActive: true
     });
   };
@@ -714,6 +728,31 @@ const ZonesManagement = () => {
                       placeholder="Enter zone name"
                     />
                   </div>
+
+                  {/* Branch Selection - Only for creating new zones */}
+                  {!editingZone && (
+                    <div className="mb-3">
+                      <label htmlFor="branchId" className="form-label">
+                        <i className="bi bi-building me-1"></i>
+                        Branch <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        className="form-select"
+                        id="branchId"
+                        value={formData.branchId || ''}
+                        onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
+                        required
+                      >
+                        <option value="">Select a branch</option>
+                        {branches.map(branch => (
+                          <option key={branch._id} value={branch._id}>
+                            {branch.name} - {branch.location}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="form-text">Choose the branch this zone belongs to</div>
+                    </div>
+                  )}
                   
                   <div className="mb-3">
                     {/* Only show Active Zone checkbox for super admins */}
@@ -744,7 +783,7 @@ const ZonesManagement = () => {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={!formData.name.trim()}
+                    disabled={!formData.name.trim() || (!editingZone && !formData.branchId)}
                   >
                     <i className="bi bi-check-circle me-2"></i>
                     {editingZone ? 'Update Zone' : 'Create Zone'}
