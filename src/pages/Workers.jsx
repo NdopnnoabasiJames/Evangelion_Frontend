@@ -9,6 +9,7 @@ import PageHeader, { HeaderConfigurations } from '../components/common/PageHeade
 import { StatusBadge } from '../utils/statusUtils.jsx';
 import { ApprovalActions, ActionConfigurations } from '../components/common/ActionButtons.jsx';
 import { API_ENDPOINTS, ROLES, STATUS } from '../utils/constants';
+import api from '../services/api';
 
 const Workers = () => {
   const { user } = useAuth();
@@ -16,6 +17,8 @@ const Workers = () => {
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedWorker, setSelectedWorker] = useState(null);
+  const [showWorkerModal, setShowWorkerModal] = useState(false);
 
   // Fetch workers based on user role
   const { data: workersData, loading: workersLoading, error: workersError, refetch } = useApi(
@@ -34,6 +37,45 @@ const Workers = () => {
   // Role-based permissions
   const canApproveWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
   const canManageWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
+
+  console.log('👤 [Workers] User role check:', {
+    userRole: user?.role,
+    canApproveWorkers,
+    canManageWorkers,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN]
+  });
+
+  // Modal handlers
+  const handleViewWorker = (worker) => {
+    console.log('🔍 VIEW BUTTON CLICKED - Worker:', worker);
+    alert(`View button clicked for: ${worker.name || worker.fullName || worker.email}`);
+    setSelectedWorker(worker);
+    setShowWorkerModal(true);
+  };
+
+  const handleDisableWorker = async (workerId, workerName) => {
+    console.log('🚫 DISABLE BUTTON CLICKED - Worker ID:', workerId, 'Name:', workerName);
+    alert(`Disable button clicked for: ${workerName}`);
+    
+    if (!window.confirm(`Are you sure you want to disable ${workerName}?`)) {
+      return;
+    }
+
+    try {
+      await api.patch(`${API_ENDPOINTS.WORKERS.BASE}/${workerId}/disable`);
+      alert(`${workerName} has been successfully disabled.`);
+      refetch();
+    } catch (error) {
+      console.error('Error disabling worker:', error);
+      alert(`Failed to disable ${workerName}. ${error.response?.data?.message || 'Please try again.'}`);
+    }
+  };
+
+  const handleCloseModal = () => {
+    console.log('❌ Close modal clicked');
+    setSelectedWorker(null);
+    setShowWorkerModal(false);
+  };
   if (loading) {
     return (
       <Layout>
@@ -118,6 +160,8 @@ const Workers = () => {
               error={error}
               canManage={canManageWorkers}
               onRefresh={refetch}
+              onViewWorker={handleViewWorker}
+              onDisableWorker={handleDisableWorker}
             />
           </TabPane>
 
@@ -137,12 +181,26 @@ const Workers = () => {
           </TabPane>
         </TabbedInterface>
       </div>
+
+      {/* Worker Details Modal */}
+      {showWorkerModal && selectedWorker && (
+        <WorkerDetailsModal 
+          worker={selectedWorker}
+          onClose={handleCloseModal}
+        />
+      )}
     </Layout>
   );
 };
 
 // Workers List Component
-const WorkersList = ({ workers, loading, error, canManage, onRefresh }) => {
+const WorkersList = ({ workers, loading, error, canManage, onRefresh, onViewWorker, onDisableWorker }) => {
+  console.log('📋 [WorkersList] Props received:', { 
+    workersCount: workers?.length, 
+    canManage, 
+    hasViewHandler: !!onViewWorker, 
+    hasDisableHandler: !!onDisableWorker 
+  });
   if (error) {
     return (
       <div className="alert alert-danger">
@@ -197,10 +255,38 @@ const WorkersList = ({ workers, loading, error, canManage, onRefresh }) => {
                 </small>
                 
                 {canManage && (
-                  <button className="btn btn-sm btn-outline-primary">
-                    <i className="bi bi-pencil"></i>
-                  </button>
+                  <div className="btn-group" role="group">
+                    <button 
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => {
+                        console.log('VIEW BUTTON CLICKED!');
+                        alert('View button works!');
+                        handleViewWorker(worker);
+                      }}
+                      title="View Details"
+                    >
+                      <i className="bi bi-eye"></i> View
+                    </button>
+                    <button 
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => {
+                        console.log('DISABLE BUTTON CLICKED!');
+                        alert('Disable button works!');
+                        handleDisableWorker(worker._id, worker.name || worker.fullName || worker.email);
+                      }}
+                      title="Disable Worker"
+                      disabled={worker.status === 'disabled'}
+                    >
+                      <i className="bi bi-ban"></i> Disable
+                    </button>
+                  </div>
                 )}
+                
+                {/* Debug: Show button visibility */}
+                <div style={{ fontSize: '12px', color: 'red', marginTop: '5px', fontWeight: 'bold' }}>
+                  DEBUG: canManage = {canManage ? 'TRUE' : 'FALSE'}
+                  {canManage ? ' (BUTTONS SHOULD BE VISIBLE)' : ' (BUTTONS HIDDEN)'}
+                </div>
               </div>
             </div>
           </div>
@@ -323,6 +409,207 @@ const WorkerPerformance = ({ workers }) => {
           </div>
         </div>
       ))}
+    </div>
+  );
+};
+
+// Worker Details Modal Component
+const WorkerDetailsModal = ({ worker, onClose }) => {
+  return (
+    <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <div className="modal-dialog modal-lg">
+        <div className="modal-content">
+          <div className="modal-header" style={{ backgroundColor: 'var(--primary-purple)', color: 'white' }}>
+            <h5 className="modal-title">
+              <i className="bi bi-person-circle me-2"></i>
+              Worker Details
+            </h5>
+            <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
+          </div>
+          
+          <div className="modal-body">
+            <div className="row g-4">
+              {/* Personal Information */}
+              <div className="col-12">
+                <h6 className="text-primary mb-3">
+                  <i className="bi bi-person me-2"></i>
+                  Personal Information
+                </h6>
+                <div className="row">
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Full Name</label>
+                      <p className="form-control-plaintext">{worker.fullName || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Email</label>
+                      <p className="form-control-plaintext">{worker.email || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Phone Number</label>
+                      <p className="form-control-plaintext">{worker.phoneNumber || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Status</label>
+                      <div>
+                        <StatusBadge status={worker.status} type="user" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Information */}
+              <div className="col-12">
+                <h6 className="text-primary mb-3">
+                  <i className="bi bi-geo-alt me-2"></i>
+                  Location Information
+                </h6>
+                <div className="row">
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">State</label>
+                      <p className="form-control-plaintext">{worker.state?.name || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Branch</label>
+                      <p className="form-control-plaintext">{worker.branch?.name || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Zone</label>
+                      <p className="form-control-plaintext">{worker.zone?.name || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Pickup Station</label>
+                      <p className="form-control-plaintext">{worker.pickupStation?.name || 'Not Assigned'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Statistics */}
+              <div className="col-12">
+                <h6 className="text-primary mb-3">
+                  <i className="bi bi-graph-up me-2"></i>
+                  Performance Statistics
+                </h6>
+                <div className="row text-center">
+                  <div className="col-md-3">
+                    <div className="card bg-light">
+                      <div className="card-body">
+                        <h4 className="text-primary">{worker.guestsRegistered || 0}</h4>
+                        <small className="text-muted">Guests Registered</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="card bg-light">
+                      <div className="card-body">
+                        <h4 className="text-success">{worker.eventsParticipated || 0}</h4>
+                        <small className="text-muted">Events Participated</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="card bg-light">
+                      <div className="card-body">
+                        <h4 className="text-warning">{worker.guestsCheckedIn || 0}</h4>
+                        <small className="text-muted">Guests Checked In</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="card bg-light">
+                      <div className="card-body">
+                        <h4 className="text-info">{worker.totalVolunteerRequests || 0}</h4>
+                        <small className="text-muted">Volunteer Requests</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Registration Information */}
+              <div className="col-12">
+                <h6 className="text-primary mb-3">
+                  <i className="bi bi-calendar me-2"></i>
+                  Registration Information
+                </h6>
+                <div className="row">
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Registered Date</label>
+                      <p className="form-control-plaintext">
+                        {worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Last Updated</label>
+                      <p className="form-control-plaintext">
+                        {worker.updatedAt ? new Date(worker.updatedAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Role Information */}
+              {worker.canSwitchRoles && (
+                <div className="col-12">
+                  <h6 className="text-primary mb-3">
+                    <i className="bi bi-person-gear me-2"></i>
+                    Role Information
+                  </h6>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Primary Role</label>
+                        <p className="form-control-plaintext">
+                          <span className="badge bg-primary">{worker.role}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Current Role</label>
+                        <p className="form-control-plaintext">
+                          <span className="badge bg-success">{worker.currentRole || worker.role}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <div className="alert alert-info">
+                        <i className="bi bi-info-circle me-2"></i>
+                        This worker has registrar access and can switch between Worker and Registrar roles.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

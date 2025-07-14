@@ -21,7 +21,12 @@ const WorkersManagement = () => {
     scoreOperator: 'greater'
   });
 
+  // Modal states
+  const [selectedWorker, setSelectedWorker] = useState(null);
+  const [showWorkerModal, setShowWorkerModal] = useState(false);
+
   const { execute: fetchWorkers } = useApi(null, { immediate: false });
+  const { execute: updateWorkerStatus } = useApi(null, { immediate: false });
 
   useEffect(() => {
     loadWorkers();
@@ -126,6 +131,43 @@ const WorkersManagement = () => {
       setError(error.response?.data?.message || error.message || 'Failed to load workers');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handler functions for action buttons
+  const handleViewWorker = (worker) => {
+    setSelectedWorker(worker);
+    setShowWorkerModal(true);
+  };
+
+  const handleToggleWorkerStatus = async (worker) => {
+    try {
+      const newStatus = !worker.isActive;
+      
+      await updateWorkerStatus(
+        `${API_ENDPOINTS.ADMIN.WORKERS}/${worker._id}/status`,
+        {
+          method: 'PUT',
+          body: {
+            isActive: newStatus,
+            status: newStatus ? 'active' : 'disabled'
+          }
+        }
+      );
+
+      // Update the worker in the local state
+      setWorkers(prevWorkers =>
+        prevWorkers.map(w =>
+          w._id === worker._id
+            ? { ...w, isActive: newStatus, status: newStatus ? 'active' : 'disabled' }
+            : w
+        )
+      );
+
+      console.log(`Worker ${newStatus ? 'enabled' : 'disabled'} successfully`);
+    } catch (error) {
+      console.error('Error updating worker status:', error);
+      alert(`Failed to ${worker.isActive ? 'disable' : 'enable'} worker: ${error.message}`);
     }
   };
 
@@ -446,12 +488,14 @@ const WorkersManagement = () => {
                             <button
                               className="btn btn-outline-info"
                               title="View details"
+                              onClick={() => handleViewWorker(worker)}
                             >
                               <i className="bi bi-eye"></i>
                             </button>
                             <button
                               className={`btn ${worker.isActive ? 'btn-outline-warning' : 'btn-outline-success'}`}
                               title={worker.isActive ? 'Disable worker' : 'Enable worker'}
+                              onClick={() => handleToggleWorkerStatus(worker)}
                             >
                               <i className={`bi ${worker.isActive ? 'bi-pause' : 'bi-play'}`}></i>
                             </button>
@@ -468,6 +512,125 @@ const WorkersManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* Worker Details Modal */}
+      {showWorkerModal && selectedWorker && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Worker Details</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowWorkerModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="row">
+                  <div className="col-md-6">
+                    <h6>Personal Information</h6>
+                    <p><strong>Name:</strong> {selectedWorker.name}</p>
+                    <p><strong>Email:</strong> {selectedWorker.email}</p>
+                    <p><strong>Status:</strong> 
+                      <span className={`badge ms-2 ${selectedWorker.isActive ? 'bg-success' : 'bg-danger'}`}>
+                        {selectedWorker.isActive ? 'Active' : 'Disabled'}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="col-md-6">
+                    <h6>Branch & Location</h6>
+                    <p><strong>Branch:</strong> {selectedWorker.branch?.name || 'N/A'}</p>
+                    <p><strong>State:</strong> {selectedWorker.state?.name || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-md-12">
+                    <h6>Performance Metrics</h6>
+                    <div className="row">
+                      <div className="col-md-3">
+                        <div className="card text-center">
+                          <div className="card-body">
+                            <h5 className="card-title text-primary">{selectedWorker.rank || 'N/A'}</h5>
+                            <p className="card-text">Rank</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-3">
+                        <div className="card text-center">
+                          <div className="card-body">
+                            <h5 className="card-title text-success">{selectedWorker.totalScore || 0}</h5>
+                            <p className="card-text">Total Score</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-3">
+                        <div className="card text-center">
+                          <div className="card-body">
+                            <h5 className="card-title text-info">{selectedWorker.totalInvited || 0}</h5>
+                            <p className="card-text">Invited</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-3">
+                        <div className="card text-center">
+                          <div className="card-body">
+                            <h5 className="card-title text-warning">{selectedWorker.totalCheckedIn || 0}</h5>
+                            <p className="card-text">Checked In</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {selectedWorker.medal && (
+                  <div className="row mt-3">
+                    <div className="col-md-12 text-center">
+                      <h6>Achievement</h6>
+                      <span className={`badge fs-6 ${
+                        selectedWorker.medal === 'gold' ? 'bg-warning' :
+                        selectedWorker.medal === 'silver' ? 'bg-secondary' :
+                        selectedWorker.medal === 'bronze' ? 'bg-dark' : 'bg-primary'
+                      }`}>
+                        {selectedWorker.medal.charAt(0).toUpperCase() + selectedWorker.medal.slice(1)} Medal
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div className="row mt-3">
+                  <div className="col-md-12">
+                    <h6>Account Information</h6>
+                    <p><strong>Created:</strong> {formatDate(selectedWorker.createdAt)}</p>
+                    <p><strong>Last Updated:</strong> {formatDate(selectedWorker.updatedAt)}</p>
+                    {selectedWorker.approvedBy && (
+                      <p><strong>Approved By:</strong> {selectedWorker.approvedBy.name}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowWorkerModal(false)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${selectedWorker.isActive ? 'btn-warning' : 'btn-success'}`}
+                  onClick={() => {
+                    handleToggleWorkerStatus(selectedWorker);
+                    setShowWorkerModal(false);
+                  }}
+                >
+                  {selectedWorker.isActive ? 'Disable Worker' : 'Enable Worker'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
