@@ -252,12 +252,8 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
     return event.pickupStations?.find(ps => ps.pickupStationId === stationId);
   };
   const handleStationToggle = (stationId) => {
-    console.log('🔄 handleStationToggle called with stationId:', stationId);
-    console.log('📝 Current selectedStations before toggle:', selectedStations);
-    
     // Don't allow toggling if station is already assigned
     if (isStationAssigned(stationId)) {
-      console.log('❌ Station is already assigned, ignoring toggle');
       return;
     }
     
@@ -265,7 +261,6 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
       const newSelection = prev.includes(stationId) 
         ? prev.filter(id => id !== stationId)
         : [...prev, stationId];
-      console.log('✅ New selectedStations after toggle:', newSelection);
       return newSelection;
     });
   };
@@ -333,10 +328,6 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
           assignmentData.departureTime = eventDate.toISOString();
         }        if (station.capacity || station.defaultCapacity) {
           assignmentData.maxCapacity = station.capacity || station.defaultCapacity;
-          console.log('📊 Setting maxCapacity:', assignmentData.maxCapacity, 'from station:', {
-            capacity: station.capacity,
-            defaultCapacity: station.defaultCapacity
-          });
         }
 
         if (station.notes) {
@@ -471,7 +462,6 @@ const PickupStationSelectorEnhanced = ({ event, pickupStations, onAssignmentComp
                               checked={selectedStations.includes(station._id)}
                               onChange={(e) => {
                                 e.stopPropagation();
-                                console.log('📋 Checkbox clicked for station:', station._id);
                                 handleStationToggle(station._id);
                               }}
                               onClick={(e) => {

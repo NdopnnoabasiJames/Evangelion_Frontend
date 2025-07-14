@@ -38,23 +38,14 @@ const Workers = () => {
   const canApproveWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
   const canManageWorkers = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
 
-  console.log('👤 [Workers] User role check:', {
-    userRole: user?.role,
-    canApproveWorkers,
-    canManageWorkers,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN]
-  });
-
   // Modal handlers
   const handleViewWorker = (worker) => {
-    console.log('🔍 VIEW BUTTON CLICKED - Worker:', worker);
     alert(`View button clicked for: ${worker.name || worker.fullName || worker.email}`);
     setSelectedWorker(worker);
     setShowWorkerModal(true);
   };
 
   const handleDisableWorker = async (workerId, workerName) => {
-    console.log('🚫 DISABLE BUTTON CLICKED - Worker ID:', workerId, 'Name:', workerName);
     alert(`Disable button clicked for: ${workerName}`);
     
     if (!window.confirm(`Are you sure you want to disable ${workerName}?`)) {
@@ -72,7 +63,6 @@ const Workers = () => {
   };
 
   const handleCloseModal = () => {
-    console.log('❌ Close modal clicked');
     setSelectedWorker(null);
     setShowWorkerModal(false);
   };
@@ -195,12 +185,6 @@ const Workers = () => {
 
 // Workers List Component
 const WorkersList = ({ workers, loading, error, canManage, onRefresh, onViewWorker, onDisableWorker }) => {
-  console.log('📋 [WorkersList] Props received:', { 
-    workersCount: workers?.length, 
-    canManage, 
-    hasViewHandler: !!onViewWorker, 
-    hasDisableHandler: !!onDisableWorker 
-  });
   if (error) {
     return (
       <div className="alert alert-danger">
@@ -259,7 +243,6 @@ const WorkersList = ({ workers, loading, error, canManage, onRefresh, onViewWork
                     <button 
                       className="btn btn-sm btn-outline-primary"
                       onClick={() => {
-                        console.log('VIEW BUTTON CLICKED!');
                         alert('View button works!');
                         handleViewWorker(worker);
                       }}
@@ -270,7 +253,6 @@ const WorkersList = ({ workers, loading, error, canManage, onRefresh, onViewWork
                     <button 
                       className="btn btn-sm btn-outline-danger"
                       onClick={() => {
-                        console.log('DISABLE BUTTON CLICKED!');
                         alert('Disable button works!');
                         handleDisableWorker(worker._id, worker.name || worker.fullName || worker.email);
                       }}

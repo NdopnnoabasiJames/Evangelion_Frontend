@@ -30,7 +30,6 @@ const GuestsManagement = () => {
   // Filter guests based on search and filter criteria
   useEffect(() => {
     let filtered = [...guests];
-    console.log('Filtering guests. Original count:', guests.length);
 
     // Apply search filter
     if (filters.search) {
@@ -39,53 +38,42 @@ const GuestsManagement = () => {
         (guest.email && guest.email.toLowerCase().includes(filters.search.toLowerCase())) ||
         guest.phone.includes(filters.search)
       );
-      console.log('After search filter:', filtered.length);
     }
 
     // Apply event filter
     if (filters.eventFilter !== 'all') {
       filtered = filtered.filter(guest => guest.event?._id === filters.eventFilter);
-      console.log('After event filter:', filtered.length);
     }
 
     // Apply status filter
     if (filters.statusFilter !== 'all') {
       filtered = filtered.filter(guest => guest.status === filters.statusFilter);
-      console.log('After status filter:', filtered.length);
     }
 
     // Apply transport filter
     if (filters.transportFilter !== 'all') {
       filtered = filtered.filter(guest => guest.transportPreference === filters.transportFilter);
-      console.log('After transport filter:', filtered.length);
     }
 
     // Apply branch filter
     if (filters.branchFilter !== 'all') {
       filtered = filtered.filter(guest => guest.branch?._id === filters.branchFilter);
-      console.log('After branch filter:', filtered.length);
     }
 
     // Apply state filter
     if (filters.stateFilter !== 'all') {
       filtered = filtered.filter(guest => guest.state?._id === filters.stateFilter);
-      console.log('After state filter:', filtered.length);
     }
 
     // Apply registered by filter
     if (filters.registeredByFilter !== 'all') {
       filtered = filtered.filter(guest => guest.registeredBy?._id === filters.registeredByFilter);
-      console.log('After registered by filter:', filtered.length);
     }
-
-    console.log('Final filtered count:', filtered.length);
-    console.log('Setting filteredGuests to:', filtered);
     setFilteredGuests(filtered);
   }, [guests, filters]);
 
   // Update filtered guests when guests data changes
   useEffect(() => {
-    console.log('Guests data changed. Setting filteredGuests to guests directly:', guests.length);
     setFilteredGuests(guests);
   }, [guests]);
 
@@ -95,10 +83,8 @@ const GuestsManagement = () => {
       setError(null);
       
       const response = await fetchGuests(API_ENDPOINTS.ADMIN.GUESTS);
-      console.log('Guests API Response:', response);
       
       const guestsData = response?.data || response || [];
-      console.log('Processed guests data:', guestsData);
       
       setGuests(guestsData);
     } catch (error) {
@@ -190,13 +176,7 @@ const GuestsManagement = () => {
     }
   };
 
-  console.log('Current state - guests:', guests.length, 'filteredGuests:', filteredGuests.length);
-  console.log('Loading state:', loading);
-  console.log('Error state:', error);
-  console.log('Render condition - guests.length === 0:', guests.length === 0);
-
   if (loading) {
-    console.log('Rendering loading spinner');
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
         <div className="spinner-border text-primary" role="status">
@@ -205,8 +185,6 @@ const GuestsManagement = () => {
       </div>
     );
   }
-
-  console.log('About to render main component');
 
   return (
     <div className="card">
@@ -251,7 +229,6 @@ const GuestsManagement = () => {
                 </thead>
                 <tbody>
                   {filteredGuests.map(guest => {
-                    console.log('Rendering guest:', guest.name);
                     return (
                       <tr key={guest._id}>
                         <td>

@@ -38,7 +38,6 @@ const WorkerManagement = () => {
   // Update pending workers when data changes
   useEffect(() => {
     if (pendingData) {
-      console.log('📋 Updating pending workers from API data:', pendingData);
       setPendingWorkers(Array.isArray(pendingData) ? pendingData : pendingData.data || []);
     }
   }, [pendingData]);
@@ -46,7 +45,6 @@ const WorkerManagement = () => {
   // Update approved workers when data changes
   useEffect(() => {
     if (approvedData) {
-      console.log('📋 Updating approved workers from API data:', approvedData);
       setApprovedWorkers(Array.isArray(approvedData) ? approvedData : approvedData.data || []);
     }
   }, [approvedData]);
@@ -54,7 +52,6 @@ const WorkerManagement = () => {
   // Update volunteer requests when data changes
   useEffect(() => {
     if (volunteerRequestsData) {
-      console.log('📋 Updating volunteer requests from API data:', volunteerRequestsData);
       setPendingVolunteerRequests(Array.isArray(volunteerRequestsData) ? volunteerRequestsData : volunteerRequestsData.data || []);
     }
   }, [volunteerRequestsData]);
@@ -62,7 +59,6 @@ const WorkerManagement = () => {
   // Update approved event workers when data changes
   useEffect(() => {
     if (eventWorkersData) {
-      console.log('📋 Updating approved event workers from API data:', eventWorkersData);
       setApprovedEventWorkers(Array.isArray(eventWorkersData) ? eventWorkersData : eventWorkersData.data || []);
     }
   }, [eventWorkersData]);
@@ -101,18 +97,15 @@ const WorkerManagement = () => {
       return;
     }
 
-    console.log('🔄 Rejecting worker:', workerId);
     setActionLoading(prev => ({ ...prev, [workerId]: 'rejecting' }));
     
     try {
       const result = await workerService.rejectWorker(workerId);
-      console.log('✅ Worker rejected, result:', result);
       
       // Remove from pending list
       setPendingWorkers(prev => prev.filter(worker => worker._id !== workerId));
       
       // Refetch pending list to ensure consistency
-      console.log('🔄 Refetching pending workers...');
       setTimeout(() => {
         refetchPending();
       }, 500);

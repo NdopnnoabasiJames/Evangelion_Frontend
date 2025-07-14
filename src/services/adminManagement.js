@@ -212,10 +212,8 @@ export const adminManagementService = {
     return response.data;
   },
   getPendingBranchesForStateAdmin: async () => {
-    console.log('[adminManagementService] getPendingBranchesForStateAdmin called');
     try {
       const response = await api.get('/api/branches/state-admin/pending');
-      console.log('[adminManagementService] getPendingBranchesForStateAdmin response:', response);
       return response.data;
     } catch (error) {
       console.error('[adminManagementService] getPendingBranchesForStateAdmin error:', error);

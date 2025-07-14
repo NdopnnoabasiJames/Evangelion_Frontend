@@ -106,7 +106,6 @@ const PickupStationAssignment = ({ zonalAdminId, userRole, onAssignmentComplete 
                     key={event._id}
                     className={`list-group-item list-group-item-action ${selectedEvent?._id === event._id ? 'active' : ''}`}
                     onClick={() => {
-                      console.log('Event selected:', event);
                       setSelectedEvent(event);
                     }}
                   >

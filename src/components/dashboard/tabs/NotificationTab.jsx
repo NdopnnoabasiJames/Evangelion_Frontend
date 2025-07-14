@@ -87,7 +87,6 @@ const NotificationTab = () => {
       
       // Debug: Log first notification to see structure
       if (historyData.length > 0) {
-        console.log('Sample notification data:', historyData[0]);
       }
       
       setNotificationHistory(historyData);

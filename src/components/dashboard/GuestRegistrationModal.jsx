@@ -41,7 +41,6 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
         try {
           // Use event-specific pickup stations endpoint
           const eventPickupStationsUrl = API_ENDPOINTS.WORKERS.EVENT_PICKUP_STATIONS.replace(':eventId', guestForm.eventId);
-          console.log('Loading pickup stations from:', eventPickupStationsUrl);
           
           const response = await fetch(eventPickupStationsUrl, {
             headers: {
@@ -51,7 +50,6 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
           
           if (response.ok) {
             const stations = await response.json();
-            console.log('Raw pickup stations response:', stations);
             
             // Handle the response - it should be an array of pickup stations
             let stationsArray = [];
@@ -63,7 +61,6 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
               stationsArray = stations.pickupStations;
             }
             
-            console.log('Processed pickup stations:', stationsArray);
             setPickupStations(stationsArray);
           } else {
             console.error('Failed to load pickup stations:', response.status, response.statusText);
@@ -205,7 +202,6 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
                     >
                       <option value="">Select pickup station</option>
                       {pickupStations.map((station) => {
-                        console.log('Rendering station:', station);
                         return (
                           <option key={station._id} value={station._id}>
                             {station.location || station.name || 'Unknown Location'}

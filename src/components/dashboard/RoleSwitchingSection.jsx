@@ -43,7 +43,6 @@ const RoleSwitchingSection = ({ user }) => {
   const requestRegistrarAccess = async () => {
     setLoading(true);
     try {
-      console.log('🔄 [RoleSwitch] Requesting registrar access...');
       const response = await api.post(API_ENDPOINTS.USERS.REQUEST_REGISTRAR_ACCESS);
 
       setHasRequestedAccess(true);
@@ -69,7 +68,6 @@ const RoleSwitchingSection = ({ user }) => {
       const currentEffectiveRole = user?.currentRole || user?.role;
       const newRole = currentEffectiveRole === ROLES.WORKER ? ROLES.REGISTRAR : ROLES.WORKER;
       
-      console.log('🔄 [RoleSwitch] Switching role from', currentEffectiveRole, 'to', newRole);
       const response = await api.post(API_ENDPOINTS.USERS.SWITCH_ROLE, { targetRole: newRole });
       
       const result = response.data;

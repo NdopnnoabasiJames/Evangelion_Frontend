@@ -19,7 +19,6 @@ const AdminEventsTab = ({
   const [editingEvent, setEditingEvent] = useState(null);
   
   const handleEditEvent = (event) => {
-    console.log('✅ Admin handleEditEvent called with event:', event.name);
     setEditingEvent(event);
     setEventActiveTab('edit');
   };

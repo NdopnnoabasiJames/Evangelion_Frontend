@@ -4,8 +4,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS } from '../../utils/constants';
 
 const PickupStationSelector = ({ event, pickupStations, onAssignmentComplete, onStationsUpdate }) => {
-  console.log('PickupStationSelector rendered with:', { event, pickupStations: pickupStations?.length });
-  
   const { user } = useAuth();
   const [selectedStations, setSelectedStations] = useState([]);
   const [assigning, setAssigning] = useState(false);
@@ -27,18 +25,12 @@ const PickupStationSelector = ({ event, pickupStations, onAssignmentComplete, on
       onStationsUpdate();
     }
     setShowCreateModal(false);
-  };const handleAssignment = async () => {
-    console.log('=== PICKUP STATION ASSIGNMENT STARTED ===');
-    console.log('Selected stations:', selectedStations);
-    console.log('Event:', event);
-    
+  };  const handleAssignment = async () => {
     if (selectedStations.length === 0) {
-      console.log('No stations selected, showing error');
       setError('Please select at least one pickup station');
       return;
     }
 
-    console.log('Setting assigning to true');
     setAssigning(true);
     setError(null);
 
@@ -51,13 +43,6 @@ const PickupStationSelector = ({ event, pickupStations, onAssignmentComplete, on
         notes: ''
       }));
 
-      console.log('Attempting to assign pickup stations:', {
-        url: API_ENDPOINTS.EVENTS.ASSIGN_PICKUP_STATIONS,
-        method: 'POST',
-        eventId: event._id,
-        pickupStationsData
-      });
-
       const result = await assignStations(API_ENDPOINTS.EVENTS.ASSIGN_PICKUP_STATIONS, {
         method: 'POST',
         body: { 
@@ -66,14 +51,9 @@ const PickupStationSelector = ({ event, pickupStations, onAssignmentComplete, on
         }
       });
 
-      console.log('API call completed. Result:', result);
-      console.log('API Error:', apiError);
-
       if (result) {
-        console.log('Assignment successful:', result);
         onAssignmentComplete();
       } else {
-        console.log('No result returned from API call');
         if (apiError) {
           console.error('Assignment failed with API error:', apiError);
           setError(typeof apiError === 'string' ? apiError : JSON.stringify(apiError));
@@ -86,9 +66,7 @@ const PickupStationSelector = ({ event, pickupStations, onAssignmentComplete, on
       console.error('Exception in handleAssignment:', error);
       setError(`Error: ${error.message}`);
     } finally {
-      console.log('Setting assigning to false');
       setAssigning(false);
-      console.log('=== PICKUP STATION ASSIGNMENT ENDED ===');
     }
   };
 
@@ -157,7 +135,6 @@ const PickupStationSelector = ({ event, pickupStations, onAssignmentComplete, on
         </small>        <button 
           className="btn btn-primary"
           onClick={() => {
-            console.log('Button clicked!');
             handleAssignment();
           }}
           disabled={assigning || selectedStations.length === 0}

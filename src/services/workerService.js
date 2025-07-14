@@ -4,7 +4,6 @@ class WorkerService {
   async getPendingWorkers() {
     try {
       const token = localStorage.getItem('authToken');
-      console.log('Fetching pending workers...');
       
       const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.PENDING}`, {
         headers: {
@@ -28,7 +27,6 @@ class WorkerService {
   async getApprovedWorkers() {
     try {
       const token = localStorage.getItem('authToken');
-      console.log('Fetching approved workers...');
       
       const response = await fetch(API_ENDPOINTS.WORKERS.APPROVED, {
         headers: {

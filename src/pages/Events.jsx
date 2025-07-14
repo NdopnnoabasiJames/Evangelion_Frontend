@@ -62,10 +62,8 @@ const Events = () => {
   }, [eventsNeedingBranchSelection, eventsNeedingZoneSelection, user?.role]);
 
   const handleEditEvent = useCallback((event) => {
-    console.log('✅ handleEditEvent called with event:', event.name);
     setEditingEvent(event);
     setActiveTab('edit');
-    console.log('✅ Set activeTab to edit');
   }, []);
 
   // Role-based permissions
@@ -229,7 +227,6 @@ const Events = () => {
                 onRefresh={refreshAllData}
                 onEditEvent={handleEditEvent}
                 onCreateEvent={canCreateEvents ? () => {
-                  console.log('Events page: Switching to create tab');
                   setActiveTab('create');
                 } : null}
               />

@@ -53,15 +53,12 @@ const WorkerTabs = ({ dashboardData }) => {
     try {
       
       // Fetch worker statistics using API service
-      console.log('🔍 [WorkerTabs] Fetching worker stats from:', API_ENDPOINTS.WORKERS.STATS);
       const response = await api.get(API_ENDPOINTS.WORKERS.STATS);
       
       // Backend returns { data: { totalEvents, totalRegisteredGuests, totalCheckedInGuests } }
       // Handle both direct and wrapped responses
       const stats = response.data.data || response.data;
-      
-      console.log('📊 [WorkerTabs] Raw stats response:', stats);
-      
+            
       // Ensure stats has the expected structure
       const normalizedStats = {
         totalEvents: stats.totalEvents || 0,                           // Approved events (participated)
@@ -70,7 +67,6 @@ const WorkerTabs = ({ dashboardData }) => {
         totalCheckedInGuests: stats.totalCheckedInGuests || 0          // Checked-in guests
       };
       
-      console.log('📈 [WorkerTabs] Normalized stats:', normalizedStats);
       setOverviewStats(normalizedStats);
     } catch (err) {
       console.error('[WorkerTabs] Error loading overview stats:', err);

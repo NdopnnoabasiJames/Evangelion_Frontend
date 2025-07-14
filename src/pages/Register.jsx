@@ -48,31 +48,11 @@ const Register = () => {
     }
   }, [formData.branch]);
 
-  // Debug logging (after all hooks)
-  console.log('Register component debug:', {
-    isAuthenticated,
-    loading,
-    user,
-    token: localStorage.getItem('authToken'),
-    userInStorage: localStorage.getItem('user')
-  });
-  
   // Additional debug info
   authDebug.checkState();
   
-  // Debug API states
-  console.log('API Debug:', {
-    states: states,
-    statesLoading,
-    statesError,
-    branches,
-    branchesLoading,
-    branchesError
-  });
-  
   // Show loading state while auth is being determined
   if (loading) {
-    console.log('Auth is loading, showing spinner...');
     return (
       <div className="min-vh-100 d-flex align-items-center justify-content-center">
         <div className="spinner-border text-primary" role="status">
@@ -84,7 +64,6 @@ const Register = () => {
   
   // Redirect if already authenticated
   if (!loading && isAuthenticated) {
-    console.log('Redirecting authenticated user from register page');
     const from = location.state?.from?.pathname || '/dashboard';
     return <Navigate to={from} replace />;
   }

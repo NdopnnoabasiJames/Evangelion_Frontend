@@ -43,14 +43,11 @@ const RegistrarTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔍 [RegistrarTabs] Fetching registrar stats from:', API_ENDPOINTS.REGISTRARS.STATS);
       const response = await api.get(API_ENDPOINTS.REGISTRARS.STATS);
       
       const data = response.data;
       const actualData = data.data || data;
       const stats = actualData.stats || actualData;
-      
-      console.log('📊 [RegistrarTabs] Raw stats response:', stats);
       
       const normalizedStats = {
         totalEvents: stats.eventsCount || 0,                        // My Events (approved events)
@@ -59,7 +56,6 @@ const RegistrarTabs = ({ dashboardData }) => {
         totalCheckedInGuests: stats.guestsCheckedInCount || 0       // Guests checked in by registrar
       };
       
-      console.log('📈 [RegistrarTabs] Normalized stats:', normalizedStats);
       setOverviewStats(normalizedStats);
     } catch (err) {
       console.error('[RegistrarTabs] Error loading overview stats:', err);
