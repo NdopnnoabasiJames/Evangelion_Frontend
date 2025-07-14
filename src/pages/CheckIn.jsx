@@ -69,7 +69,7 @@ const CheckIn = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.SEARCH_GUESTS, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.SEARCH_GUESTS}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -101,7 +101,7 @@ const CheckIn = () => {
       setError(null);
       setSuccessMessage('');
       
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.CHECK_IN_GUEST, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.CHECK_IN_GUEST}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

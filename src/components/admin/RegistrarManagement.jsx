@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 
 const RegistrarManagement = () => {
   const [pendingRegistrars, setPendingRegistrars] = useState([]);
@@ -19,7 +19,7 @@ const RegistrarManagement = () => {
     setLoading(true);
     setError(null);
     try {      
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.PENDING, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.PENDING}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -44,7 +44,7 @@ const RegistrarManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.APPROVED, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.APPROVED}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
@@ -66,7 +66,7 @@ const RegistrarManagement = () => {
 
   const handleApproveRegistrar = async (registrarId) => {
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.APPROVE, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.APPROVE}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const RegistrarManagement = () => {
     const reason = prompt('Please provide a reason for rejection (optional):');
 
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.REJECT, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.REJECT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

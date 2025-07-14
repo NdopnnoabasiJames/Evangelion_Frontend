@@ -1,11 +1,11 @@
-import { API_ENDPOINTS } from '../../../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../../../utils/constants';
 
 export const useZoneManagement = () => {
   const loadZones = async (setZones, setZonesLoading, setZonesError) => {
     setZonesLoading(true);
     setZonesError(null);
     try {
-      const response = await fetch(API_ENDPOINTS.ZONES.ALL_WITH_ADMINS, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.ZONES.ALL_WITH_ADMINS}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

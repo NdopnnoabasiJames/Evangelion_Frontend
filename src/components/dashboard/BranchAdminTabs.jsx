@@ -12,7 +12,7 @@ import NotificationTab from './tabs/NotificationTab';
 import { LoadingCard, ErrorDisplay } from '../common/Loading';
 import analyticsService from '../../services/analyticsService';
 import workerService from '../../services/workerService';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 
 const BranchAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();  
@@ -104,7 +104,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_ENDPOINTS.REGISTRARS.PENDING, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.PENDING}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }

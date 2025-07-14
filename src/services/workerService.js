@@ -28,7 +28,7 @@ class WorkerService {
     try {
       const token = localStorage.getItem('authToken');
       
-      const response = await fetch(API_ENDPOINTS.WORKERS.APPROVED, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.APPROVED}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

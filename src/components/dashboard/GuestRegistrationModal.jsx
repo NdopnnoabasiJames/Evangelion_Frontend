@@ -19,7 +19,7 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
   useEffect(() => {
     const loadEvents = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.WORKERS.MY_EVENTS, {
+        const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.WORKERS.MY_EVENTS}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
           }
@@ -40,7 +40,7 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
         setLoadingPickupStations(true);
         try {
           // Use event-specific pickup stations endpoint
-          const eventPickupStationsUrl = API_ENDPOINTS.WORKERS.EVENT_PICKUP_STATIONS.replace(':eventId', guestForm.eventId);
+          const eventPickupStationsUrl = `${API_BASE_URL}${API_ENDPOINTS.WORKERS.EVENT_PICKUP_STATIONS.replace(':eventId', guestForm.eventId)}`;
           
           const response = await fetch(eventPickupStationsUrl, {
             headers: {
