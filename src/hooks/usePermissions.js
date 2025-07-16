@@ -32,8 +32,10 @@ export const usePermissions = () => {
 
     canManageGuests: () => hasAnyRole([
       ROLES.SUPER_ADMIN, 
+      ROLES.SUPER_ME,
       ROLES.STATE_ADMIN, 
       ROLES.BRANCH_ADMIN, 
+      ROLES.BRANCH_ME,
       ROLES.ZONAL_ADMIN
     ]),
 
@@ -43,6 +45,8 @@ export const usePermissions = () => {
 
     canViewAnalytics: () => hasAnyRole([
       ROLES.SUPER_ADMIN, 
+      ROLES.SUPER_ME,
+      ROLES.BRANCH_ME,
       ROLES.STATE_ADMIN, 
       ROLES.BRANCH_ADMIN, 
       ROLES.ZONAL_ADMIN
@@ -50,8 +54,13 @@ export const usePermissions = () => {
 
     canExportData: () => hasAnyRole([
       ROLES.SUPER_ADMIN, 
+      ROLES.SUPER_ME,
       ROLES.STATE_ADMIN, 
-      ROLES.BRANCH_ADMIN
+      ROLES.BRANCH_ADMIN,
+      ROLES.BRANCH_ME,
+      ROLES.ZONAL_ADMIN,
+      ROLES.SUPER_ME,
+      ROLES.BRANCH_ME
     ]),
 
     canAssignZones: () => hasAnyRole([
@@ -61,8 +70,11 @@ export const usePermissions = () => {
 
     // Role checks
     isSuperAdmin: () => hasRole(ROLES.SUPER_ADMIN),
+    isSuperMe: () => hasRole(ROLES.SUPER_ME),
+    isBranchMe: () => hasRole(ROLES.BRANCH_ME),
     isStateAdmin: () => hasRole(ROLES.STATE_ADMIN),
     isBranchAdmin: () => hasRole(ROLES.BRANCH_ADMIN),
+    isBranchMe: () => hasRole(ROLES.BRANCH_ME),
     isZonalAdmin: () => hasRole(ROLES.ZONAL_ADMIN),
     isWorker: () => hasRole(ROLES.WORKER),
     isRegistrar: () => hasRole(ROLES.REGISTRAR),
@@ -70,35 +82,44 @@ export const usePermissions = () => {
     // Navigation permissions
     canAccessDashboard: () => !!user,
     canAccessEvents: () => hasAnyRole([
-      ROLES.SUPER_ADMIN, 
-      ROLES.STATE_ADMIN, 
-      ROLES.BRANCH_ADMIN, 
+      ROLES.SUPER_ADMIN,
+      ROLES.SUPER_ME,
+      ROLES.STATE_ADMIN,
+      ROLES.BRANCH_ADMIN,
       ROLES.ZONAL_ADMIN,
       ROLES.WORKER
     ]),
     canAccessGuests: () => hasAnyRole([
-      ROLES.SUPER_ADMIN, 
+      ROLES.SUPER_ADMIN,
+      ROLES.SUPER_ME, 
       ROLES.STATE_ADMIN, 
       ROLES.BRANCH_ADMIN, 
+      ROLES.BRANCH_ME,
       ROLES.ZONAL_ADMIN,
       ROLES.WORKER
     ]),
     canAccessWorkers: () => hasAnyRole([
-      ROLES.SUPER_ADMIN, 
-      ROLES.STATE_ADMIN, 
-      ROLES.BRANCH_ADMIN
+      ROLES.SUPER_ADMIN,
+      ROLES.SUPER_ME,
+      ROLES.STATE_ADMIN,
+      ROLES.BRANCH_ADMIN,
+      ROLES.BRANCH_ME
     ]),
     canAccessRegistrars: () => hasAnyRole([
       ROLES.SUPER_ADMIN, 
+      ROLES.SUPER_ME,
       ROLES.STATE_ADMIN, 
       ROLES.BRANCH_ADMIN, 
+      ROLES.BRANCH_ME,
       ROLES.ZONAL_ADMIN,
       ROLES.REGISTRAR
     ]),
     canAccessAnalytics: () => hasAnyRole([
       ROLES.SUPER_ADMIN, 
+      ROLES.SUPER_ME,
       ROLES.STATE_ADMIN, 
       ROLES.BRANCH_ADMIN, 
+      ROLES.BRANCH_ME,
       ROLES.ZONAL_ADMIN
     ])
   };

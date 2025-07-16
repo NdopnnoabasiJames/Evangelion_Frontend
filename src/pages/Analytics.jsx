@@ -99,7 +99,7 @@ const Analytics = () => {
   };
 
   // Role-based access control
-  const canViewAnalytics = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
+  const canViewAnalytics = [ROLES.SUPER_ADMIN, ROLES.SUPER_ME, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.BRANCH_ME].includes(user?.role);
 
   if (!canViewAnalytics) {
     return (

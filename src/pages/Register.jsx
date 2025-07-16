@@ -71,6 +71,7 @@ const Register = () => {
   const roleOptions = [
     { value: 'state_admin', label: 'State Admin', requiresApproval: 'Super Admin' },
     { value: 'branch_admin', label: 'Branch Admin', requiresApproval: 'State Admin' },
+    { value: 'branch_me', label: 'Branch M&E', requiresApproval: 'Branch Admin' },
     { value: 'zonal_admin', label: 'Zonal Admin', requiresApproval: 'Branch Admin' },
     { value: 'worker', label: 'Worker', requiresApproval: 'Branch Admin' },
     { value: 'registrar', label: 'Registrar', requiresApproval: 'Branch Admin' }

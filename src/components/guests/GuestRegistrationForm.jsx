@@ -100,6 +100,24 @@ const GuestRegistrationForm = ({
           placeholder="Optional comments..."
         ></textarea>
       </div>
+      <div className="col-12 mb-3">
+        <div className="form-check">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="isNewConvert"
+            checked={guestForm.isNewConvert}
+            onChange={(e) => setGuestForm({...guestForm, isNewConvert: e.target.checked})}
+          />
+          <label className="form-check-label" htmlFor="isNewConvert">
+            <i className="bi bi-person-plus-fill me-2 text-success"></i>
+            New Convert
+          </label>
+          <small className="form-text text-muted d-block mt-1">
+            Check this box if this guest is a new convert to the church
+          </small>
+        </div>
+      </div>
     </div>
     <div className="d-flex gap-2">
       <button type="submit" className="btn btn-primary" disabled={loading}>

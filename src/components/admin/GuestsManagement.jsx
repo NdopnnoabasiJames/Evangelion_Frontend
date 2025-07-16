@@ -152,6 +152,7 @@ const GuestsManagement = () => {
       { key: 'event', label: 'Event' },
       { key: 'status', label: 'Status' },
       { key: 'transport', label: 'Transport' },
+      { key: 'isNewConvert', label: 'New Convert' },
       { key: 'checkedIn', label: 'Checked In' },
       { key: 'registeredBy', label: 'Registered By' },
       { key: 'branch', label: 'Branch' },
@@ -167,6 +168,7 @@ const GuestsManagement = () => {
       event: guest.event?.name || '',
       status: formatStatusText(guest.status),
       transport: guest.transportPreference || '',
+      isNewConvert: guest.isNewConvert ? 'Yes' : 'No',
       checkedIn: guest.checkedIn ? 'Yes' : 'No',
       registeredBy: guest.registeredBy?.name || '',
       branch: guest.branch?.name || '',
@@ -418,6 +420,7 @@ const GuestsManagement = () => {
                     <th>Branch</th>
                     <th>State</th>
                     <th>Transport</th>
+                    <th>New Convert</th>
                     <th>Status</th>
                   </tr>                </thead>
                 <tbody>
@@ -463,6 +466,11 @@ const GuestsManagement = () => {
                         <td>
                           <span className={`badge ${guest.transportPreference === 'church_bus' ? 'bg-warning' : 'bg-success'}`}>
                             {guest.transportPreference === 'church_bus' ? 'Church Bus' : 'Private'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${guest.isNewConvert ? 'bg-success' : 'bg-light text-dark'}`}>
+                            {guest.isNewConvert ? 'Yes' : 'No'}
                           </span>
                         </td>
                         <td>

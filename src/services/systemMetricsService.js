@@ -91,6 +91,7 @@ export const systemMetricsService = {
         adminsByRole: {
           stateAdmins: hierarchyStats?.stateAdmins || 0,
           branchAdmins: hierarchyStats?.branchAdmins || 0,
+          branchMes: hierarchyStats?.branchMes || 0,
           zonalAdmins: hierarchyStats?.zonalAdmins || 0,
           workers: hierarchyStats?.workers || 0
         }

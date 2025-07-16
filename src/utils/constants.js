@@ -1,13 +1,15 @@
 // API Configuration
 // Use proxy in development - Vite will proxy /api to backend
-export const API_BASE_URL = 'https://evangelion-production-173f.up.railway.app';  // Production
-// export const API_BASE_URL = 'http://localhost:3031';  // Development 
+// export const API_BASE_URL = 'https://evangelion-production-173f.up.railway.app';  // Production
+export const API_BASE_URL = 'http://localhost:3031';  // Development 
 
 // User Roles (matching backend)
 export const ROLES = {
   SUPER_ADMIN: "super_admin",
+  SUPER_ME: "super_me",
   STATE_ADMIN: "state_admin",
   BRANCH_ADMIN: "branch_admin",
+  BRANCH_ME: "branch_me",
   ZONAL_ADMIN: "zonal_admin",
   WORKER: "worker",
   REGISTRAR: "registrar",
@@ -36,6 +38,14 @@ export const ROLE_NAVIGATION_PERMISSIONS = {
     "registrars",
     "analytics",
   ],
+  [ROLES.SUPER_ME]: [
+    "dashboard",
+    "events",
+    "guests",
+    "workers",
+    "registrars",
+    "analytics",
+  ],
   [ROLES.STATE_ADMIN]: [
     "dashboard",
     "events",
@@ -45,6 +55,14 @@ export const ROLE_NAVIGATION_PERMISSIONS = {
     "analytics",
   ],
   [ROLES.BRANCH_ADMIN]: [
+    "dashboard",
+    "events",
+    "guests",
+    "workers",
+    "registrars",
+    "analytics",
+  ],
+  [ROLES.BRANCH_ME]: [
     "dashboard",
     "events",
     "guests",
@@ -150,6 +168,8 @@ export const API_ENDPOINTS = {
     // Super Admin endpoints
     SUPER_ADMIN_ALL: "/api/registrars/super-admin/all",
     SUPER_ADMIN_PENDING: "/api/registrars/super-admin/pending",
+    SUPER_ME_ALL: "/api/registrars/super-me/all",
+    SUPER_ME_PENDING: "/api/registrars/super-me/pending",
     SUPER_ADMIN_APPROVE: "/api/registrars/super-admin/approve",
     SUPER_ADMIN_REJECT: "/api/registrars/super-admin/reject",
   },
@@ -260,4 +280,30 @@ export const EVENT_STATUS = {
   PUBLISHED: "published", // This is considered "active" in the system
   COMPLETED: "completed",
   CANCELLED: "cancelled",
+};
+
+// Helper functions for role-based permissions
+export const isReadOnlyRole = (role) => {
+  return [ROLES.SUPER_ME, ROLES.BRANCH_ME].includes(role);
+};
+
+export const canViewButNotEdit = (role) => {
+  return [ROLES.SUPER_ME, ROLES.BRANCH_ME].includes(role);
+};
+
+export const canManageEntity = (role, entity) => {
+  if (isReadOnlyRole(role)) return false;
+  // Define what roles can manage what entities
+  const managementPermissions = {
+    events: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.ZONAL_ADMIN],
+    guests: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.ZONAL_ADMIN],
+    workers: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN],
+    registrars: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.ZONAL_ADMIN],
+    admins: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN],
+    states: [ROLES.SUPER_ADMIN],
+    branches: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN],
+    zones: [ROLES.SUPER_ADMIN, ROLES.BRANCH_ADMIN],
+  };
+  
+  return managementPermissions[entity]?.includes(role) || false;
 };

@@ -30,7 +30,8 @@ const Guests = () => {
     transportPreference: 'private',
     pickupStation: '',
     notes: '',
-    comments: ''
+    comments: '',
+    isNewConvert: false
   });
 
   // Fetch events for dropdowns
@@ -86,7 +87,7 @@ const Guests = () => {
 
   // Role-based permissions
   const canRegisterGuests = ['WORKER'].includes(user?.role);
-  const canManageGuests = ['SUPER_ADMIN', 'STATE_ADMIN', 'BRANCH_ADMIN', 'ZONAL_ADMIN'].includes(user?.role);
+  const canManageGuests = ['SUPER_ADMIN', 'SUPER_ME', 'STATE_ADMIN', 'BRANCH_ADMIN', 'BRANCH_ME', 'ZONAL_ADMIN'].includes(user?.role);
   const canSearchAdvanced = ['SUPER_ADMIN', 'STATE_ADMIN', 'BRANCH_ADMIN', 'ZONAL_ADMIN'].includes(user?.role);
 
   const handleGuestRegistration = async (e) => {
@@ -127,7 +128,8 @@ const Guests = () => {
           transportPreference: 'private',
           pickupStation: '',
           notes: '',
-          comments: ''
+          comments: '',
+          isNewConvert: false
         });
         
         // Refresh guest list
@@ -334,6 +336,7 @@ const Guests = () => {
                               <th>Phone</th>
                               <th>Email</th>
                               <th>Transport</th>
+                              <th>New Convert</th>
                               <th>Status</th>
                               <th>Registered By</th>
                               <th>Comments</th>
@@ -362,6 +365,11 @@ const Guests = () => {
                                       </div>
                                     )}
                                   </div>
+                                </td>
+                                <td>
+                                  <span className={`badge ${guest.isNewConvert ? 'bg-success' : 'bg-light text-dark'}`}>
+                                    {guest.isNewConvert ? 'Yes' : 'No'}
+                                  </span>
                                 </td>
                                 <td>{getStatusBadge(guest.status)}</td>                                <td className="text-muted">
                                   {guest.registeredBy?.name || 'Unknown'}

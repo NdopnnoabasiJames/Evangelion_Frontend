@@ -34,7 +34,6 @@ export const analyticsService = {
   getApprovedZonalAdmins: adminManagementService.getApprovedZonalAdmins,
   approveZonalAdmin: adminManagementService.approveZonalAdmin,
   rejectZonalAdmin: adminManagementService.rejectZonalAdmin,
-
   // Re-export analytics data services
   getRegistrationTrends: analyticsDataService.getRegistrationTrends,
   getWorkerPerformance: analyticsDataService.getWorkerPerformance,

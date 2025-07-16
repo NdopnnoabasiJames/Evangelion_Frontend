@@ -101,7 +101,7 @@ const ApprovedAdminCard = ({ admin }) => {
                   </small>
                 )}                <small className="d-block">
                   <i className="fas fa-calendar me-1"></i>
-                  Approved: {formatDate(admin.approvedAt)}
+                  Approved: {formatDate(admin.updatedAt)}
                 </small>
                 <small className="d-block">
                   <i className="fas fa-toggle-on me-1 text-success"></i>

@@ -9,7 +9,8 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
     eventId: '',
     comments: '',
     transportPreference: '',
-    pickupStation: ''
+    pickupStation: '',
+    isNewConvert: false
   });
   const [events, setEvents] = useState([]);
   const [pickupStations, setPickupStations] = useState([]);
@@ -223,6 +224,20 @@ const GuestRegistrationModal = ({ onClose, onSuccess }) => {
                     onChange={(e) => setGuestForm({ ...guestForm, comments: e.target.value })}
                     placeholder="Optional comments..."
                   ></textarea>
+                </div>
+                <div className="col-12 mb-3">
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={guestForm.isNewConvert}
+                      onChange={(e) => setGuestForm({ ...guestForm, isNewConvert: e.target.checked })}
+                      id="newConvertCheck"
+                    />
+                    <label className="form-check-label" htmlFor="newConvertCheck">
+                      New Convert
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>

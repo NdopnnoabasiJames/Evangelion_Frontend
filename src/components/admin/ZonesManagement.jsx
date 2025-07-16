@@ -98,7 +98,7 @@ const ZonesManagement = () => {
       setError(null);
       // Use appropriate endpoint based on user role
       let endpoint;
-      if (user?.role === ROLES.SUPER_ADMIN) {
+      if (user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.SUPER_ME) {
         endpoint = API_ENDPOINTS.ZONES.ALL_WITH_ADMINS;
       } else if (user?.role === ROLES.STATE_ADMIN) {
         endpoint = API_ENDPOINTS.ZONES.STATE_ADMIN_LIST;
@@ -316,7 +316,7 @@ const ZonesManagement = () => {
         let response;
         if (user?.role === ROLES.BRANCH_ADMIN) {
           response = await fetchZones(API_ENDPOINTS.ZONES.BRANCH_ADMIN_PENDING || '/api/zones/branch-admin/pending');
-        } else if (user?.role === ROLES.SUPER_ADMIN) {
+        } else if (user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.SUPER_ME) {
           response = await fetchZones('/api/zones/status/pending');
         } else if (user?.role === ROLES.STATE_ADMIN) {
           response = await fetchZones('/api/zones/status/pending');
@@ -397,7 +397,7 @@ const ZonesManagement = () => {
         let response;
         if (user?.role === ROLES.BRANCH_ADMIN) {
           response = await fetchZones(API_ENDPOINTS.ZONES.BRANCH_ADMIN_PENDING || '/api/zones/branch-admin/pending');
-        } else if (user?.role === ROLES.SUPER_ADMIN) {
+        } else if (user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.SUPER_ME) {
           response = await fetchZones('/api/zones/status/pending');
         } else if (user?.role === ROLES.STATE_ADMIN) {
           response = await fetchZones('/api/zones/status/pending');
@@ -429,7 +429,7 @@ const ZonesManagement = () => {
         let response;
         if (user?.role === ROLES.BRANCH_ADMIN) {
           response = await fetchZones(API_ENDPOINTS.ZONES.BRANCH_ADMIN_REJECTED || '/api/zones/branch-admin/rejected');
-        } else if (user?.role === ROLES.SUPER_ADMIN) {
+        } else if (user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.SUPER_ME) {
           response = await fetchZones('/api/zones/status/rejected');
         } else if (user?.role === ROLES.STATE_ADMIN) {
           response = await fetchZones('/api/zones/status/rejected');
@@ -756,7 +756,7 @@ const ZonesManagement = () => {
                   
                   <div className="mb-3">
                     {/* Only show Active Zone checkbox for super admins */}
-                    {user?.role === ROLES.SUPER_ADMIN && (
+                    {user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.SUPER_ME && (
                       <div className="form-check">
                         <input
                           className="form-check-input"

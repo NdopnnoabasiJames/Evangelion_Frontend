@@ -158,10 +158,12 @@ const Dashboard = () => {
 
     switch (effectiveRole) {
       case ROLES.SUPER_ADMIN:
+      case ROLES.SUPER_ME:
         return <SuperAdminTabs dashboardData={dashboardData} />;
       case ROLES.STATE_ADMIN:
         return <StateAdminTabs dashboardData={dashboardData} />;
       case ROLES.BRANCH_ADMIN:
+      case ROLES.BRANCH_ME:
         return <BranchAdminTabs dashboardData={dashboardData} />;
 
       case ROLES.ZONAL_ADMIN:

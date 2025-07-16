@@ -37,7 +37,7 @@ const BranchesManagement = () => {
       setLoading(true);
       setError(null);
       // Use appropriate endpoint based on user role
-      const endpoint = user?.role === ROLES.SUPER_ADMIN 
+      const endpoint = user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.SUPER_ME
         ? API_ENDPOINTS.BRANCHES.ALL_WITH_ADMINS
         : API_ENDPOINTS.BRANCHES.STATE_ADMIN_LIST;
       // Fetch branches and rankings in parallel
