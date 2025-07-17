@@ -53,11 +53,9 @@ const Dashboard = () => {
         setError(null);
 
         // Fetch real data based on user role
-        console.log(`[Dashboard] Loading dashboard data for role: ${user.currentRole || user.role}`);
         const realData = await analyticsService.getDashboardStatsByRole(
           user.currentRole || user.role
         );
-        console.log(`[Dashboard] Received dashboard data:`, realData);
 
         // Add metadata
         const dashboardData = {
@@ -66,7 +64,6 @@ const Dashboard = () => {
           notifications: Math.floor(Math.random() * 5) + 1, // Keep notifications random for now
         };
 
-        console.log(`[Dashboard] Final dashboard data:`, dashboardData);
         setDashboardData(dashboardData);
       } catch (err) {
         console.error("Dashboard error:", err);

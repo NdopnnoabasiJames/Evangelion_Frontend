@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
+import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { analyticsService } from '../../services/analyticsService';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const StatesManagement = () => {  const [states, setStates] = useState([]);
+const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -243,11 +244,19 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
             <small className="text-muted">Manage all states in the system</small>
           </div>
           <button 
-            className="btn btn-primary"
-            onClick={() => setShowCreateModal(true)}
+            className={`btn btn-primary ${isReadOnly ? 'disabled' : ''}`}
+            onClick={() => {
+              if (isReadOnly) {
+                showReadOnlyAlert('create new states');
+                return;
+              }
+              setShowCreateModal(true);
+            }}
+            disabled={isReadOnly}
+            title={isReadOnly ? 'Read-only mode - Cannot create states' : 'Add new state'}
           >
             <i className="bi bi-plus-circle me-2"></i>
-            Add New State
+            Add New State {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
           </button>
         </div>
         
@@ -257,7 +266,17 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
               <i className="bi bi-exclamation-triangle me-2"></i>
               {error}
             </div>
-          )}          <div className="mb-4">
+          )}
+          
+          {/* Read-only indicator for M&E roles */}
+          {isReadOnly && (
+            <div className="alert alert-info mb-3" role="alert">
+              <i className="bi bi-eye me-2"></i>
+              <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Data modification is not permitted for M&E roles.
+            </div>
+          )}
+          
+          <div className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="text-muted mb-0">
                 Filters

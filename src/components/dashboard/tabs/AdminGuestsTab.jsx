@@ -1,10 +1,10 @@
 import React from 'react';
 import GuestsManagement from '../../admin/GuestsManagement';
 
-const AdminGuestsTab = () => {
+const AdminGuestsTab = ({ isReadOnly = false }) => {
   return (
     <div className="tab-pane fade show active">
-      <GuestsManagement />
+      <GuestsManagement isReadOnly={isReadOnly} />
     </div>
   );
 };

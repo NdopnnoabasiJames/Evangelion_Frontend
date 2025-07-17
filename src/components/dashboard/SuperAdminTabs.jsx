@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import { isReadOnlyRole, showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { useAdminManagement } from './hooks/useAdminManagement';
 import AdminOverviewTab from './tabs/AdminOverviewTab';
 import AdminManagementTab from './tabs/AdminManagementTab';
@@ -16,6 +17,9 @@ import RegistrarsManagement from '../admin/RegistrarsManagement';
 
 const SuperAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
+  
+  // Check if user is in read-only M&E role
+  const isReadOnly = isReadOnlyRole(user?.currentRole || user?.role);
   
   // Import custom hooks for admin management only
   const adminHooks = useAdminManagement();
@@ -59,8 +63,34 @@ const SuperAdminTabs = ({ dashboardData }) => {
   // Wrapper functions for admin management
   const loadPendingAdmins = () => adminHooks.loadPendingAdmins(setPendingAdmins, setLoading, setError);
   const loadApprovedAdmins = () => adminHooks.loadApprovedAdmins(setApprovedAdmins, setApprovedLoading, setApprovedError);
-  const handleApproveAdmin = (adminId) => adminHooks.handleApproveAdmin(adminId, loadPendingAdmins, loadApprovedAdmins, setError);
-  const handleRejectAdmin = (adminId, reason) => adminHooks.handleRejectAdmin(adminId, reason, loadPendingAdmins, setError);const renderOverview = () => (
+  
+  const handleApproveAdmin = (adminId) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('approve administrators');
+      return;
+    }
+    adminHooks.handleApproveAdmin(adminId, loadPendingAdmins, loadApprovedAdmins, setError);
+  };
+  
+  const handleRejectAdmin = (adminId, reason) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('reject administrators');
+      return;
+    }
+    adminHooks.handleRejectAdmin(adminId, reason, loadPendingAdmins, setError);
+  };
+
+  // Handle tab switching with read-only checks for modification tabs
+  const handleTabSwitch = (tabName) => {
+    const modificationTabs = ['admin-management', 'events', 'states', 'branches', 'zones', 'workers', 'registrars'];
+    
+    if (isReadOnly && modificationTabs.includes(tabName)) {
+      // For M&E roles, allow viewing but show read-only indicator
+      setActiveTab(tabName);
+    } else {
+      setActiveTab(tabName);
+    }
+  };const renderOverview = () => (
     <AdminOverviewTab 
       dashboardData={dashboardData}
       setActiveTab={setActiveTab}
@@ -79,11 +109,12 @@ const SuperAdminTabs = ({ dashboardData }) => {
       loadApprovedAdmins={loadApprovedAdmins}
       handleApproveAdmin={handleApproveAdmin}
       handleRejectAdmin={handleRejectAdmin}
+      isReadOnly={isReadOnly}
     />
   );
 
   const renderStatesManagement = () => (
-    <AdminStatesTab />
+    <AdminStatesTab isReadOnly={isReadOnly} />
   );
 
   const renderEventManagement = () => (
@@ -97,39 +128,50 @@ const SuperAdminTabs = ({ dashboardData }) => {
       refetchEvents={refetchEvents}
       refetchHierarchicalEvents={refetchHierarchicalEvents}
       user={user}
+      isReadOnly={isReadOnly}
     />
   );
-  const renderBranches = () => <AdminBranchesTab />;
+  const renderBranches = () => <AdminBranchesTab isReadOnly={isReadOnly} />;
 
-  const renderZones = () => <AdminZonesTab />;
+  const renderZones = () => <AdminZonesTab isReadOnly={isReadOnly} />;
 
-  const renderWorkers = () => <AdminWorkersTab />;
+  const renderWorkers = () => <AdminWorkersTab isReadOnly={isReadOnly} />;
 
-  const renderGuests = () => <AdminGuestsTab />;
+  const renderGuests = () => <AdminGuestsTab isReadOnly={isReadOnly} />;
 
-  const renderPickupStations = () => <SuperAdminPickupStationsTab />;
+  const renderPickupStations = () => <SuperAdminPickupStationsTab isReadOnly={isReadOnly} />;
 
-  const renderRegistrars = () => <RegistrarsManagement />;
+  const renderRegistrars = () => <RegistrarsManagement isReadOnly={isReadOnly} />;
 
   return (
     <div className="admin-tabs-container">
+      {/* Read-only indicator for M&E roles */}
+      {isReadOnly && (
+        <div className="alert alert-info mb-3" role="alert">
+          <i className="bi bi-eye me-2"></i>
+          <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Data modification is not permitted for M&E roles.
+        </div>
+      )}
+      
       {/* Tab Navigation */}
       <ul className="nav nav-tabs nav-tabs-responsive mb-4" role="tablist">
         <li className="nav-item" role="presentation">
           <button
             className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
+            onClick={() => handleTabSwitch('overview')}
             type="button"
           >            <i className="bi bi-graph-up me-2"></i>
             Overview
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'admin-management' ? 'active' : ''}`}
-            onClick={() => setActiveTab('admin-management')}
+            className={`nav-link ${activeTab === 'admin-management' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('admin-management')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >            <i className="bi bi-shield-check me-2"></i>
             Admin Management
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
             {pendingAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingAdmins.length}
@@ -139,11 +181,13 @@ const SuperAdminTabs = ({ dashboardData }) => {
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
-            onClick={() => setActiveTab('events')}
+            className={`nav-link ${activeTab === 'events' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('events')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >            <i className="bi bi-calendar-event me-2"></i>
             Events
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
             {dashboardData?.activeEvents > 0 && (
               <span className="badge bg-info text-white ms-2">
                 {dashboardData.activeEvents}
@@ -151,70 +195,84 @@ const SuperAdminTabs = ({ dashboardData }) => {
             )}
           </button>        </li>        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'states' ? 'active' : ''}`}
-            onClick={() => setActiveTab('states')}
+            className={`nav-link ${activeTab === 'states' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('states')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-map me-2"></i>
             States
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
-            onClick={() => setActiveTab('branches')}
+            className={`nav-link ${activeTab === 'branches' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('branches')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-building me-2"></i>
             Branches
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'zones' ? 'active' : ''}`}
-            onClick={() => setActiveTab('zones')}
+            className={`nav-link ${activeTab === 'zones' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('zones')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-diagram-3 me-2"></i>
             Zones
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'workers' ? 'active' : ''}`}
-            onClick={() => setActiveTab('workers')}
+            className={`nav-link ${activeTab === 'workers' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('workers')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-person-gear me-2"></i>
             Workers
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'registrars' ? 'active' : ''}`}
-            onClick={() => setActiveTab('registrars')}
+            className={`nav-link ${activeTab === 'registrars' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('registrars')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-person-badge me-2"></i>
             Registrars
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'guests' ? 'active' : ''}`}
-            onClick={() => setActiveTab('guests')}
+            className={`nav-link ${activeTab === 'guests' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('guests')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-person-check me-2"></i>
             Guests
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pickup-stations')}
+            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            onClick={() => handleTabSwitch('pickup-stations')}
             type="button"
+            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-geo-alt me-2"></i>
             Pickup Stations
+            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
       </ul>      {/* Tab Content */}

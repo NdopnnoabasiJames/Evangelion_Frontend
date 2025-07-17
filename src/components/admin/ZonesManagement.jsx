@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import ZonesTable from './ZonesTable';
 import PendingZonesTable from './PendingZonesTable';
 import adminManagementService from '../../services/adminManagement';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const ZonesManagement = () => {
+const ZonesManagement = ({ isReadOnly = false }) => {
   const { user } = useAuth();
   const [zones, setZones] = useState([]);
   const [filteredZones, setFilteredZones] = useState([]);
@@ -286,6 +287,10 @@ const ZonesManagement = () => {
     }
   };
   const handleDeleteZone = async (zone) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('delete zones');
+      return;
+    }
     if (window.confirm(`Are you sure you want to delete the zone "${zone.name}"?`)) {
       try {        // Use appropriate endpoint based on user role
         const endpoint = user?.role === ROLES.SUPER_ADMIN 
@@ -304,6 +309,10 @@ const ZonesManagement = () => {
 
   // Approve zone handler
   const handleApproveZone = async (zone) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('approve zones');
+      return;
+    }
     try {
       await adminManagementService.approveZone(zone._id);
       if (window.showNotification) {
@@ -338,6 +347,10 @@ const ZonesManagement = () => {
 
   // Reject zone handler
   const handleRejectZone = async (zone) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('reject zones');
+      return;
+    }
     try {
       let endpoint = `${API_ENDPOINTS.ZONES.REJECT}/${zone._id}`;
       await rejectZone(endpoint, { method: 'PATCH' });
@@ -366,11 +379,19 @@ const ZonesManagement = () => {
   };
 
   const openCreateModal = () => {
+    if (isReadOnly) {
+      showReadOnlyAlert('create new zones');
+      return;
+    }
     resetForm();
     setShowCreateModal(true);
   };
 
   const openEditModal = (zone) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('edit zones');
+      return;
+    }
     setFormData({
       name: zone.name,
       isActive: zone.isActive
@@ -473,6 +494,14 @@ const ZonesManagement = () => {
 
   return (
     <div className="container-fluid">
+      {/* Read-only indicator for M&E roles */}
+      {isReadOnly && (
+        <div className="alert alert-info mb-3" role="alert">
+          <i className="bi bi-eye me-2"></i>
+          <strong>Read-Only Mode:</strong> You are viewing in monitoring & evaluation mode. Data modification actions are disabled.
+        </div>
+      )}
+      
       <div className="row">
         <div className="col-12">
           <div className="card">
@@ -484,11 +513,13 @@ const ZonesManagement = () => {
             </h5>
           </div>
           <button
-            className="btn btn-primary"
+            className={`btn btn-primary ${isReadOnly ? 'disabled' : ''}`}
             onClick={openCreateModal}
+            disabled={isReadOnly}
+            title={isReadOnly ? 'Read-only mode - Cannot create zones' : 'Add new zone'}
           >
             <i className="bi bi-plus-circle me-2"></i>
-            Add Zone
+            Add Zone {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
           </button>
         </div>
         <div className="card-body">
@@ -624,6 +655,9 @@ const ZonesManagement = () => {
             {filteredZones.length > 0 ? (
               <ZonesTable
                 zones={filteredZones}
+                isReadOnly={isReadOnly}
+                onEdit={openEditModal}
+                onDelete={handleDeleteZone}
               />
             ) : (
               <div className="text-center text-muted py-5">No zones found.</div>
@@ -650,6 +684,9 @@ const ZonesManagement = () => {
                 <PendingZonesTable
                   zones={pendingZones}
                   user={user}
+                  isReadOnly={isReadOnly}
+                  onApprove={handleApproveZone}
+                  onReject={handleRejectZone}
                 />
               ) : (
                 <div className="text-center text-muted py-5">No pending zones.</div>
@@ -659,6 +696,9 @@ const ZonesManagement = () => {
                 <PendingZonesTable
                   zones={pendingZones}
                   user={user}
+                  isReadOnly={isReadOnly}
+                  onApprove={handleApproveZone}
+                  onReject={handleRejectZone}
                 />
               ) : (
                 <div className="text-center text-muted py-5">No pending zones.</div>
@@ -682,6 +722,9 @@ const ZonesManagement = () => {
             {rejectedZones.length > 0 ? (
               <ZonesTable
                 zones={rejectedZones}
+                isReadOnly={isReadOnly}
+                onEdit={openEditModal}
+                onDelete={handleDeleteZone}
               />
             ) : (
               <div className="text-center text-muted py-5">No rejected zones.</div>

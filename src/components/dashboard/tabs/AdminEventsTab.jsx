@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LoadingCard } from '../../common/Loading';
 import { TabbedInterface, TabPane } from '../../common/TabNavigation';
+import { showReadOnlyAlert } from '../../../utils/readOnlyHelpers';
 import EventsList from '../../events/EventsList';
 import HierarchicalEventCreation from '../../events/HierarchicalEventCreation';
 import PickupStationAssignment from '../../events/PickupStationAssignment';
@@ -14,13 +15,27 @@ const AdminEventsTab = ({
   setEventActiveTab,
   refetchEvents,
   refetchHierarchicalEvents,
-  user
+  user,
+  isReadOnly = false
 }) => {
   const [editingEvent, setEditingEvent] = useState(null);
   
   const handleEditEvent = (event) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('edit events');
+      return;
+    }
     setEditingEvent(event);
     setEventActiveTab('edit');
+  };
+
+  const handleTabSwitch = (tabKey) => {
+    const restrictedTabs = ['create', 'edit'];
+    if (isReadOnly && restrictedTabs.includes(tabKey)) {
+      showReadOnlyAlert(tabKey === 'create' ? 'create events' : 'edit events');
+      return;
+    }
+    setEventActiveTab(tabKey);
   };
   const eventTabs = [
     {
@@ -30,13 +45,15 @@ const AdminEventsTab = ({
     },
     {
       key: 'create',
-      label: 'Create Event',
-      icon: 'bi-plus-circle'
+      label: isReadOnly ? 'Create Event 🔒' : 'Create Event',
+      icon: 'bi-plus-circle',
+      disabled: isReadOnly
     },
     ...(editingEvent ? [{
       key: 'edit',
-      label: 'Edit Event',
-      icon: 'bi-pencil-square'
+      label: isReadOnly ? 'Edit Event 🔒' : 'Edit Event',
+      icon: 'bi-pencil-square',
+      disabled: isReadOnly
     }] : []),
     {
       key: 'hierarchical',
@@ -71,12 +88,18 @@ const AdminEventsTab = ({
         </h5>
       </div>
       <div className="card-body">
+        {/* Read-only indicator for M&E roles */}
+        {isReadOnly && (
+          <div className="alert alert-info mb-3" role="alert">
+            <i className="bi bi-eye me-2"></i>
+            <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Event modification is not permitted for M&E roles.
+          </div>
+        )}
+        
         <TabbedInterface
           tabs={eventTabs}
           activeTab={eventActiveTab}
-          onTabChange={(tab) => {
-            setEventActiveTab(tab);
-          }}
+          onTabChange={handleTabSwitch}
         >
           <TabPane tabId="list" title="All Events">
             <div className="events-container">

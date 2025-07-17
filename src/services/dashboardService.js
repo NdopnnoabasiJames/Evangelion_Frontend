@@ -34,51 +34,15 @@ export const dashboardService = {
     try {
       const [basicAnalytics, statesResponse, branchesResponse, eventsResponse, zoneStats, pickupStationsResponse, usersResponse] =
         await Promise.all([
-          api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD).then(res => {
-            console.log('[DashboardService] Analytics response:', res.data);
-            return res;
-          }).catch(err => {
-            console.error('[DashboardService] Analytics API error:', err.response?.data || err.message);
-            throw err;
-          }),
-          api.get("/api/states").then(res => {
-            console.log('[DashboardService] States response length:', res.data?.length || 'no data');
-            return res;
-          }).catch(err => {
-            console.error('[DashboardService] States API error:', err.response?.data || err.message);
-            throw err;
-          }),
-          api.get("/api/branches").then(res => {
-            console.log('[DashboardService] Branches response length:', res.data?.length || 'no data');
-            return res;
-          }).catch(err => {
-            console.error('[DashboardService] Branches API error:', err.response?.data || err.message);
-            throw err;
-          }),
-          api.get("/api/events").then(res => {
-            console.log('[DashboardService] Events response length:', res.data?.length || 'no data');
-            return res;
-          }).catch(err => {
-            console.error('[DashboardService] Events API error:', err.response?.data || err.message);
-            throw err;
-          }),
-          api.get("/api/zones/statistics").then(res => {
-            console.log('[DashboardService] Zone stats response:', res.data);
-            return res;
-          }).catch(err => {
-            console.error('[DashboardService] Zone stats API error:', err.response?.data || err.message);
-            throw err;
-          }),          api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
+          api.get(API_ENDPOINTS.ANALYTICS.DASHBOARD),
+          api.get("/api/states"),
+          api.get("/api/branches"),
+          api.get("/api/events"),
+          api.get("/api/zones/statistics"),          api.get(API_ENDPOINTS.PICKUP_STATIONS.BASE).catch(err => {
             console.error('Error fetching pickup stations:', err);
             return { data: [] };
           }),
-          api.get(API_ENDPOINTS.ADMIN.USERS).then(res => {
-            console.log('[DashboardService] Users response length:', res.data?.length || 'no data');
-            return res;
-          }).catch(err => {
-            console.error('[DashboardService] Users API error:', err.response?.data || err.message);
-            throw err;
-          }),
+          api.get(API_ENDPOINTS.ADMIN.USERS),
         ]);
 
       console.log('[DashboardService] All API calls completed successfully');
@@ -140,14 +104,6 @@ export const dashboardService = {
         // Admin role breakdown
         adminsByRole: adminsByRole,
       };
-
-      console.log('[DashboardService] Final dashboard stats:', stats);
-      console.log('[DashboardService] Analytics data breakdown:', {
-        analyticsDataRaw: analyticsData,
-        totalGuests: analyticsData?.totalGuests,
-        checkedInGuests: analyticsData?.checkedInGuests,
-        checkInRate: analyticsData?.checkInRate
-      });
 
       return stats;
     } catch (error) {
@@ -303,29 +259,21 @@ export const dashboardService = {
     }
   },  // Get role-specific dashboard data
   getDashboardStatsByRole: async (userRole) => {
-    console.log(`[DashboardService] getDashboardStatsByRole called with role: ${userRole}`);
-    
     switch (userRole) {
       case "super_admin":
       case "super_me":
-        console.log(`[DashboardService] Calling enhanced super admin stats for role: ${userRole}`);
         // Use static import
         return systemMetricsService.getEnhancedSuperAdminStats();
       case "state_admin":
-        console.log(`[DashboardService] Calling state admin stats`);
         return dashboardService.getStateAdminDashboardStats();
       case "branch_admin":
       case "branch_me":
-        console.log(`[DashboardService] Calling branch admin stats for role: ${userRole}`);
         return dashboardService.getBranchAdminDashboardStats();
       case "worker":
-        console.log(`[DashboardService] Calling worker stats`);
         return dashboardService.getWorkerDashboardStats();
       case "registrar":
-        console.log(`[DashboardService] Calling registrar stats`);
         return dashboardService.getRegistrarDashboardStats();
       default:
-        console.log(`[DashboardService] Unknown role: ${userRole}, returning empty stats`);
         // Return basic stats for unknown roles instead of calling admin endpoints
         return {
           message: `Dashboard data not available for role: ${userRole}`,

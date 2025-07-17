@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
+import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { toast } from 'react-toastify';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const RegistrarsManagement = () => {
+const RegistrarsManagement = ({ isReadOnly = false }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [registrars, setRegistrars] = useState([]);
   const [pendingRegistrars, setPendingRegistrars] = useState([]);
@@ -126,6 +127,11 @@ const RegistrarsManagement = () => {
   };
 
   const handleApprove = async (registrarId) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('approve registrars');
+      return;
+    }
+    
     setActionLoading(prev => ({ ...prev, [registrarId]: 'approving' }));
     
     try {
@@ -152,6 +158,11 @@ const RegistrarsManagement = () => {
   };
 
   const handleReject = async (registrarId) => {
+    if (isReadOnly) {
+      showReadOnlyAlert('reject registrars');
+      return;
+    }
+    
     const reason = prompt('Please provide a reason for rejection:');
     if (!reason) return;
 

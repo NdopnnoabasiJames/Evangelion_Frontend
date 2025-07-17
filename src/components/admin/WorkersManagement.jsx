@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { analyticsService } from '../../services/analyticsService';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const WorkersManagement = () => {
+const WorkersManagement = ({ isReadOnly = false }) => {
   const { user } = useAuth();
   const [workers, setWorkers] = useState([]);
   const [filteredWorkers, setFilteredWorkers] = useState([]);
@@ -141,6 +142,11 @@ const WorkersManagement = () => {
   };
 
   const handleToggleWorkerStatus = async (worker) => {
+    if (isReadOnly) {
+      showReadOnlyAlert(worker.isActive ? 'disable workers' : 'enable workers');
+      return;
+    }
+    
     try {
       const newStatus = !worker.isActive;
       
@@ -287,6 +293,14 @@ const WorkersManagement = () => {
             <div className="alert alert-danger" role="alert">
               <i className="bi bi-exclamation-triangle-fill me-2"></i>
               {error}
+            </div>
+          )}
+
+          {/* Read-only indicator for M&E roles */}
+          {isReadOnly && (
+            <div className="alert alert-info mb-3" role="alert">
+              <i className="bi bi-eye me-2"></i>
+              <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Worker modification actions are disabled.
             </div>
           )}
 
@@ -493,11 +507,13 @@ const WorkersManagement = () => {
                               <i className="bi bi-eye"></i>
                             </button>
                             <button
-                              className={`btn ${worker.isActive ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                              title={worker.isActive ? 'Disable worker' : 'Enable worker'}
+                              className={`btn ${worker.isActive ? 'btn-outline-warning' : 'btn-outline-success'} ${isReadOnly ? 'disabled' : ''}`}
+                              title={isReadOnly ? 'Read-only mode - Cannot modify worker status' : (worker.isActive ? 'Disable worker' : 'Enable worker')}
                               onClick={() => handleToggleWorkerStatus(worker)}
+                              disabled={isReadOnly}
                             >
                               <i className={`bi ${worker.isActive ? 'bi-pause' : 'bi-play'}`}></i>
+                              {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
                             </button>
                           </div>
                         </td>
@@ -618,13 +634,16 @@ const WorkersManagement = () => {
                 </button>
                 <button
                   type="button"
-                  className={`btn ${selectedWorker.isActive ? 'btn-warning' : 'btn-success'}`}
+                  className={`btn ${selectedWorker.isActive ? 'btn-warning' : 'btn-success'} ${isReadOnly ? 'disabled' : ''}`}
                   onClick={() => {
                     handleToggleWorkerStatus(selectedWorker);
                     setShowWorkerModal(false);
                   }}
+                  disabled={isReadOnly}
+                  title={isReadOnly ? 'Read-only mode - Cannot modify worker status' : ''}
                 >
                   {selectedWorker.isActive ? 'Disable Worker' : 'Enable Worker'}
+                  {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
                 </button>
               </div>
             </div>

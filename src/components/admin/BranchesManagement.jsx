@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
+import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { analyticsService } from '../../services/analyticsService';
 import adminManagementService from '../../services/adminManagement';
 import BranchModal from './BranchModal';
 import BranchesTable from './BranchesTable';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const BranchesManagement = () => {
+const BranchesManagement = ({ isReadOnly = false }) => {
   const { user } = useAuth();
   const [branches, setBranches] = useState([]);
   const [filteredBranches, setFilteredBranches] = useState([]);
@@ -413,14 +414,30 @@ const BranchesManagement = () => {
             <small className="text-muted">Manage branches in {user?.state?.name || 'your state'}</small>
           </div>
           <button 
-            className="btn btn-primary"
-            onClick={() => setShowCreateModal(true)}
+            className={`btn btn-primary ${isReadOnly ? 'disabled' : ''}`}
+            onClick={() => {
+              if (isReadOnly) {
+                showReadOnlyAlert('create new branches');
+                return;
+              }
+              setShowCreateModal(true);
+            }}
+            disabled={isReadOnly}
+            title={isReadOnly ? 'Read-only mode - Cannot create branches' : 'Create new branch'}
           >
             <i className="bi bi-plus-circle me-2"></i>
-            Create Branch
+            Create Branch {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
           </button>
         </div>
         <div className="card-body">
+          {/* Read-only indicator for M&E roles */}
+          {isReadOnly && (
+            <div className="alert alert-info mb-3" role="alert">
+              <i className="bi bi-eye me-2"></i>
+              <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Data modification is not permitted for M&E roles.
+            </div>
+          )}
+          
           {/* Sub-tabs for Super Admin and State Admin: Pending Approval and Rejected */}
           {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.STATE_ADMIN) && (
             <ul className="nav nav-tabs nav-tabs-responsive mb-3">

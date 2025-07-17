@@ -2,7 +2,7 @@ import React from 'react';
 import { API_ENDPOINTS } from '../../../utils/constants';
 import PickupStationsTab from './PickupStationsTab';
 
-const SuperAdminPickupStationsTab = () => {
+const SuperAdminPickupStationsTab = ({ isReadOnly = false }) => {
   const columns = [
     {
       field: 'location',
@@ -120,6 +120,7 @@ const SuperAdminPickupStationsTab = () => {
       showZone={true}
       showBranch={true}
       showState={true}
+      isReadOnly={isReadOnly}
     />
   );
 };
