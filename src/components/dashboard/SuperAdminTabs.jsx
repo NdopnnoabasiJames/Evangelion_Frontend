@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
-import { isReadOnlyRole, showReadOnlyAlert } from '../../utils/readOnlyHelpers';
+import { isReadOnlyRole } from '../../utils/readOnlyHelpers';
 import { useAdminManagement } from './hooks/useAdminManagement';
 import AdminOverviewTab from './tabs/AdminOverviewTab';
 import AdminManagementTab from './tabs/AdminManagementTab';
@@ -66,7 +66,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
   
   const handleApproveAdmin = (adminId) => {
     if (isReadOnly) {
-      showReadOnlyAlert('approve administrators');
       return;
     }
     adminHooks.handleApproveAdmin(adminId, loadPendingAdmins, loadApprovedAdmins, setError);
@@ -74,7 +73,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
   
   const handleRejectAdmin = (adminId, reason) => {
     if (isReadOnly) {
-      showReadOnlyAlert('reject administrators');
       return;
     }
     adminHooks.handleRejectAdmin(adminId, reason, loadPendingAdmins, setError);
@@ -145,14 +143,6 @@ const SuperAdminTabs = ({ dashboardData }) => {
 
   return (
     <div className="admin-tabs-container">
-      {/* Read-only indicator for M&E roles */}
-      {isReadOnly && (
-        <div className="alert alert-info mb-3" role="alert">
-          <i className="bi bi-eye me-2"></i>
-          <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Data modification is not permitted for M&E roles.
-        </div>
-      )}
-      
       {/* Tab Navigation */}
       <ul className="nav nav-tabs nav-tabs-responsive mb-4" role="tablist">
         <li className="nav-item" role="presentation">

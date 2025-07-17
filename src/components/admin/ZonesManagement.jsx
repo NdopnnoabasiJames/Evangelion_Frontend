@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
-import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import ZonesTable from './ZonesTable';
 import PendingZonesTable from './PendingZonesTable';
 import adminManagementService from '../../services/adminManagement';
@@ -288,7 +287,6 @@ const ZonesManagement = ({ isReadOnly = false }) => {
   };
   const handleDeleteZone = async (zone) => {
     if (isReadOnly) {
-      showReadOnlyAlert('delete zones');
       return;
     }
     if (window.confirm(`Are you sure you want to delete the zone "${zone.name}"?`)) {
@@ -310,7 +308,6 @@ const ZonesManagement = ({ isReadOnly = false }) => {
   // Approve zone handler
   const handleApproveZone = async (zone) => {
     if (isReadOnly) {
-      showReadOnlyAlert('approve zones');
       return;
     }
     try {
@@ -348,7 +345,6 @@ const ZonesManagement = ({ isReadOnly = false }) => {
   // Reject zone handler
   const handleRejectZone = async (zone) => {
     if (isReadOnly) {
-      showReadOnlyAlert('reject zones');
       return;
     }
     try {
@@ -380,7 +376,6 @@ const ZonesManagement = ({ isReadOnly = false }) => {
 
   const openCreateModal = () => {
     if (isReadOnly) {
-      showReadOnlyAlert('create new zones');
       return;
     }
     resetForm();
@@ -389,7 +384,6 @@ const ZonesManagement = ({ isReadOnly = false }) => {
 
   const openEditModal = (zone) => {
     if (isReadOnly) {
-      showReadOnlyAlert('edit zones');
       return;
     }
     setFormData({

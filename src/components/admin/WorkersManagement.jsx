@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
-import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { analyticsService } from '../../services/analyticsService';
 import { exportToExcel } from '../../utils/exportUtils';
 
@@ -143,7 +142,6 @@ const WorkersManagement = ({ isReadOnly = false }) => {
 
   const handleToggleWorkerStatus = async (worker) => {
     if (isReadOnly) {
-      showReadOnlyAlert(worker.isActive ? 'disable workers' : 'enable workers');
       return;
     }
     
@@ -293,14 +291,6 @@ const WorkersManagement = ({ isReadOnly = false }) => {
             <div className="alert alert-danger" role="alert">
               <i className="bi bi-exclamation-triangle-fill me-2"></i>
               {error}
-            </div>
-          )}
-
-          {/* Read-only indicator for M&E roles */}
-          {isReadOnly && (
-            <div className="alert alert-info mb-3" role="alert">
-              <i className="bi bi-eye me-2"></i>
-              <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Worker modification actions are disabled.
             </div>
           )}
 

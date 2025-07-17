@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { API_ENDPOINTS, ROLES } from '../../utils/constants';
-import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { analyticsService } from '../../services/analyticsService';
 import adminManagementService from '../../services/adminManagement';
 import BranchModal from './BranchModal';

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { API_ENDPOINTS } from '../../utils/constants';
-import { showReadOnlyAlert } from '../../utils/readOnlyHelpers';
 import { toast } from 'react-toastify';
 import { exportToExcel } from '../../utils/exportUtils';
 
@@ -128,7 +127,6 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
 
   const handleApprove = async (registrarId) => {
     if (isReadOnly) {
-      showReadOnlyAlert('approve registrars');
       return;
     }
     
@@ -159,7 +157,6 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
 
   const handleReject = async (registrarId) => {
     if (isReadOnly) {
-      showReadOnlyAlert('reject registrars');
       return;
     }
     

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { isReadOnlyRole, showReadOnlyAlert } from '../../utils/readOnlyHelpers';
+import { isReadOnlyRole } from '../../utils/readOnlyHelpers';
 import AdminApprovalCard from './AdminApprovalCard';
 import ApprovedAdminCard from './ApprovedAdminCard';
 import BranchAdminEvents from './BranchAdminEvents';

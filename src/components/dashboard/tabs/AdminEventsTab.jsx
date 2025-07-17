@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { LoadingCard } from '../../common/Loading';
 import { TabbedInterface, TabPane } from '../../common/TabNavigation';
-import { showReadOnlyAlert } from '../../../utils/readOnlyHelpers';
 import EventsList from '../../events/EventsList';
 import HierarchicalEventCreation from '../../events/HierarchicalEventCreation';
 import PickupStationAssignment from '../../events/PickupStationAssignment';
@@ -22,7 +21,6 @@ const AdminEventsTab = ({
   
   const handleEditEvent = (event) => {
     if (isReadOnly) {
-      showReadOnlyAlert('edit events');
       return;
     }
     setEditingEvent(event);
@@ -32,7 +30,6 @@ const AdminEventsTab = ({
   const handleTabSwitch = (tabKey) => {
     const restrictedTabs = ['create', 'edit'];
     if (isReadOnly && restrictedTabs.includes(tabKey)) {
-      showReadOnlyAlert(tabKey === 'create' ? 'create events' : 'edit events');
       return;
     }
     setEventActiveTab(tabKey);
