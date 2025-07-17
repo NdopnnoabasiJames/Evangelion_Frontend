@@ -422,7 +422,8 @@ const GuestsManagement = () => {
                     <th>Transport</th>
                     <th>New Convert</th>
                     <th>Status</th>
-                  </tr>                </thead>
+                  </tr>
+                </thead>
                 <tbody>
                   {filteredGuests.map(guest => {
                     return (

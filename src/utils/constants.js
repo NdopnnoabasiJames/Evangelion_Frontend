@@ -293,6 +293,7 @@ export const canViewButNotEdit = (role) => {
 
 export const canManageEntity = (role, entity) => {
   if (isReadOnlyRole(role)) return false;
+  
   // Define what roles can manage what entities
   const managementPermissions = {
     events: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.ZONAL_ADMIN],
