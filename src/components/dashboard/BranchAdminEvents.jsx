@@ -7,7 +7,7 @@ import EventDelegation from '../events/EventDelegation';
 import EventsList from '../events/EventsList';
 import HierarchicalEventCreation from '../events/HierarchicalEventCreation';
 
-const BranchAdminEvents = () => {
+const BranchAdminEvents = ({ isReadOnly = false }) => {
   const [eventActiveTab, setEventActiveTab] = useState('pending');
   
   // API hooks for different event types
@@ -78,7 +78,11 @@ const BranchAdminEvents = () => {
                 Events accessible in your branch - including events you created and events delegated to your branch.
               </p>
             </div>
-            <EventsList events={eventsArray} userRole="branch_admin" />
+            <EventsList 
+              events={eventsArray} 
+              userRole="branch_admin" 
+              canEdit={!isReadOnly}
+            />
           </div>
         );
 
@@ -134,11 +138,11 @@ const BranchAdminEvents = () => {
                      { count: branchArray.length, className: 'bg-primary' } : null;
             })()
           },
-          {
+          ...(!isReadOnly ? [{
             key: 'create',
             label: 'Create Event',
             icon: 'bi-plus-circle'
-          }
+          }] : [])
         ]}
         activeTab={eventActiveTab}
         onTabChange={setEventActiveTab}
@@ -149,9 +153,11 @@ const BranchAdminEvents = () => {
         <TabPane tabId="list">
           {eventActiveTab === 'list' && renderTabContent()}
         </TabPane>
-        <TabPane tabId="create">
-          {eventActiveTab === 'create' && renderTabContent()}
-        </TabPane>
+        {!isReadOnly && (
+          <TabPane tabId="create">
+            {eventActiveTab === 'create' && renderTabContent()}
+          </TabPane>
+        )}
       </TabbedInterface>
     </div>
   );

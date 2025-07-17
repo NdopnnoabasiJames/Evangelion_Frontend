@@ -43,17 +43,15 @@ const AdminEventsTab = ({
       label: 'All Events',
       icon: 'bi-list-ul'
     },
-    {
+    ...(!isReadOnly ? [{
       key: 'create',
-      label: isReadOnly ? 'Create Event 🔒' : 'Create Event',
-      icon: 'bi-plus-circle',
-      disabled: isReadOnly
-    },
-    ...(editingEvent ? [{
+      label: 'Create Event',
+      icon: 'bi-plus-circle'
+    }] : []),
+    ...(editingEvent && !isReadOnly ? [{
       key: 'edit',
-      label: isReadOnly ? 'Edit Event 🔒' : 'Edit Event',
-      icon: 'bi-pencil-square',
-      disabled: isReadOnly
+      label: 'Edit Event',
+      icon: 'bi-pencil-square'
     }] : []),
     {
       key: 'hierarchical',
@@ -107,9 +105,9 @@ const AdminEventsTab = ({
                 events={events}
                 loading={eventsLoading}
                 error={eventsError}
-                canManage={true} // Super admin can manage all events
-                canEdit={true}
-                canDelete={true}
+                canManage={!isReadOnly} // Super admin can manage all events
+                canEdit={!isReadOnly}
+                canDelete={!isReadOnly}
                 onEditEvent={handleEditEvent}
                 onRefresh={() => {
                   refetchEvents();
@@ -160,9 +158,9 @@ const AdminEventsTab = ({
                 events={hierarchicalEventsData || []}
                 loading={eventsLoading}
                 error={eventsError}
-                canManage={true}
-                canEdit={true}
-                canDelete={true}
+                canManage={!isReadOnly}
+                canEdit={!isReadOnly}
+                canDelete={!isReadOnly}
                 showHierarchy={true}
                 onEditEvent={handleEditEvent}
                 onRefresh={refetchHierarchicalEvents}

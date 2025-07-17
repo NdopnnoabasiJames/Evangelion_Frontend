@@ -512,15 +512,16 @@ const ZonesManagement = ({ isReadOnly = false }) => {
               Zones Management
             </h5>
           </div>
-          <button
-            className={`btn btn-primary ${isReadOnly ? 'disabled' : ''}`}
-            onClick={openCreateModal}
-            disabled={isReadOnly}
-            title={isReadOnly ? 'Read-only mode - Cannot create zones' : 'Add new zone'}
-          >
-            <i className="bi bi-plus-circle me-2"></i>
-            Add Zone {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
-          </button>
+          {!isReadOnly && (
+            <button
+              className="btn btn-primary"
+              onClick={openCreateModal}
+              title="Add new zone"
+            >
+              <i className="bi bi-plus-circle me-2"></i>
+              Add Zone
+            </button>
+          )}
         </div>
         <div className="card-body">
           {/* Subtabs */}

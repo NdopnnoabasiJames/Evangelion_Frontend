@@ -470,7 +470,7 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
                         </div>
                       </td>
                     )}
-                    {activeTab === 'pending' && (
+                    {activeTab === 'pending' && !isReadOnly && (
                       <td>
                         <div className="btn-group btn-group-sm">
                           <button

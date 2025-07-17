@@ -8,7 +8,7 @@ import { TabbedInterface, TabPane } from '../common/TabNavigation';
 import { LoadingCard } from '../common/Loading';
 import { API_ENDPOINTS } from '../../utils/constants';
 
-const StateAdminEvents = () => {
+const StateAdminEvents = ({ isReadOnly = false }) => {
   const [events, setEvents] = useState([]);
   const [pendingEvents, setPendingEvents] = useState([]);
   const [eventActiveTab, setEventActiveTab] = useState('list');
@@ -83,11 +83,11 @@ const StateAdminEvents = () => {
       icon: 'bi-clock-history',
       badge: pendingEvents.length > 0 ? pendingEvents.length : null
     },
-    {
+    ...(!isReadOnly ? [{
       key: 'create',
       label: 'Create Event',
       icon: 'bi-plus-circle'
-    }
+    }] : [])
   ];
 
   return (
@@ -110,9 +110,9 @@ const StateAdminEvents = () => {
                 events={events}
                 loading={eventsLoading}
                 error={eventsError}
-                canEdit={true}
+                canEdit={!isReadOnly}
                 onRefresh={handleRefresh}
-                onCreateEvent={() => setEventActiveTab('create')}
+                onCreateEvent={!isReadOnly ? () => setEventActiveTab('create') : null}
               />
             </div>
           </TabPane>          <TabPane tabId="pending" title="Branch Selection">
@@ -132,12 +132,14 @@ const StateAdminEvents = () => {
             </div>
           </TabPane>
 
-          <TabPane tabId="create" title="Create Event">
-            <HierarchicalEventCreation 
-              userRole="state_admin"
-              onEventCreated={handleEventCreated}
-            />
-          </TabPane>
+          {!isReadOnly && (
+            <TabPane tabId="create" title="Create Event">
+              <HierarchicalEventCreation 
+                userRole="state_admin"
+                onEventCreated={handleEventCreated}
+              />
+            </TabPane>
+          )}
         </TabbedInterface>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
+const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false, isReadOnly = false }) => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);  const handleApprove = async () => {
@@ -101,34 +101,36 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
             </div>
             
             <div className="col-md-4 text-end">
-              <div className="d-flex flex-column gap-2">
-                <button
-                  className="btn btn-success"
-                  onClick={handleApprove}
-                  disabled={loading || actionLoading}
-                >
-                  {actionLoading ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      Approving...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-check me-2"></i>
-                      Approve
-                    </>
-                  )}
-                </button>
-                
-                <button
-                  className="btn btn-danger"
-                  onClick={() => setShowRejectModal(true)}
-                  disabled={loading || actionLoading}
-                >
-                  <i className="fas fa-times me-2"></i>
-                  Reject
-                </button>
-              </div>
+              {!isReadOnly && (
+                <div className="d-flex flex-column gap-2">
+                  <button
+                    className="btn btn-success"
+                    onClick={handleApprove}
+                    disabled={loading || actionLoading}
+                  >
+                    {actionLoading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-check me-2"></i>
+                        Approve
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => setShowRejectModal(true)}
+                    disabled={loading || actionLoading}
+                  >
+                    <i className="fas fa-times me-2"></i>
+                    Reject
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

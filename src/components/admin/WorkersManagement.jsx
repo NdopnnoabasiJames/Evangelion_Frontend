@@ -506,15 +506,15 @@ const WorkersManagement = ({ isReadOnly = false }) => {
                             >
                               <i className="bi bi-eye"></i>
                             </button>
-                            <button
-                              className={`btn ${worker.isActive ? 'btn-outline-warning' : 'btn-outline-success'} ${isReadOnly ? 'disabled' : ''}`}
-                              title={isReadOnly ? 'Read-only mode - Cannot modify worker status' : (worker.isActive ? 'Disable worker' : 'Enable worker')}
-                              onClick={() => handleToggleWorkerStatus(worker)}
-                              disabled={isReadOnly}
-                            >
-                              <i className={`bi ${worker.isActive ? 'bi-pause' : 'bi-play'}`}></i>
-                              {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
-                            </button>
+                            {!isReadOnly && (
+                              <button
+                                className={`btn ${worker.isActive ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                title={worker.isActive ? 'Disable worker' : 'Enable worker'}
+                                onClick={() => handleToggleWorkerStatus(worker)}
+                              >
+                                <i className={`bi ${worker.isActive ? 'bi-pause' : 'bi-play'}`}></i>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -632,19 +632,18 @@ const WorkersManagement = ({ isReadOnly = false }) => {
                 >
                   Close
                 </button>
-                <button
-                  type="button"
-                  className={`btn ${selectedWorker.isActive ? 'btn-warning' : 'btn-success'} ${isReadOnly ? 'disabled' : ''}`}
-                  onClick={() => {
-                    handleToggleWorkerStatus(selectedWorker);
-                    setShowWorkerModal(false);
-                  }}
-                  disabled={isReadOnly}
-                  title={isReadOnly ? 'Read-only mode - Cannot modify worker status' : ''}
-                >
-                  {selectedWorker.isActive ? 'Disable Worker' : 'Enable Worker'}
-                  {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
-                </button>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    className={`btn ${selectedWorker.isActive ? 'btn-warning' : 'btn-success'}`}
+                    onClick={() => {
+                      handleToggleWorkerStatus(selectedWorker);
+                      setShowWorkerModal(false);
+                    }}
+                  >
+                    {selectedWorker.isActive ? 'Disable Worker' : 'Enable Worker'}
+                  </button>
+                )}
               </div>
             </div>
           </div>

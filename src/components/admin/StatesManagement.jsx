@@ -242,22 +242,18 @@ const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates
               States Management
             </h5>
             <small className="text-muted">Manage all states in the system</small>
-          </div>
-          <button 
-            className={`btn btn-primary ${isReadOnly ? 'disabled' : ''}`}
-            onClick={() => {
-              if (isReadOnly) {
-                showReadOnlyAlert('create new states');
-                return;
-              }
-              setShowCreateModal(true);
-            }}
-            disabled={isReadOnly}
-            title={isReadOnly ? 'Read-only mode - Cannot create states' : 'Add new state'}
-          >
-            <i className="bi bi-plus-circle me-2"></i>
-            Add New State {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
-          </button>
+          </div>            {!isReadOnly && (
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowCreateModal(true);
+                }}
+                title="Add new state"
+              >
+                <i className="bi bi-plus-circle me-2"></i>
+                Add New State
+              </button>
+            )}
         </div>
         
         <div className="card-body">

@@ -412,22 +412,18 @@ const BranchesManagement = ({ isReadOnly = false }) => {
               Branches Management
             </h5>
             <small className="text-muted">Manage branches in {user?.state?.name || 'your state'}</small>
-          </div>
-          <button 
-            className={`btn btn-primary ${isReadOnly ? 'disabled' : ''}`}
-            onClick={() => {
-              if (isReadOnly) {
-                showReadOnlyAlert('create new branches');
-                return;
-              }
-              setShowCreateModal(true);
-            }}
-            disabled={isReadOnly}
-            title={isReadOnly ? 'Read-only mode - Cannot create branches' : 'Create new branch'}
-          >
-            <i className="bi bi-plus-circle me-2"></i>
-            Create Branch {isReadOnly && <i className="bi bi-lock-fill ms-1"></i>}
-          </button>
+          </div>            {!isReadOnly && (
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowCreateModal(true);
+                }}
+                title="Create new branch"
+              >
+                <i className="bi bi-plus-circle me-2"></i>
+                Create Branch
+              </button>
+            )}
         </div>
         <div className="card-body">
           {/* Read-only indicator for M&E roles */}
