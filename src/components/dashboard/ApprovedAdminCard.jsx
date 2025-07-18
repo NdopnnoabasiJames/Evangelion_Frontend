@@ -26,6 +26,7 @@ const ApprovedAdminCard = ({ admin }) => {
       case 'state_admin':
         return 'primary';
       case 'branch_admin':
+      case 'branch_me':
         return 'success';
       case 'zonal_admin':
         return 'info';

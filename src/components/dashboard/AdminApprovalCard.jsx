@@ -59,6 +59,8 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
             {admin.role === 'zonal_admin' ? 'Zonal Admin' : 
              admin.role === 'state_admin' ? 'State Admin' : 
              admin.role === 'branch_admin' ? 'Branch Admin' : 
+             admin.role === 'branch_me' ? 'Branch M&E' : 
+
              'Admin'}
           </span>
         </div>
