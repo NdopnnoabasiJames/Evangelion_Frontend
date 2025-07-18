@@ -8,7 +8,7 @@ import BranchModal from './BranchModal';
 import BranchesTable from './BranchesTable';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const BranchesManagement = ({ isReadOnly = false }) => {
+const BranchesManagement = () => {
   const { user } = useAuth();
   const [branches, setBranches] = useState([]);
   const [filteredBranches, setFilteredBranches] = useState([]);
@@ -411,28 +411,16 @@ const BranchesManagement = ({ isReadOnly = false }) => {
               Branches Management
             </h5>
             <small className="text-muted">Manage branches in {user?.state?.name || 'your state'}</small>
-          </div>            {!isReadOnly && (
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setShowCreateModal(true);
-                }}
-                title="Create new branch"
-              >
-                <i className="bi bi-plus-circle me-2"></i>
-                Create Branch
-              </button>
-            )}
+          </div>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Create Branch
+          </button>
         </div>
         <div className="card-body">
-          {/* Read-only indicator for M&E roles */}
-          {isReadOnly && (
-            <div className="alert alert-info mb-3" role="alert">
-              <i className="bi bi-eye me-2"></i>
-              <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Data modification is not permitted for M&E roles.
-            </div>
-          )}
-          
           {/* Sub-tabs for Super Admin and State Admin: Pending Approval and Rejected */}
           {(user?.role === ROLES.SUPER_ADMIN || user?.role === ROLES.STATE_ADMIN) && (
             <ul className="nav nav-tabs nav-tabs-responsive mb-3">

@@ -5,7 +5,7 @@ export const authService = {  // Login user
   login: async (credentials) => {
     try {
       const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
-      // Backend returns data nested in response.data.data
+      // Backend returns data with TransformInterceptor: { data: { access_token, user }, timestamp, path }
       const { access_token, user } = response.data.data;
       
       // Store token and user data

@@ -1,8 +1,8 @@
 import React from 'react';
 import BranchesManagement from '../../admin/BranchesManagement';
 
-const AdminBranchesTab = ({ isReadOnly = false }) => {
-  return <BranchesManagement isReadOnly={isReadOnly} />;
+const AdminBranchesTab = () => {
+  return <BranchesManagement />;
 };
 
 export default AdminBranchesTab;

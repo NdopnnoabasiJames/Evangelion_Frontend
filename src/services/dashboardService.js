@@ -1,6 +1,5 @@
 import api from "./api";
 import { API_ENDPOINTS } from "../utils/constants";
-import { systemMetricsService } from "./systemMetricsService";
 
 export const dashboardService = {
   // Get current user profile with populated state/branch information
@@ -44,8 +43,6 @@ export const dashboardService = {
           }),
           api.get(API_ENDPOINTS.ADMIN.USERS),
         ]);
-
-      console.log('[DashboardService] All API calls completed successfully');
 
       const statesData = statesResponse.data?.data || statesResponse.data || [];
       const branchesData = branchesResponse.data?.data || branchesResponse.data || [];
@@ -261,13 +258,12 @@ export const dashboardService = {
   getDashboardStatsByRole: async (userRole) => {
     switch (userRole) {
       case "super_admin":
-      case "super_me":
-        // Use static import
+        // Dynamically import to avoid circular dependency
+        const { systemMetricsService } = await import("./systemMetricsService");
         return systemMetricsService.getEnhancedSuperAdminStats();
       case "state_admin":
         return dashboardService.getStateAdminDashboardStats();
       case "branch_admin":
-      case "branch_me":
         return dashboardService.getBranchAdminDashboardStats();
       case "worker":
         return dashboardService.getWorkerDashboardStats();
@@ -276,7 +272,7 @@ export const dashboardService = {
       default:
         // Return basic stats for unknown roles instead of calling admin endpoints
         return {
-          message: `Dashboard data not available for role: ${userRole}`,
+          message: "Dashboard data not available for this role",
           stats: {}
         };
     }

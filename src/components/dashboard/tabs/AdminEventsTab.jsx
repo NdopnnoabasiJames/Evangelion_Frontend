@@ -14,25 +14,13 @@ const AdminEventsTab = ({
   setEventActiveTab,
   refetchEvents,
   refetchHierarchicalEvents,
-  user,
-  isReadOnly = false
+  user
 }) => {
   const [editingEvent, setEditingEvent] = useState(null);
   
   const handleEditEvent = (event) => {
-    if (isReadOnly) {
-      return;
-    }
     setEditingEvent(event);
     setEventActiveTab('edit');
-  };
-
-  const handleTabSwitch = (tabKey) => {
-    const restrictedTabs = ['create', 'edit'];
-    if (isReadOnly && restrictedTabs.includes(tabKey)) {
-      return;
-    }
-    setEventActiveTab(tabKey);
   };
   const eventTabs = [
     {
@@ -40,12 +28,12 @@ const AdminEventsTab = ({
       label: 'All Events',
       icon: 'bi-list-ul'
     },
-    ...(!isReadOnly ? [{
+    {
       key: 'create',
       label: 'Create Event',
       icon: 'bi-plus-circle'
-    }] : []),
-    ...(editingEvent && !isReadOnly ? [{
+    },
+    ...(editingEvent ? [{
       key: 'edit',
       label: 'Edit Event',
       icon: 'bi-pencil-square'
@@ -83,18 +71,12 @@ const AdminEventsTab = ({
         </h5>
       </div>
       <div className="card-body">
-        {/* Read-only indicator for M&E roles */}
-        {isReadOnly && (
-          <div className="alert alert-info mb-3" role="alert">
-            <i className="bi bi-eye me-2"></i>
-            <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Event modification is not permitted for M&E roles.
-          </div>
-        )}
-        
         <TabbedInterface
           tabs={eventTabs}
           activeTab={eventActiveTab}
-          onTabChange={handleTabSwitch}
+          onTabChange={(tab) => {
+            setEventActiveTab(tab);
+          }}
         >
           <TabPane tabId="list" title="All Events">
             <div className="events-container">
@@ -102,9 +84,9 @@ const AdminEventsTab = ({
                 events={events}
                 loading={eventsLoading}
                 error={eventsError}
-                canManage={!isReadOnly} // Super admin can manage all events
-                canEdit={!isReadOnly}
-                canDelete={!isReadOnly}
+                canManage={true} // Super admin can manage all events
+                canEdit={true}
+                canDelete={true}
                 onEditEvent={handleEditEvent}
                 onRefresh={() => {
                   refetchEvents();
@@ -155,9 +137,9 @@ const AdminEventsTab = ({
                 events={hierarchicalEventsData || []}
                 loading={eventsLoading}
                 error={eventsError}
-                canManage={!isReadOnly}
-                canEdit={!isReadOnly}
-                canDelete={!isReadOnly}
+                canManage={true}
+                canEdit={true}
+                canDelete={true}
                 showHierarchy={true}
                 onEditEvent={handleEditEvent}
                 onRefresh={refetchHierarchicalEvents}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { isReadOnlyRole } from '../../utils/readOnlyHelpers';
 import AdminApprovalCard from './AdminApprovalCard';
 import ApprovedAdminCard from './ApprovedAdminCard';
 import BranchAdminEvents from './BranchAdminEvents';
@@ -16,11 +15,7 @@ import workerService from '../../services/workerService';
 import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 
 const BranchAdminTabs = ({ dashboardData }) => {
-  const { user } = useAuth();
-  
-  // Check if user is in read-only M&E role
-  const isReadOnly = isReadOnlyRole(user?.currentRole || user?.role);
-  
+  const { user } = useAuth();  
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingZonalAdmins, setPendingZonalAdmins] = useState([]);
   const [approvedZonalAdmins, setApprovedZonalAdmins] = useState([]);
@@ -492,14 +487,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
 
   return (
     <div>
-      {/* Read-only indicator for M&E roles */}
-      {isReadOnly && (
-        <div className="alert alert-info mb-3" role="alert">
-          <i className="bi bi-eye me-2"></i>
-          <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Data modification is not permitted for M&E roles.
-        </div>
-      )}
-      
       {/* Tab Navigation */}      <ul className="nav nav-tabs mb-4" role="tablist">
         <li className="nav-item" role="presentation">
           <button
@@ -511,25 +498,20 @@ const BranchAdminTabs = ({ dashboardData }) => {
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'zones' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            className={`nav-link ${activeTab === 'zones' ? 'active' : ''}`}
             onClick={() => setActiveTab('zones')}
             type="button"
-            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-geo-alt me-2"></i>
             Zones
-            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'zonal-admin-management' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            className={`nav-link ${activeTab === 'zonal-admin-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('zonal-admin-management')}
-            type="button"
-            title={isReadOnly ? 'Read-only access for M&E role' : ''}
-          >
+            type="button"          >
             <i className="bi bi-shield-check me-2"></i>
             Zone Admin Management
-            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
             {pendingZonalAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingZonalAdmins.length}
@@ -539,14 +521,12 @@ const BranchAdminTabs = ({ dashboardData }) => {
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'worker-management' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            className={`nav-link ${activeTab === 'worker-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('worker-management')}
             type="button"
-            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-people me-2"></i>
             Worker Management
-            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
             {pendingWorkers.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingWorkers.length}
@@ -555,14 +535,12 @@ const BranchAdminTabs = ({ dashboardData }) => {
           </button>
         </li>        <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'registrar-management' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            className={`nav-link ${activeTab === 'registrar-management' ? 'active' : ''}`}
             onClick={() => setActiveTab('registrar-management')}
             type="button"
-            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-clipboard-check me-2"></i>
             Manage Registrars
-            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
             {pendingRegistrars.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingRegistrars.length}
@@ -572,54 +550,47 @@ const BranchAdminTabs = ({ dashboardData }) => {
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'events' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            className={`nav-link ${activeTab === 'events' ? 'active' : ''}`}
             onClick={() => setActiveTab('events')}
             type="button"
-            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >            <i className="bi bi-calendar-event me-2"></i>
             Events
-            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            className={`nav-link ${activeTab === 'pickup-stations' ? 'active' : ''}`}
             onClick={() => setActiveTab('pickup-stations')}
             type="button"
-            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-geo-alt me-2"></i>
             Pickup Stations
-            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
         <li className="nav-item" role="presentation">
           <button
-            className={`nav-link ${activeTab === 'notifications' ? 'active' : ''} ${isReadOnly ? 'text-muted' : ''}`}
+            className={`nav-link ${activeTab === 'notifications' ? 'active' : ''}`}
             onClick={() => setActiveTab('notifications')}
             type="button"
-            title={isReadOnly ? 'Read-only access for M&E role' : ''}
           >
             <i className="bi bi-envelope me-2"></i>
             Notifications
-            {isReadOnly && <i className="bi bi-eye-fill ms-1 text-info"></i>}
           </button>
         </li>
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'zones' && <ZonesManagement isReadOnly={isReadOnly} />}
+        {activeTab === 'zones' && <ZonesManagement />}
         {activeTab === 'zonal-admin-management' && (
           <ZoneAdminManagement 
             onPendingCountChange={(count) => setPendingZonalAdmins(Array(count).fill({}))}
-            isReadOnly={isReadOnly}
           />
         )}
-        {activeTab === 'worker-management' && <WorkerManagement isReadOnly={isReadOnly} />}
-        {activeTab === 'registrar-management' && <RegistrarManagement isReadOnly={isReadOnly} />}
-        {activeTab === 'events' && <BranchAdminEvents isReadOnly={isReadOnly} />}
-        {activeTab === 'pickup-stations' && <BranchAdminPickupStationsTab isReadOnly={isReadOnly} />}
-        {activeTab === 'notifications' && <NotificationTab isReadOnly={isReadOnly} />}
+        {activeTab === 'worker-management' && <WorkerManagement />}
+        {activeTab === 'registrar-management' && <RegistrarManagement />}
+        {activeTab === 'events' && <BranchAdminEvents />}
+        {activeTab === 'pickup-stations' && <BranchAdminPickupStationsTab />}
+        {activeTab === 'notifications' && <NotificationTab />}
       </div>
     </div>
   );

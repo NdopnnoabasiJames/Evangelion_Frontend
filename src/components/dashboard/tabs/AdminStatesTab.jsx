@@ -1,8 +1,8 @@
 import React from 'react';
 import StatesManagement from '../../admin/StatesManagement';
 
-const AdminStatesTab = ({ isReadOnly = false }) => {
-  return <StatesManagement isReadOnly={isReadOnly} />;
+const AdminStatesTab = () => {
+  return <StatesManagement />;
 };
 
 export default AdminStatesTab;

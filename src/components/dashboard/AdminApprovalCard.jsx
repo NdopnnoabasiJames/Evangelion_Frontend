@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false, isReadOnly = false }) => {
+const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false }) => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);  const handleApprove = async () => {
@@ -56,9 +56,9 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false, isRead
             <i className="fas fa-clock me-2"></i>
             Pending Approval
           </h6>          <span className="badge bg-warning text-dark">
-            {admin.role === 'zonal_admin' ? 'Zonal Coordinator' : 
+            {admin.role === 'zonal_admin' ? 'Zonal Admin' : 
              admin.role === 'state_admin' ? 'State Admin' : 
-             admin.role === 'branch_admin' ? 'Branch Pastor' : 
+             admin.role === 'branch_admin' ? 'Branch Admin' : 
              'Admin'}
           </span>
         </div>
@@ -101,36 +101,34 @@ const AdminApprovalCard = ({ admin, onApprove, onReject, loading = false, isRead
             </div>
             
             <div className="col-md-4 text-end">
-              {!isReadOnly && (
-                <div className="d-flex flex-column gap-2">
-                  <button
-                    className="btn btn-success"
-                    onClick={handleApprove}
-                    disabled={loading || actionLoading}
-                  >
-                    {actionLoading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Approving...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-check me-2"></i>
-                        Approve
-                      </>
-                    )}
-                  </button>
-                  
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => setShowRejectModal(true)}
-                    disabled={loading || actionLoading}
-                  >
-                    <i className="fas fa-times me-2"></i>
-                    Reject
-                  </button>
-                </div>
-              )}
+              <div className="d-flex flex-column gap-2">
+                <button
+                  className="btn btn-success"
+                  onClick={handleApprove}
+                  disabled={loading || actionLoading}
+                >
+                  {actionLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-check me-2"></i>
+                      Approve
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  className="btn btn-danger"
+                  onClick={() => setShowRejectModal(true)}
+                  disabled={loading || actionLoading}
+                >
+                  <i className="fas fa-times me-2"></i>
+                  Reject
+                </button>
+              </div>
             </div>
           </div>
         </div>

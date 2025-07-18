@@ -1,8 +1,8 @@
 import React from 'react';
 import ZonesManagement from '../../admin/ZonesManagement';
 
-const AdminZonesTab = ({ isReadOnly = false }) => {
-  return <ZonesManagement isReadOnly={isReadOnly} />;
+const AdminZonesTab = () => {
+  return <ZonesManagement />;
 };
 
 export default AdminZonesTab;

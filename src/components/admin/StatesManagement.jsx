@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from '../../utils/constants';
 import { analyticsService } from '../../services/analyticsService';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates] = useState([]);
+const StatesManagement = () => {  const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -241,18 +241,14 @@ const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates
               States Management
             </h5>
             <small className="text-muted">Manage all states in the system</small>
-          </div>            {!isReadOnly && (
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setShowCreateModal(true);
-                }}
-                title="Add new state"
-              >
-                <i className="bi bi-plus-circle me-2"></i>
-                Add New State
-              </button>
-            )}
+          </div>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Add New State
+          </button>
         </div>
         
         <div className="card-body">
@@ -261,17 +257,7 @@ const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates
               <i className="bi bi-exclamation-triangle me-2"></i>
               {error}
             </div>
-          )}
-          
-          {/* Read-only indicator for M&E roles */}
-          {isReadOnly && (
-            <div className="alert alert-info mb-3" role="alert">
-              <i className="bi bi-eye me-2"></i>
-              <strong>Monitoring & Evaluation Mode:</strong> You are viewing in read-only mode. Data modification is not permitted for M&E roles.
-            </div>
-          )}
-          
-          <div className="mb-4">
+          )}          <div className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="text-muted mb-0">
                 Filters
@@ -393,6 +379,7 @@ const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates
                       <th>Zones</th>
                       <th>Created</th>
                       <th>Status</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -453,6 +440,23 @@ const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates
                           <span className={`badge ${state.isActive ? 'bg-success' : 'bg-warning'}`}>
                             {state.isActive ? 'Active' : 'Inactive'}
                           </span>
+                        </td>
+                        <td>
+                          <div className="btn-group btn-group-sm">
+                            <button
+                              className="btn btn-outline-primary"
+                              onClick={() => setEditingState(state)}
+                              title="Edit state"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </button>
+                            <button
+                              className="btn btn-outline-info"
+                              title="View details"
+                            >
+                              <i className="bi bi-eye"></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

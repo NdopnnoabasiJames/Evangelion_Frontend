@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { isReadOnlyRole } from '../../utils/readOnlyHelpers';
 import StateAdminOverview from './StateAdminOverview';
 import BranchAdminManagement from './BranchAdminManagement';
 import StateAdminEvents from './StateAdminEvents';
@@ -15,10 +14,6 @@ import analyticsService from '../../services/analyticsService';
 
 const StateAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
-  
-  // Check if user is in read-only M&E role
-  const isReadOnly = isReadOnlyRole(user?.currentRole || user?.role);
-  
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingBranchAdmins, setPendingBranchAdmins] = useState([]);
   const [approvedBranchAdmins, setApprovedBranchAdmins] = useState([]);
@@ -125,7 +120,7 @@ const StateAdminTabs = ({ dashboardData }) => {
             type="button"
           >
             <i className="bi bi-shield-check me-2"></i>
-            Branch Pastors
+            Branch Admins
             {pendingBranchAdmins.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingBranchAdmins.length}
@@ -203,7 +198,7 @@ const StateAdminTabs = ({ dashboardData }) => {
             pendingBranchAdmins={pendingBranchAdmins}
             onManageBranchAdmins={() => setActiveTab('branch-admin-management')}
           />
-        )}        {activeTab === 'branches' && <BranchesManagement isReadOnly={isReadOnly} />}
+        )}        {activeTab === 'branches' && <BranchesManagement />}
         {activeTab === 'branch-admin-management' && (
           <BranchAdminManagement 
             pendingBranchAdmins={pendingBranchAdmins}
@@ -216,12 +211,12 @@ const StateAdminTabs = ({ dashboardData }) => {
             onRejectBranchAdmin={handleRejectBranchAdmin}
             onRefreshPending={loadPendingBranchAdmins}
             onRefreshApproved={loadApprovedBranchAdmins}
-          />        )}        {activeTab === 'events' && <StateAdminEvents isReadOnly={isReadOnly} />}
-        {activeTab === 'zones' && <ZonesManagement isReadOnly={isReadOnly} />}
-        {activeTab === 'workers' && <WorkersManagement isReadOnly={isReadOnly} />}
-        {activeTab === 'guests' && <GuestsManagement isReadOnly={isReadOnly} />}
+          />        )}        {activeTab === 'events' && <StateAdminEvents />}
+        {activeTab === 'zones' && <ZonesManagement />}
+        {activeTab === 'workers' && <WorkersManagement />}
+        {activeTab === 'guests' && <GuestsManagement />}
         {activeTab === 'pickup-stations' && <StateAdminPickupStationsTab />}
-        {activeTab === 'notifications' && <NotificationTab isReadOnly={isReadOnly} />}
+        {activeTab === 'notifications' && <NotificationTab />}
       </div>
     </div>
   );

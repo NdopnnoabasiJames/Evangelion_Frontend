@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from '../../utils/constants';
 import { toast } from 'react-toastify';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const RegistrarsManagement = ({ isReadOnly = false }) => {
+const RegistrarsManagement = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [registrars, setRegistrars] = useState([]);
   const [pendingRegistrars, setPendingRegistrars] = useState([]);
@@ -126,10 +126,6 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
   };
 
   const handleApprove = async (registrarId) => {
-    if (isReadOnly) {
-      return;
-    }
-    
     setActionLoading(prev => ({ ...prev, [registrarId]: 'approving' }));
     
     try {
@@ -156,10 +152,6 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
   };
 
   const handleReject = async (registrarId) => {
-    if (isReadOnly) {
-      return;
-    }
-    
     const reason = prompt('Please provide a reason for rejection:');
     if (!reason) return;
 
@@ -467,7 +459,7 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
                         </div>
                       </td>
                     )}
-                    {activeTab === 'pending' && !isReadOnly && (
+                    {activeTab === 'pending' && (
                       <td>
                         <div className="btn-group btn-group-sm">
                           <button
