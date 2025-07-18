@@ -15,7 +15,11 @@ import workerService from '../../services/workerService';
 import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 
 const BranchAdminTabs = ({ dashboardData }) => {
-  const { user } = useAuth();  
+  const { user } = useAuth();
+  
+  // Determine if user has read-only access (Branch ME)
+  const isReadOnly = user?.role === 'branch_me' || user?.currentRole === 'branch_me';
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingZonalAdmins, setPendingZonalAdmins] = useState([]);
   const [approvedZonalAdmins, setApprovedZonalAdmins] = useState([]);
@@ -427,6 +431,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
                 onApprove={handleApproveZonalAdmin}
                 onReject={handleRejectZonalAdmin}
                 loading={loading}
+                isReadOnly={isReadOnly}
               />
             ))
           )}
@@ -580,17 +585,18 @@ const BranchAdminTabs = ({ dashboardData }) => {
       </ul>      {/* Tab Content */}
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'zones' && <ZonesManagement />}
+        {activeTab === 'zones' && <ZonesManagement isReadOnly={isReadOnly} />}
         {activeTab === 'zonal-admin-management' && (
           <ZoneAdminManagement 
             onPendingCountChange={(count) => setPendingZonalAdmins(Array(count).fill({}))}
+            isReadOnly={isReadOnly}
           />
         )}
-        {activeTab === 'worker-management' && <WorkerManagement />}
-        {activeTab === 'registrar-management' && <RegistrarManagement />}
-        {activeTab === 'events' && <BranchAdminEvents />}
-        {activeTab === 'pickup-stations' && <BranchAdminPickupStationsTab />}
-        {activeTab === 'notifications' && <NotificationTab />}
+        {activeTab === 'worker-management' && <WorkerManagement isReadOnly={isReadOnly} />}
+        {activeTab === 'registrar-management' && <RegistrarManagement isReadOnly={isReadOnly} />}
+        {activeTab === 'events' && <BranchAdminEvents isReadOnly={isReadOnly} />}
+        {activeTab === 'pickup-stations' && <BranchAdminPickupStationsTab isReadOnly={isReadOnly} />}
+        {activeTab === 'notifications' && <NotificationTab isReadOnly={isReadOnly} />}
       </div>
     </div>
   );

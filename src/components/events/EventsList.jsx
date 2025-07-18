@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBadge } from '../../utils/statusUtils.jsx';
 import { ErrorDisplay, EmptyState } from '../common/Loading';
 
-const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent, onEditEvent }) => {
+const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent, onEditEvent, isReadOnly = false }) => {
   
   const handleEditClick = (event) => {
     if (onEditEvent) {
@@ -25,7 +25,7 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent,
         icon="bi-calendar-event"
         title="No Events Found"
         description="There are no events available at the moment. Create your first event to get started."
-        action={onCreateEvent && (
+        action={onCreateEvent && !isReadOnly && (
           <button 
             className="btn btn-primary mt-3"
             onClick={onCreateEvent}
@@ -127,7 +127,7 @@ const EventsList = ({ events, loading, error, canEdit, onRefresh, onCreateEvent,
                   <span className="d-none d-sm-inline"> participants</span>
                 </small>
                 
-                {canEdit && (
+                {canEdit && !isReadOnly && (
                   <button 
                     className="btn btn-sm btn-outline-primary"
                     aria-label={`Edit ${event.name}`}

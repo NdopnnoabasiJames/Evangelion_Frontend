@@ -3,9 +3,10 @@ import { useAuth } from '../../../hooks/useAuth';
 import api from '../../../services/api';
 import '../../../styles/components.css';
 
-const NotificationTab = () => {
+const NotificationTab = ({ isReadOnly = false }) => {
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState('create');
+  // Set default view to 'history' for Branch ME users, 'create' for others
+  const [activeView, setActiveView] = useState(isReadOnly ? 'history' : 'create');
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [guests, setGuests] = useState([]);
@@ -791,32 +792,37 @@ const NotificationTab = () => {
               {/* Action buttons */}
               <div className="history-actions">
                 {/* Show retry for failed notifications or notifications with any failures */}
-                {(() => {
-                  const status = notification.status?.toUpperCase();
-                  const totalFailed = (notification.failedCount || 0) + (notification.failedSmsCount || 0);
-                  const hasFailed = status === 'FAILED' || totalFailed > 0;
-                  return hasFailed;
-                })() && (
-                  <button 
-                    className="btn btn-warning btn-sm"
-                    onClick={() => retryNotification(notification._id)}
-                    disabled={actionLoading.has(notification._id)}
-                    title="Retry failed deliveries"
-                  >
-                    <i className="bi bi-arrow-clockwise me-1"></i>
-                    {actionLoading.has(notification._id) ? 'Retrying...' : 'Retry'}
-                  </button>
+                {/* Hide action buttons for Branch ME users */}
+                {!isReadOnly && (
+                  <>
+                    {(() => {
+                      const status = notification.status?.toUpperCase();
+                      const totalFailed = (notification.failedCount || 0) + (notification.failedSmsCount || 0);
+                      const hasFailed = status === 'FAILED' || totalFailed > 0;
+                      return hasFailed;
+                    })() && (
+                      <button 
+                        className="btn btn-warning btn-sm"
+                        onClick={() => retryNotification(notification._id)}
+                        disabled={actionLoading.has(notification._id)}
+                        title="Retry failed deliveries"
+                      >
+                        <i className="bi bi-arrow-clockwise me-1"></i>
+                        {actionLoading.has(notification._id) ? 'Retrying...' : 'Retry'}
+                      </button>
+                    )}
+                    
+                    <button 
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => deleteNotification(notification._id)}
+                      disabled={actionLoading.has(notification._id)}
+                      title="Delete this notification"
+                    >
+                      <i className="bi bi-trash me-1"></i>
+                      {actionLoading.has(notification._id) ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </>
                 )}
-                
-                <button 
-                  className="btn btn-outline-danger btn-sm"
-                  onClick={() => deleteNotification(notification._id)}
-                  disabled={actionLoading.has(notification._id)}
-                  title="Delete this notification"
-                >
-                  <i className="bi bi-trash me-1"></i>
-                  {actionLoading.has(notification._id) ? 'Deleting...' : 'Delete'}
-                </button>
               </div>
             </div>
           ))
@@ -858,12 +864,15 @@ const NotificationTab = () => {
       <div className="tab-header">
         <h2><i className="bi bi-envelope me-2"></i> Notifications</h2>
         <div className="tab-nav">
-          <button 
-            className={activeView === 'create' ? 'active' : ''}
-            onClick={() => setActiveView('create')}
-          >
-            Create Notification
-          </button>
+          {/* Hide Create Notification tab for Branch ME users */}
+          {!isReadOnly && (
+            <button 
+              className={activeView === 'create' ? 'active' : ''}
+              onClick={() => setActiveView('create')}
+            >
+              Create Notification
+            </button>
+          )}
           <button 
             className={activeView === 'history' ? 'active' : ''}
             onClick={() => setActiveView('history')}
@@ -875,7 +884,8 @@ const NotificationTab = () => {
 
       {error && <div className="error-message">{error}</div>}
 
-      {activeView === 'create' && renderCreateView()}
+      {/* Hide create view for Branch ME users */}
+      {activeView === 'create' && !isReadOnly && renderCreateView()}
       {activeView === 'history' && renderHistory()}
       {preview && renderPreview()}
     </div>

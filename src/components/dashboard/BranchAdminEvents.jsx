@@ -7,7 +7,7 @@ import EventDelegation from '../events/EventDelegation';
 import EventsList from '../events/EventsList';
 import HierarchicalEventCreation from '../events/HierarchicalEventCreation';
 
-const BranchAdminEvents = () => {
+const BranchAdminEvents = ({ isReadOnly = false }) => {
   const [eventActiveTab, setEventActiveTab] = useState('pending');
   
   // API hooks for different event types
@@ -60,6 +60,7 @@ const BranchAdminEvents = () => {
                 events={pendingEvents}
                 userRole="branch_admin"
                 onDelegationComplete={handleDelegationComplete}
+                isReadOnly={isReadOnly}
               />
             </div>
           </div>
@@ -78,7 +79,7 @@ const BranchAdminEvents = () => {
                 Events accessible in your branch - including events you created and events delegated to your branch.
               </p>
             </div>
-            <EventsList events={eventsArray} userRole="branch_admin" />
+            <EventsList events={eventsArray} userRole="branch_admin" isReadOnly={isReadOnly} />
           </div>
         );
 
@@ -134,11 +135,12 @@ const BranchAdminEvents = () => {
                      { count: branchArray.length, className: 'bg-primary' } : null;
             })()
           },
-          {
+          // Hide Create Event tab for Branch ME users
+          ...(!isReadOnly ? [{
             key: 'create',
             label: 'Create Event',
             icon: 'bi-plus-circle'
-          }
+          }] : [])
         ]}
         activeTab={eventActiveTab}
         onTabChange={setEventActiveTab}
@@ -149,9 +151,12 @@ const BranchAdminEvents = () => {
         <TabPane tabId="list">
           {eventActiveTab === 'list' && renderTabContent()}
         </TabPane>
-        <TabPane tabId="create">
-          {eventActiveTab === 'create' && renderTabContent()}
-        </TabPane>
+        {/* Hide Create Event tab for Branch ME users */}
+        {!isReadOnly && (
+          <TabPane tabId="create">
+            {eventActiveTab === 'create' && renderTabContent()}
+          </TabPane>
+        )}
       </TabbedInterface>
     </div>
   );

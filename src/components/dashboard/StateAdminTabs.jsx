@@ -11,6 +11,7 @@ import NotificationTab from './tabs/NotificationTab';
 import WorkersManagement from '../admin/WorkersManagement';
 import GuestsManagement from '../admin/GuestsManagement';
 import analyticsService from '../../services/analyticsService';
+import { toast } from 'react-toastify';
 
 const StateAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
@@ -73,21 +74,27 @@ const StateAdminTabs = ({ dashboardData }) => {
   const handleApproveBranchAdmin = async (adminId, adminData) => {
     try {
       await analyticsService.approveBranchAdmin(adminId, adminData);
+      // Show success message
+      toast.success(`${adminData.name} has been approved successfully!`);
       // Refresh both lists after approval
       loadPendingBranchAdmins();
       loadApprovedBranchAdmins();
     } catch (err) {
       console.error('Error approving branch admin:', err);
+      toast.error('Failed to approve admin. Please try again.');
     }
   };
 
   const handleRejectBranchAdmin = async (adminId, reason) => {
     try {
       await analyticsService.rejectBranchAdmin(adminId, reason);
+      // Show success message
+      toast.success('Admin has been rejected successfully!');
       // Refresh pending list after rejection
       loadPendingBranchAdmins();
     } catch (err) {
       console.error('Error rejecting branch admin:', err);
+      toast.error('Failed to reject admin. Please try again.');
     }
   };
   return (

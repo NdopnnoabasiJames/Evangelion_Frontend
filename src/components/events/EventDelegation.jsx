@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { EmptyState } from '../common/Loading';
 import SelectionModal from './SelectionModal';
 
-const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
+const EventDelegation = ({ events, userRole, onDelegationComplete, isReadOnly = false }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showSelectionModal, setShowSelectionModal] = useState(false);
 
@@ -32,16 +32,20 @@ const EventDelegation = ({ events, userRole, onDelegationComplete }) => {
                     <small className="text-muted">
                       Created by {event.createdBy?.name || 'Unknown'} • {new Date(event.createdAt).toLocaleDateString()}
                     </small>
-                  </div>                  <button 
-                    className="btn btn-warning"
-                    onClick={() => handleSelectForDelegation(event)}
-                  >
-                    <i className="bi bi-arrow-down-square me-2"></i>
-                    {userRole === 'state_admin' 
-                      ? (event.creatorLevel === 'state_admin' ? 'Manage Branches' : 'Select Branches')
-                      : 'Select Zones'
-                    }
-                  </button>
+                  </div>
+                  {/* Hide action buttons for Branch ME users */}
+                  {!isReadOnly && (
+                    <button 
+                      className="btn btn-warning"
+                      onClick={() => handleSelectForDelegation(event)}
+                    >
+                      <i className="bi bi-arrow-down-square me-2"></i>
+                      {userRole === 'state_admin' 
+                        ? (event.creatorLevel === 'state_admin' ? 'Manage Branches' : 'Select Branches')
+                        : 'Select Zones'
+                      }
+                    </button>
+                  )}
                 </div>
               </div>              <div className="card-body">
                 <p className="text-muted mb-2">{event.description}</p>

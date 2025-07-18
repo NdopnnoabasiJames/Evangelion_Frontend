@@ -7,7 +7,7 @@ import PendingZonesTable from './PendingZonesTable';
 import adminManagementService from '../../services/adminManagement';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const ZonesManagement = () => {
+const ZonesManagement = ({ isReadOnly = false }) => {
   const { user } = useAuth();
   const [zones, setZones] = useState([]);
   const [filteredZones, setFilteredZones] = useState([]);
@@ -483,13 +483,16 @@ const ZonesManagement = () => {
               Zones Management
             </h5>
           </div>
-          <button
-            className="btn btn-primary"
-            onClick={openCreateModal}
-          >
-            <i className="bi bi-plus-circle me-2"></i>
-            Add Zone
-          </button>
+          {/* Hide Add Zone button for Branch ME users */}
+          {!isReadOnly && (
+            <button
+              className="btn btn-primary"
+              onClick={openCreateModal}
+            >
+              <i className="bi bi-plus-circle me-2"></i>
+              Add Zone
+            </button>
+          )}
         </div>
         <div className="card-body">
           {/* Subtabs */}
@@ -624,6 +627,7 @@ const ZonesManagement = () => {
             {filteredZones.length > 0 ? (
               <ZonesTable
                 zones={filteredZones}
+                isReadOnly={isReadOnly}
               />
             ) : (
               <div className="text-center text-muted py-5">No zones found.</div>
@@ -650,6 +654,7 @@ const ZonesManagement = () => {
                 <PendingZonesTable
                   zones={pendingZones}
                   user={user}
+                  isReadOnly={isReadOnly}
                 />
               ) : (
                 <div className="text-center text-muted py-5">No pending zones.</div>
@@ -659,6 +664,7 @@ const ZonesManagement = () => {
                 <PendingZonesTable
                   zones={pendingZones}
                   user={user}
+                  isReadOnly={isReadOnly}
                 />
               ) : (
                 <div className="text-center text-muted py-5">No pending zones.</div>
@@ -682,6 +688,7 @@ const ZonesManagement = () => {
             {rejectedZones.length > 0 ? (
               <ZonesTable
                 zones={rejectedZones}
+                isReadOnly={isReadOnly}
               />
             ) : (
               <div className="text-center text-muted py-5">No rejected zones.</div>

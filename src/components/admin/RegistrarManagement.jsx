@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
 import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 
-const RegistrarManagement = () => {
+const RegistrarManagement = ({ isReadOnly = false }) => {
   const [pendingRegistrars, setPendingRegistrars] = useState([]);
   const [approvedRegistrars, setApprovedRegistrars] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -153,7 +153,7 @@ const RegistrarManagement = () => {
             </div>
           </div>
 
-          {isPending ? (
+          {isPending && !isReadOnly ? (
             <div className="d-flex gap-2">
               <button
                 className="btn btn-success btn-sm flex-fill"
@@ -169,6 +169,13 @@ const RegistrarManagement = () => {
                 <i className="bi bi-x-circle me-1"></i>
                 Reject
               </button>
+            </div>
+          ) : isPending && isReadOnly ? (
+            <div className="text-center">
+              <span className="badge bg-warning">
+                <i className="bi bi-clock me-1"></i>
+                Pending Approval
+              </span>
             </div>
           ) : (
             <div className="text-center">

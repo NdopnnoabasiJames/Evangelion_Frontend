@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from '../../utils/constants';
 import { TabPane, TabContent, TabbedInterface } from '../common/TabNavigation';
 import Loading, { ErrorDisplay, EmptyState } from '../common/Loading';
 
-const ZoneAdminManagement = () => {
+const ZoneAdminManagement = ({ onPendingCountChange, isReadOnly = false }) => {
   const [activeTab, setActiveTab] = useState('pending');
   
   // API hooks for zone admin management
@@ -128,22 +128,24 @@ const ZoneAdminManagement = () => {
                   </small>
                 </div>
 
-                <div className="d-flex gap-2">
-                  <button 
-                    className="btn btn-success btn-sm flex-fill"
-                    onClick={() => handleApprove(admin._id)}
-                  >
-                    <i className="bi bi-check-circle me-1"></i>
-                    Approve
-                  </button>
-                  <button 
-                    className="btn btn-danger btn-sm flex-fill"
-                    onClick={() => handleReject(admin._id)}
-                  >
-                    <i className="bi bi-x-circle me-1"></i>
-                    Reject
-                  </button>
-                </div>
+                {!isReadOnly && (
+                  <div className="d-flex gap-2">
+                    <button 
+                      className="btn btn-success btn-sm flex-fill"
+                      onClick={() => handleApprove(admin._id)}
+                    >
+                      <i className="bi bi-check-circle me-1"></i>
+                      Approve
+                    </button>
+                    <button 
+                      className="btn btn-danger btn-sm flex-fill"
+                      onClick={() => handleReject(admin._id)}
+                    >
+                      <i className="bi bi-x-circle me-1"></i>
+                      Reject
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { StatusBadge } from '../../utils/statusUtils';
 import { API_ENDPOINTS, STATUS, API_BASE_URL } from '../../utils/constants';
 import workerService from '../../services/workerService';
 
-const WorkerManagement = () => {
+const WorkerManagement = ({ isReadOnly = false }) => {
   const [pendingWorkers, setPendingWorkers] = useState([]);
   const [approvedWorkers, setApprovedWorkers] = useState([]);
   const [pendingVolunteerRequests, setPendingVolunteerRequests] = useState([]);
@@ -237,7 +237,7 @@ const WorkerManagement = () => {
             </div>
           </div>
 
-          {isPending && (
+          {isPending && !isReadOnly && (
             <div className="d-flex gap-2">
               <button
                 className="btn btn-success btn-sm flex-fill"
@@ -316,36 +316,38 @@ const WorkerManagement = () => {
             </div>
           </div>
 
-          <div className="d-flex gap-2">
-            <button
-              className="btn btn-success btn-sm flex-fill"
-              onClick={() => handleApproveVolunteerRequest(request.eventId, request.requestId)}
-              disabled={actionLoading[request.requestId]}
-            >
-              {actionLoading[request.requestId] === 'approving' ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Approving...
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-check-lg me-1"></i>
-                  Approve
-                </>
-              )}
-            </button>
-            <button
-              className="btn btn-danger btn-sm"
-              onClick={() => handleRejectVolunteerRequest(request.eventId, request.requestId)}
-              disabled={actionLoading[request.requestId]}
-            >
-              {actionLoading[request.requestId] === 'rejecting' ? (
-                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              ) : (
-                <i className="bi bi-x-lg"></i>
-              )}
-            </button>
-          </div>
+          {!isReadOnly && (
+            <div className="d-flex gap-2">
+              <button
+                className="btn btn-success btn-sm flex-fill"
+                onClick={() => handleApproveVolunteerRequest(request.eventId, request.requestId)}
+                disabled={actionLoading[request.requestId]}
+              >
+                {actionLoading[request.requestId] === 'approving' ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Approving...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-lg me-1"></i>
+                    Approve
+                  </>
+                )}
+              </button>
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={() => handleRejectVolunteerRequest(request.eventId, request.requestId)}
+                disabled={actionLoading[request.requestId]}
+              >
+                {actionLoading[request.requestId] === 'rejecting' ? (
+                  <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                ) : (
+                  <i className="bi bi-x-lg"></i>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
