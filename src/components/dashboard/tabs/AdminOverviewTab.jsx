@@ -213,10 +213,6 @@ const AdminOverviewTab = ({ dashboardData, setActiveTab }) => {
                   <i className="fas fa-calendar me-2"></i>
                   Manage Events
                 </button>
-                <button className="btn btn-outline-primary">
-                  <i className="fas fa-download me-2"></i>
-                  Export System Report
-                </button>
                 <button 
                   className="btn btn-outline-secondary"
                   onClick={() => setActiveTab('states')}
