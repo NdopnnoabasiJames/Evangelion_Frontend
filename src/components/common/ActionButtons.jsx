@@ -33,6 +33,7 @@ export const ApprovalActions = ({
     
     if (onApprove) {
       await onApprove(itemId);
+      alert('approved successfully!'); // Optional success message
     }
   };
 
@@ -43,6 +44,7 @@ export const ApprovalActions = ({
     
     if (onReject) {
       await onReject(itemId);
+      alert('rejected successfully!'); // Optional success message
     }
   };
 

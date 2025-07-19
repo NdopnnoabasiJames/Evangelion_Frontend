@@ -8,7 +8,7 @@ import BranchModal from './BranchModal';
 import BranchesTable from './BranchesTable';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const BranchesManagement = () => {
+const BranchesManagement = ({ isReadOnly = false }) => {
   const { user } = useAuth();
   const [branches, setBranches] = useState([]);
   const [filteredBranches, setFilteredBranches] = useState([]);
@@ -412,13 +412,16 @@ const BranchesManagement = () => {
             </h5>
             <small className="text-muted">Manage branches in {user?.state?.name || 'your state'}</small>
           </div>
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <i className="bi bi-plus-circle me-2"></i>
-            Create Branch
-          </button>
+          {/* Hide Create Branch button for Super ME users */}
+          {!isReadOnly && (
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <i className="bi bi-plus-circle me-2"></i>
+              Create Branch
+            </button>
+          )}
         </div>
         <div className="card-body">
           {/* Sub-tabs for Super Admin and State Admin: Pending Approval and Rejected */}
@@ -456,6 +459,7 @@ const BranchesManagement = () => {
                 clearFilters={clearFilters}
                 getUniqueStates={getUniqueStates}
                 error={error}
+                isReadOnly={isReadOnly}
               />
             </>
           )}

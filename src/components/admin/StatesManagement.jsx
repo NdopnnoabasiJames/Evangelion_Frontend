@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from '../../utils/constants';
 import { analyticsService } from '../../services/analyticsService';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const StatesManagement = () => {  const [states, setStates] = useState([]);
+const StatesManagement = ({ isReadOnly = false }) => {  const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -242,13 +242,16 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
             </h5>
             <small className="text-muted">Manage all states in the system</small>
           </div>
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <i className="bi bi-plus-circle me-2"></i>
-            Add New State
-          </button>
+          {/* Hide Add New State button for Super ME users */}
+          {!isReadOnly && (
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <i className="bi bi-plus-circle me-2"></i>
+              Add New State
+            </button>
+          )}
         </div>
         
         <div className="card-body">
@@ -333,13 +336,16 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
               <i className="bi bi-map text-muted" style={{ fontSize: '3rem' }}></i>
               <h6 className="text-muted mt-3">No States Found</h6>
               <p className="text-muted">No states have been created yet.</p>
-              <button 
-                className="btn btn-primary"
-                onClick={() => setShowCreateModal(true)}
-              >
-                <i className="bi bi-plus-circle me-2"></i>
-                Create First State
-              </button>
+              {/* Hide Create First State button for Super ME users */}
+              {!isReadOnly && (
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  <i className="bi bi-plus-circle me-2"></i>
+                  Create First State
+                </button>
+              )}
             </div>
           ) : filteredStates.length === 0 ? (
             <div className="text-center py-5">
@@ -442,21 +448,26 @@ const StatesManagement = () => {  const [states, setStates] = useState([]);
                           </span>
                         </td>
                         <td>
-                          <div className="btn-group btn-group-sm">
-                            <button
-                              className="btn btn-outline-primary"
-                              onClick={() => setEditingState(state)}
-                              title="Edit state"
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </button>
-                            <button
-                              className="btn btn-outline-info"
-                              title="View details"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </button>
-                          </div>
+                          {/* Hide action buttons for Super ME users */}
+                          {!isReadOnly ? (
+                            <div className="btn-group btn-group-sm">
+                              <button
+                                className="btn btn-outline-primary"
+                                onClick={() => setEditingState(state)}
+                                title="Edit state"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </button>
+                              <button
+                                className="btn btn-outline-info"
+                                title="View details"
+                              >
+                                <i className="bi bi-eye"></i>
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-muted">View only</span>
+                          )}
                         </td>
                       </tr>
                     ))}

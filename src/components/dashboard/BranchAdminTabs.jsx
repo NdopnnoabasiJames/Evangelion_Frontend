@@ -20,6 +20,15 @@ const BranchAdminTabs = ({ dashboardData }) => {
   // Determine if user has read-only access (Branch ME)
   const isReadOnly = user?.role === 'branch_me' || user?.currentRole === 'branch_me';
   
+  // DEBUG: Add console logs to track the read-only state
+  console.log('🔍 BranchAdminTabs DEBUG:', {
+    userRole: user?.role,
+    userCurrentRole: user?.currentRole,
+    isReadOnly: isReadOnly,
+    userName: user?.name,
+    userEmail: user?.email
+  });
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingZonalAdmins, setPendingZonalAdmins] = useState([]);
   const [approvedZonalAdmins, setApprovedZonalAdmins] = useState([]);
@@ -63,6 +72,13 @@ const BranchAdminTabs = ({ dashboardData }) => {
     } catch (err) {
       console.error('Error loading branch statistics:', err);
       setError(err.message || 'Failed to load branch statistics');
+      // Set default values only on error
+      setBranchStatistics({
+        totalZones: 0,
+        activeEvents: 0,
+        totalGuests: 0,
+        totalRegistrations: 0
+      });
     } finally {
       setLoading(false);
     }

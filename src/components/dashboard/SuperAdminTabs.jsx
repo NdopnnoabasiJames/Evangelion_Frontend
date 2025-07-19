@@ -17,6 +17,9 @@ import RegistrarsManagement from '../admin/RegistrarsManagement';
 const SuperAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
   
+  // Determine if user should have read-only access (Super ME)
+  const isReadOnly = user?.role === 'super_me';
+  
   // Import custom hooks for admin management only
   const adminHooks = useAdminManagement();
   
@@ -60,10 +63,11 @@ const SuperAdminTabs = ({ dashboardData }) => {
   const loadPendingAdmins = () => adminHooks.loadPendingAdmins(setPendingAdmins, setLoading, setError);
   const loadApprovedAdmins = () => adminHooks.loadApprovedAdmins(setApprovedAdmins, setApprovedLoading, setApprovedError);
   const handleApproveAdmin = (adminId) => adminHooks.handleApproveAdmin(adminId, loadPendingAdmins, loadApprovedAdmins, setError);
-  const handleRejectAdmin = (adminId, reason) => adminHooks.handleRejectAdmin(adminId, reason, loadPendingAdmins, setError);const renderOverview = () => (
+  const handleRejectAdmin = (adminId, reason) => adminHooks.handleRejectAdmin(adminId, reason, loadPendingAdmins, setError);  const renderOverview = () => (
     <AdminOverviewTab 
       dashboardData={dashboardData}
       setActiveTab={setActiveTab}
+      isReadOnly={isReadOnly}
     />
   );
 
@@ -79,11 +83,12 @@ const SuperAdminTabs = ({ dashboardData }) => {
       loadApprovedAdmins={loadApprovedAdmins}
       handleApproveAdmin={handleApproveAdmin}
       handleRejectAdmin={handleRejectAdmin}
+      isReadOnly={isReadOnly}
     />
   );
 
   const renderStatesManagement = () => (
-    <AdminStatesTab />
+    <AdminStatesTab isReadOnly={isReadOnly} />
   );
 
   const renderEventManagement = () => (
@@ -97,19 +102,20 @@ const SuperAdminTabs = ({ dashboardData }) => {
       refetchEvents={refetchEvents}
       refetchHierarchicalEvents={refetchHierarchicalEvents}
       user={user}
+      isReadOnly={isReadOnly}
     />
   );
-  const renderBranches = () => <AdminBranchesTab />;
+  const renderBranches = () => <AdminBranchesTab isReadOnly={isReadOnly} />;
 
-  const renderZones = () => <AdminZonesTab />;
+  const renderZones = () => <AdminZonesTab isReadOnly={isReadOnly} />;
 
-  const renderWorkers = () => <AdminWorkersTab />;
+  const renderWorkers = () => <AdminWorkersTab isReadOnly={isReadOnly} />;
 
-  const renderGuests = () => <AdminGuestsTab />;
+  const renderGuests = () => <AdminGuestsTab isReadOnly={isReadOnly} />;
 
-  const renderPickupStations = () => <SuperAdminPickupStationsTab />;
+  const renderPickupStations = () => <SuperAdminPickupStationsTab isReadOnly={isReadOnly} />;
 
-  const renderRegistrars = () => <RegistrarsManagement />;
+  const renderRegistrars = () => <RegistrarsManagement isReadOnly={isReadOnly} />;
 
   return (
     <div className="admin-tabs-container">

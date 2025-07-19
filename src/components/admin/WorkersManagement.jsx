@@ -5,7 +5,7 @@ import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import { analyticsService } from '../../services/analyticsService';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const WorkersManagement = () => {
+const WorkersManagement = ({ isReadOnly = false }) => {
   const { user } = useAuth();
   const [workers, setWorkers] = useState([]);
   const [filteredWorkers, setFilteredWorkers] = useState([]);
@@ -21,7 +21,7 @@ const WorkersManagement = () => {
     scoreOperator: 'greater'
   });
 
-  // Modal states
+  // Modal statesis
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [showWorkerModal, setShowWorkerModal] = useState(false);
 
@@ -484,22 +484,26 @@ const WorkersManagement = () => {
                           </span>
                         </td>
                         <td>
-                          <div className="btn-group btn-group-sm">
-                            <button
-                              className="btn btn-outline-info"
-                              title="View details"
-                              onClick={() => handleViewWorker(worker)}
-                            >
-                              <i className="bi bi-eye"></i>
-                            </button>
-                            <button
-                              className={`btn ${worker.isActive ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                              title={worker.isActive ? 'Disable worker' : 'Enable worker'}
-                              onClick={() => handleToggleWorkerStatus(worker)}
-                            >
-                              <i className={`bi ${worker.isActive ? 'bi-pause' : 'bi-play'}`}></i>
-                            </button>
-                          </div>
+                          {!isReadOnly ? (
+                            <div className="btn-group btn-group-sm">
+                              <button
+                                className="btn btn-outline-info"
+                                title="View details"
+                                onClick={() => handleViewWorker(worker)}
+                              >
+                                <i className="bi bi-eye"></i>
+                              </button>
+                              <button
+                                className={`btn ${worker.isActive ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                title={worker.isActive ? 'Disable worker' : 'Enable worker'}
+                                onClick={() => handleToggleWorkerStatus(worker)}
+                              >
+                                <i className={`bi ${worker.isActive ? 'bi-pause' : 'bi-play'}`}></i>
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-muted">View only</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -616,16 +620,18 @@ const WorkersManagement = () => {
                 >
                   Close
                 </button>
-                <button
-                  type="button"
-                  className={`btn ${selectedWorker.isActive ? 'btn-warning' : 'btn-success'}`}
-                  onClick={() => {
-                    handleToggleWorkerStatus(selectedWorker);
-                    setShowWorkerModal(false);
-                  }}
-                >
-                  {selectedWorker.isActive ? 'Disable Worker' : 'Enable Worker'}
-                </button>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    className={`btn ${selectedWorker.isActive ? 'btn-warning' : 'btn-success'}`}
+                    onClick={() => {
+                      handleToggleWorkerStatus(selectedWorker);
+                      setShowWorkerModal(false);
+                    }}
+                  >
+                    {selectedWorker.isActive ? 'Disable Worker' : 'Enable Worker'}
+                  </button>
+                )}
               </div>
             </div>
           </div>

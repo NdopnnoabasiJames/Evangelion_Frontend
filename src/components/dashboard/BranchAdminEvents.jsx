@@ -79,7 +79,14 @@ const BranchAdminEvents = ({ isReadOnly = false }) => {
                 Events accessible in your branch - including events you created and events delegated to your branch.
               </p>
             </div>
-            <EventsList events={eventsArray} userRole="branch_admin" isReadOnly={isReadOnly} />
+            <EventsList 
+              events={eventsArray} 
+              userRole="branch_admin" 
+              isReadOnly={isReadOnly}
+              canEdit={!isReadOnly}
+              onRefresh={refetchEvents}
+              {...(!isReadOnly && { onEditEvent: () => console.log('Edit event clicked') })}
+            />
           </div>
         );
 

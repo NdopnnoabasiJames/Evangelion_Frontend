@@ -14,7 +14,8 @@ const AdminEventsTab = ({
   setEventActiveTab,
   refetchEvents,
   refetchHierarchicalEvents,
-  user
+  user,
+  isReadOnly = false
 }) => {
   const [editingEvent, setEditingEvent] = useState(null);
   
@@ -28,12 +29,13 @@ const AdminEventsTab = ({
       label: 'All Events',
       icon: 'bi-list-ul'
     },
-    {
+    // Hide Create Event tab for Super ME users
+    ...(!isReadOnly ? [{
       key: 'create',
       label: 'Create Event',
       icon: 'bi-plus-circle'
-    },
-    ...(editingEvent ? [{
+    }] : []),
+    ...(editingEvent && !isReadOnly ? [{
       key: 'edit',
       label: 'Edit Event',
       icon: 'bi-pencil-square'
@@ -84,34 +86,37 @@ const AdminEventsTab = ({
                 events={events}
                 loading={eventsLoading}
                 error={eventsError}
-                canManage={true} // Super admin can manage all events
-                canEdit={true}
-                canDelete={true}
-                onEditEvent={handleEditEvent}
+                canManage={!isReadOnly} // Super admin can manage all events
+                canEdit={!isReadOnly}
+                canDelete={!isReadOnly}
+                isReadOnly={isReadOnly}
+                onEditEvent={!isReadOnly ? handleEditEvent : undefined}
                 onRefresh={() => {
                   refetchEvents();
                   refetchHierarchicalEvents();
                 }}
-                onCreateEvent={() => {
+                onCreateEvent={!isReadOnly ? () => {
                   setEventActiveTab('create');
-                }}
+                } : undefined}
               />
             </div>
           </TabPane>
 
-          <TabPane tabId="create" title="Create Event">
-            <HierarchicalEventCreation 
-              userRole={user?.role || 'super_admin'}
-              onEventCreated={() => {
-                refetchEvents();
-                refetchHierarchicalEvents();
-                // Switch back to list tab after creation
-                setEventActiveTab('list');
-              }}
-            />
-          </TabPane>
+          {!isReadOnly && (
+            <TabPane tabId="create" title="Create Event">
+              <HierarchicalEventCreation 
+                userRole={user?.role || 'super_admin'}
+                onEventCreated={() => {
+                  refetchEvents();
+                  refetchHierarchicalEvents();
+                  // Switch back to list tab after creation
+                  setEventActiveTab('list');
+                }}
+              />
+            </TabPane>
+          )}
 
-          {editingEvent && (
+          {editingEvent && !isReadOnly && (
             <TabPane tabId="edit" title="Edit Event">
               <HierarchicalEventCreation 
                 userRole={user?.role || 'super_admin'}
@@ -137,15 +142,16 @@ const AdminEventsTab = ({
                 events={hierarchicalEventsData || []}
                 loading={eventsLoading}
                 error={eventsError}
-                canManage={true}
-                canEdit={true}
-                canDelete={true}
+                canManage={!isReadOnly}
+                canEdit={!isReadOnly}
+                canDelete={!isReadOnly}
+                isReadOnly={isReadOnly}
                 showHierarchy={true}
-                onEditEvent={handleEditEvent}
+                onEditEvent={!isReadOnly ? handleEditEvent : undefined}
                 onRefresh={refetchHierarchicalEvents}
-                onCreateEvent={() => {
+                onCreateEvent={!isReadOnly ? () => {
                   setEventActiveTab('create');
-                }}
+                } : undefined}
               />
             </div>
           </TabPane>

@@ -258,12 +258,14 @@ export const dashboardService = {
   getDashboardStatsByRole: async (userRole) => {
     switch (userRole) {
       case "super_admin":
+      case "super_me":
         // Dynamically import to avoid circular dependency
         const { systemMetricsService } = await import("./systemMetricsService");
         return systemMetricsService.getEnhancedSuperAdminStats();
       case "state_admin":
         return dashboardService.getStateAdminDashboardStats();
       case "branch_admin":
+      case "branch_me":
         return dashboardService.getBranchAdminDashboardStats();
       case "worker":
         return dashboardService.getWorkerDashboardStats();

@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from '../../utils/constants';
 import { toast } from 'react-toastify';
 import { exportToExcel } from '../../utils/exportUtils';
 
-const RegistrarsManagement = () => {
+const RegistrarsManagement = ({ isReadOnly = false }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [registrars, setRegistrars] = useState([]);
   const [pendingRegistrars, setPendingRegistrars] = useState([]);
@@ -418,7 +418,7 @@ const RegistrarsManagement = () => {
                   <th>Registration Date</th>
                   <th>Status</th>
                   {activeTab === 'all' && <th>Checked-in Guests</th>}
-                  {activeTab === 'pending' && <th>Actions</th>}
+                  {activeTab === 'pending' && !isReadOnly && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -459,7 +459,7 @@ const RegistrarsManagement = () => {
                         </div>
                       </td>
                     )}
-                    {activeTab === 'pending' && (
+                    {activeTab === 'pending' && !isReadOnly && (
                       <td>
                         <div className="btn-group btn-group-sm">
                           <button

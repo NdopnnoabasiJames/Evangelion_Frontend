@@ -13,7 +13,8 @@ const AdminManagementTab = ({
   loadPendingAdmins,
   loadApprovedAdmins,
   handleApproveAdmin,
-  handleRejectAdmin
+  handleRejectAdmin,
+  isReadOnly = false
 }) => {
   if (loading) {
     return (
@@ -73,6 +74,7 @@ const AdminManagementTab = ({
               onApprove={handleApproveAdmin}
               onReject={handleRejectAdmin}
               loading={loading}
+              isReadOnly={isReadOnly}
             />
           ))
         )}

@@ -1,10 +1,10 @@
 import React from 'react';
 import WorkersManagement from '../../admin/WorkersManagement';
 
-const AdminWorkersTab = () => {
+const AdminWorkersTab = ({ isReadOnly = false }) => {
   return (
     <div className="tab-pane fade show active">
-      <WorkersManagement />
+      <WorkersManagement isReadOnly={isReadOnly} />
     </div>
   );
 };
