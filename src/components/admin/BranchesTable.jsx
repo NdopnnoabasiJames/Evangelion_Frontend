@@ -153,7 +153,7 @@ const BranchesTable = ({ branches, filters, handleFilterChange, clearFilters, ge
                     <span className="badge bg-success">{branch.totalScore || 0} pts</span>
                   </td>
                   <td>
-                    <span className="badge bg-info">{branch.zoneCount || 0}</span>
+                    <span className="badge bg-info">{branch.zonesCount || 0}</span>
                   </td>
                   <td>
                     <span className={`badge ${branch.isActive ? 'bg-success' : 'bg-warning'}`}>
