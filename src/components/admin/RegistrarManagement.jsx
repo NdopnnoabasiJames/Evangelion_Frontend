@@ -66,13 +66,12 @@ const RegistrarManagement = ({ isReadOnly = false }) => {
 
   const handleApproveRegistrar = async (registrarId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.APPROVE}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.APPROVE}/${registrarId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify({ registrarId })
+        }
       });
 
       if (response.ok) {
@@ -91,14 +90,13 @@ const RegistrarManagement = ({ isReadOnly = false }) => {
     const reason = prompt('Please provide a reason for rejection (optional):');
 
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.REJECT}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.REGISTRARS.REJECT}/${registrarId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         },
         body: JSON.stringify({ 
-          registrarId,
           reason: reason || undefined 
         })
       });
@@ -133,8 +131,8 @@ const RegistrarManagement = ({ isReadOnly = false }) => {
           <div className="mb-3">
             <div className="row g-2 text-sm">
               <div className="col-6">
-                <strong>Phone:</strong>
-                <div className="text-muted">{registrar.phone || 'N/A'}</div>
+                <strong>Role:</strong>
+                <div className="text-muted">{registrar.role?.toUpperCase() || 'N/A'}</div>
               </div>
               <div className="col-6">
                 <strong>State:</strong>
