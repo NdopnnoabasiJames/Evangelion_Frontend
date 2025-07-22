@@ -20,15 +20,6 @@ const BranchAdminTabs = ({ dashboardData }) => {
   // Determine if user has read-only access (Branch ME)
   const isReadOnly = user?.role === 'branch_me' || user?.currentRole === 'branch_me';
   
-  // DEBUG: Add console logs to track the read-only state
-  console.log('🔍 BranchAdminTabs DEBUG:', {
-    userRole: user?.role,
-    userCurrentRole: user?.currentRole,
-    isReadOnly: isReadOnly,
-    userName: user?.name,
-    userEmail: user?.email
-  });
-  
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingZonalAdmins, setPendingZonalAdmins] = useState([]);
   const [approvedZonalAdmins, setApprovedZonalAdmins] = useState([]);
@@ -561,7 +552,7 @@ const BranchAdminTabs = ({ dashboardData }) => {
             type="button"
           >
             <i className="bi bi-clipboard-check me-2"></i>
-            Manage Registrars
+            Manage Registrars & PCUs
             {pendingRegistrars.length > 0 && (
               <span className="badge bg-warning text-dark ms-2">
                 {pendingRegistrars.length}

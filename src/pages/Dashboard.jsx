@@ -125,6 +125,13 @@ const Dashboard = () => {
           totalCheckins: 312,
           recentActivity: "Check-in session active",
         };
+      case ROLES.PCU:
+        return {
+          ...baseData,
+          firstTimersToday: 18,
+          totalFirstTimers: 156,
+          recentActivity: "First timer marked",
+        };
       default:
         return baseData;
     }
@@ -172,6 +179,9 @@ const Dashboard = () => {
         return <WorkerTabs dashboardData={dashboardData} />;
 
       case ROLES.REGISTRAR:
+        return <RegistrarTabs dashboardData={dashboardData} />;
+
+      case ROLES.PCU:
         return <RegistrarTabs dashboardData={dashboardData} />;
 
       default:

@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoadingCard, ErrorDisplay, EmptyState } from '../common/Loading';
-import { API_ENDPOINTS } from '../../utils/constants';
+import { API_ENDPOINTS, ROLES } from '../../utils/constants';
 import api from '../../services/api';
 import RoleSwitchingSection from './RoleSwitchingSection';
 
 const RegistrarTabs = ({ dashboardData }) => {
   const { user } = useAuth();
+  const isPCU = user?.role === ROLES.PCU;
+  const isRegistrar = user?.role === ROLES.REGISTRAR;
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [allEvents, setAllEvents] = useState([]);
   const [myEvents, setMyEvents] = useState([]);
@@ -132,6 +135,31 @@ const RegistrarTabs = ({ dashboardData }) => {
       console.error('Error checking in guest:', err);
       const errorMessage = err.response?.data?.message || 'Error checking in guest';
       alert(`Failed to check in guest: ${errorMessage}`);
+    }
+  };
+
+  const handleMarkFirstTimer = async (guestId) => {
+    try {
+      const response = await api.post(`${API_ENDPOINTS.REGISTRARS.BASE}/guests/${guestId}/mark-first-timer`);
+      
+      // Refresh the guest list
+      loadEventGuests(selectedEvent._id);
+      // Refresh stats
+      loadOverviewStats();
+      
+      if (window.showNotification) {
+        window.showNotification('Guest marked as first timer successfully!', 'success');
+      } else {
+        alert('Guest marked as first timer successfully!');
+      }
+    } catch (err) {
+      console.error('Error marking guest as first timer:', err);
+      const errorMessage = err.response?.data?.message || 'Error marking guest as first timer';
+      if (window.showNotification) {
+        window.showNotification(`Failed to mark as first timer: ${errorMessage}`, 'error');
+      } else {
+        alert(`Failed to mark as first timer: ${errorMessage}`);
+      }
     }
   };
 
@@ -450,7 +478,9 @@ const RegistrarTabs = ({ dashboardData }) => {
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h5 className="mb-0">My Approved Events</h5>
-        <small className="text-muted">Events where you can check in guests</small>
+        <small className="text-muted">
+          Events where you can {isPCU ? 'mark guests as first timers' : 'check in guests'}
+        </small>
       </div>
       
       {loading ? (
@@ -478,7 +508,7 @@ const RegistrarTabs = ({ dashboardData }) => {
             >
               <i className="bi bi-arrow-left"></i>
             </button>
-            Guest Check-In: {selectedEvent?.name || 'Event'}
+            {isPCU ? 'Guest First Timer Marking' : 'Guest Check-In'}: {selectedEvent?.name || 'Event'}
           </h5>
           <small className="text-muted">
             <i className="bi bi-geo-alt me-1"></i>
@@ -520,8 +550,10 @@ const RegistrarTabs = ({ dashboardData }) => {
                     <th scope="col">Phone</th>
                     <th scope="col">Email</th>
                     <th scope="col">Registered By</th>
+                    {isPCU && <th scope="col">Checked In By</th>}
                     <th scope="col">Comments</th>
                     <th scope="col">Status</th>
+                    {isPCU && <th scope="col">First Timer</th>}
                     <th scope="col">Check-In Time</th>
                     <th scope="col">Action</th>
                   </tr>
@@ -544,12 +576,31 @@ const RegistrarTabs = ({ dashboardData }) => {
                           <small className="text-muted">Unknown</small>
                         )}
                       </td>
+                      {isPCU && (
+                        <td>
+                          {guest.checkedInBy ? (
+                            <div>
+                              <div className="fw-semibold">{guest.checkedInBy.name}</div>
+                              <small className="text-muted">{guest.checkedInBy.email}</small>
+                            </div>
+                          ) : (
+                            <small className="text-muted">Not checked in</small>
+                          )}
+                        </td>
+                      )}
                       <td className="text-muted">{guest.comments || '-'}</td>
                       <td>
-                        <span className={`badge ${guest.checkedIn ? 'bg-success' : 'bg-warning'}`}>
+                        <span className={`badge ${guest.checkedIn ? 'bg-success' : 'bg-warning'} ${guest.firstTimer ? 'opacity-75' : ''}`}>
                           {guest.checkedIn ? 'Checked In' : 'Registered'}
                         </span>
                       </td>
+                      {isPCU && (
+                        <td>
+                          <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-secondary'}`}>
+                            {guest.firstTimer ? 'First Timer' : 'Regular'}
+                          </span>
+                        </td>
+                      )}
                       <td>
                         {guest.checkedInTime ? (
                           <div>
@@ -566,17 +617,37 @@ const RegistrarTabs = ({ dashboardData }) => {
                         )}
                       </td>
                       <td>
-                        <button
-                          className={`btn btn-sm ${guest.checkedIn ? 'btn-success' : 'btn-primary'}`}
-                          onClick={() => handleCheckInGuest(guest._id)}
-                          disabled={guest.checkedIn}
-                        >
-                          {guest.checkedIn ? (
-                            <><i className="bi bi-check-circle me-1"></i>Checked In</>
+                        {isPCU ? (
+                          // PCU sees First Timer button for checked-in guests
+                          guest.checkedIn ? (
+                            <button
+                              className={`btn btn-sm ${guest.firstTimer ? 'btn-success' : 'btn-info'}`}
+                              onClick={() => handleMarkFirstTimer(guest._id)}
+                              disabled={guest.firstTimer}
+                            >
+                              {guest.firstTimer ? (
+                                <><i className="bi bi-star-fill me-1"></i>First Timer</>
+                              ) : (
+                                <><i className="bi bi-star me-1"></i>Mark First Timer</>
+                              )}
+                            </button>
                           ) : (
-                            <><i className="bi bi-person-check me-1"></i>Check In</>
-                          )}
-                        </button>
+                            <small className="text-muted">Not checked in</small>
+                          )
+                        ) : (
+                          // Registrar sees Check In button
+                          <button
+                            className={`btn btn-sm ${guest.checkedIn ? 'btn-success' : 'btn-primary'}`}
+                            onClick={() => handleCheckInGuest(guest._id)}
+                            disabled={guest.checkedIn}
+                          >
+                            {guest.checkedIn ? (
+                              <><i className="bi bi-check-circle me-1"></i>Checked In</>
+                            ) : (
+                              <><i className="bi bi-person-check me-1"></i>Check In</>
+                            )}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

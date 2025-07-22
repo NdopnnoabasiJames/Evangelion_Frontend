@@ -198,7 +198,7 @@ const RegistrarManagement = ({ isReadOnly = false }) => {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h5 className="mb-0">Registrar Management</h5>
+        <h5 className="mb-0">Registrar & PCU Management</h5>
         <div className="btn-group" role="group">
           <button
             className={`btn ${activeView === 'pending' ? 'btn-primary' : 'btn-outline-primary'}`}
@@ -223,7 +223,7 @@ const RegistrarManagement = ({ isReadOnly = false }) => {
         <div>
           {activeView === 'pending' ? (
             pendingRegistrars.length === 0 ? (
-              <EmptyState message="No pending registrar requests" />
+              <EmptyState message="No pending registrar or PCU requests" />
             ) : (
               <div className="row g-3">
                 {pendingRegistrars.map(registrar => renderRegistrarCard(registrar, true))}
@@ -231,7 +231,7 @@ const RegistrarManagement = ({ isReadOnly = false }) => {
             )
           ) : (
             approvedRegistrars.length === 0 ? (
-              <EmptyState message="No approved registrars yet" />
+              <EmptyState message="No approved registrars or PCUs yet" />
             ) : (
               <div className="row g-3">
                 {approvedRegistrars.map(registrar => renderRegistrarCard(registrar, false))}
