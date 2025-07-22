@@ -421,6 +421,7 @@ const GuestsManagement = () => {
                     <th>State</th>
                     <th>Transport</th>
                     <th>New Convert</th>
+                    <th>First Timer</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -475,8 +476,13 @@ const GuestsManagement = () => {
                           </span>
                         </td>
                         <td>
-                          <span className={`badge ${getStatusBadgeClass(guest.status)}`}>
-                            {formatStatusText(guest.status)}
+                          <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-light text-dark'}`}>
+                            {guest.firstTimer ? 'Yes' : 'No'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${guest.checkedIn ? 'bg-success' : 'bg-secondary'} text-white`}>
+                            {guest.checkedIn ? 'Checked In' : 'Not Checked In'}
                           </span>
                         </td>
                       </tr>

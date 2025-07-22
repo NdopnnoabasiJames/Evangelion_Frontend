@@ -331,12 +331,14 @@ const Guests = () => {
                     renderItem={() => (
                       <div className="table-responsive">
                         <table className="table table-hover mb-0">
-                          <thead className="table-light">                            <tr>
+                          <thead className="table-light">
+                            <tr>
                               <th>Name</th>
                               <th>Phone</th>
                               <th>Email</th>
                               <th>Transport</th>
                               <th>New Convert</th>
+                              <th>First Timer</th>
                               <th>Status</th>
                               <th>Registered By</th>
                               <th>Comments</th>
@@ -344,7 +346,13 @@ const Guests = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {guests.map(guest => (
+                            {guests.map(guest => {
+                              console.log('🔍 DEBUG: Rendering guest:', guest.name, {
+                                firstTimer: guest.firstTimer,
+                                status: guest.status,
+                                fullGuest: guest
+                              });
+                              return (
                               <tr key={guest._id}>
                                 <td>
                                   <div className="fw-medium">{guest.name}</div>
@@ -371,7 +379,16 @@ const Guests = () => {
                                     {guest.isNewConvert ? 'Yes' : 'No'}
                                   </span>
                                 </td>
-                                <td>{getStatusBadge(guest.status)}</td>                                <td className="text-muted">
+                                <td>
+                                  <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-light text-dark'}`}>
+                                    {guest.firstTimer ? 'Yes' : 'No'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className={`badge ${guest.checkedIn ? 'bg-success' : 'bg-secondary'} text-white`}>
+                                    {guest.checkedIn ? 'Checked In' : 'Not Checked In'}
+                                  </span>
+                                </td>                                <td className="text-muted">
                                   {guest.registeredBy?.name || 'Unknown'}
                                 </td>
                                 <td className="text-muted">
@@ -384,7 +401,8 @@ const Guests = () => {
                                   }
                                 </td>
                               </tr>
-                            ))}
+                            );
+                            })}
                           </tbody>
                         </table>
                       </div>

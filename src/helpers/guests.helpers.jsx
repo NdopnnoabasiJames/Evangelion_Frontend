@@ -29,11 +29,13 @@ export const fetchGuestsHelper = async ({
     let endpoint = '';
     if ([
       'SUPER_ADMIN',
+      'SUPER_ME',
       'STATE_ADMIN',
       'BRANCH_ADMIN',
+      'BRANCH_ME',
       'ZONAL_ADMIN'
     ].includes(user?.role)) {
-      endpoint = `${API_ENDPOINTS.GUESTS.ADMIN}${selectedEvent ? `?eventId=${selectedEvent}` : ''}`;
+      endpoint = `${API_ENDPOINTS.ADMIN.GUESTS}${selectedEvent ? `?eventId=${selectedEvent}` : ''}`;
     } else if (user?.role === 'WORKER') {
       endpoint = `${API_ENDPOINTS.WORKERS.MY_GUESTS}${selectedEvent ? `?eventId=${selectedEvent}` : ''}`;
     } else {
@@ -45,8 +47,15 @@ export const fetchGuestsHelper = async ({
         'Content-Type': 'application/json'
       }
     });
+    
+    console.log('🔍 DEBUG: Fetch endpoint:', endpoint);
+    console.log('🔍 DEBUG: Response status:', response.status);
+    
     if (response.ok) {
       const data = await response.json();
+      console.log('🔍 DEBUG: Raw API response:', data);
+      console.log('🔍 DEBUG: First guest sample:', data.guests?.[0] || data[0]);
+      
       setGuests(data.guests || data || []);
       if (data.summary) {
         setStatistics(data.summary);
@@ -118,6 +127,20 @@ export const handleQuickSearchHelper = async ({
     });
     if (response.ok) {
       const data = await response.json();
+      console.log('=== FRONTEND GUESTS DEBUG ===');
+      console.log('API Response data:', data);
+      console.log('Guests array:', data.guests || data || []);
+      if ((data.guests || data || []).length > 0) {
+        const firstGuest = (data.guests || data || [])[0];
+        console.log('First guest sample:', {
+          name: firstGuest.name,
+          firstTimer: firstGuest.firstTimer,
+          firstTimerMarkedBy: firstGuest.firstTimerMarkedBy,
+          status: firstGuest.status
+        });
+      }
+      console.log('=== END FRONTEND DEBUG ===');
+      
       setGuests(data.guests || data || []);
     }
   } catch (err) {
