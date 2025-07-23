@@ -150,6 +150,36 @@ const Guests = () => {
     }
   };
 
+  // Handle marking guest for commence assimilation (INTERN role)
+  const handleMarkCommenceAssimilation = async (guestId) => {
+    try {
+      setLoading(true);
+      
+      const endpoint = API_ENDPOINTS.GUESTS.MARK_COMMENCE_ASSIMILATION.replace(':id', guestId);
+      
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Refresh guest list to show updated status
+        await fetchGuests();
+        alert('Guest marked for commence assimilation successfully!');
+      } else {
+        const errorData = await response.json();
+        alert('Failed to mark guest for commence assimilation: ' + (errorData.message || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Error marking guest for commence assimilation: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleQuickSearch = async () => {
     await handleQuickSearchHelper({
       searchTerm,
@@ -339,6 +369,7 @@ const Guests = () => {
                               <th>Transport</th>
                               <th>New Convert</th>
                               <th>First Timer</th>
+                              <th>Commence Assimilation</th>
                               <th>Status</th>
                               <th>Registered By</th>
                               <th>Comments</th>
@@ -383,6 +414,21 @@ const Guests = () => {
                                   <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-light text-dark'}`}>
                                     {guest.firstTimer ? 'Yes' : 'No'}
                                   </span>
+                                </td>
+                                <td>
+                                  {user.role === 'intern' && guest.checkedIn && guest.firstTimer && !guest.commenceAssimilation ? (
+                                    <button
+                                      className="btn btn-sm btn-warning"
+                                      onClick={() => handleMarkCommenceAssimilation(guest._id)}
+                                      disabled={loading}
+                                    >
+                                      Mark Assimilation
+                                    </button>
+                                  ) : (
+                                    <span className={`badge ${guest.commenceAssimilation ? 'bg-warning text-dark' : 'bg-light text-dark'}`}>
+                                      {guest.commenceAssimilation ? 'Yes' : 'No'}
+                                    </span>
+                                  )}
                                 </td>
                                 <td>
                                   <span className={`badge ${guest.checkedIn ? 'bg-success' : 'bg-secondary'} text-white`}>

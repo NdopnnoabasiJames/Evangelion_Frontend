@@ -75,7 +75,8 @@ const Register = () => {
     { value: 'zonal_admin', label: 'Zonal Admin', requiresApproval: 'Branch Admin' },
     { value: 'worker', label: 'Worker', requiresApproval: 'Branch Admin' },
     { value: 'registrar', label: 'Registrar', requiresApproval: 'Branch Admin' },
-    { value: 'pcu', label: 'PCU', requiresApproval: 'Branch Admin' }
+    { value: 'pcu', label: 'PCU', requiresApproval: 'Branch Admin' },
+    { value: 'intern', label: 'Intern', requiresApproval: 'Branch Admin' }
   ];
 
   const handleInputChange = (e) => {

@@ -422,6 +422,7 @@ const GuestsManagement = () => {
                     <th>Transport</th>
                     <th>New Convert</th>
                     <th>First Timer</th>
+                    <th>Commence Assimilation</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -478,6 +479,11 @@ const GuestsManagement = () => {
                         <td>
                           <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-light text-dark'}`}>
                             {guest.firstTimer ? 'Yes' : 'No'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${guest.commenceAssimilation ? 'bg-warning text-dark' : 'bg-light text-dark'}`}>
+                            {guest.commenceAssimilation ? 'Yes' : 'No'}
                           </span>
                         </td>
                         <td>
