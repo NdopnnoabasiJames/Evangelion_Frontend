@@ -1,7 +1,7 @@
 // API Configuration
 // Use proxy in development - Vite will proxy /api to backend
-export const API_BASE_URL = 'https://evangelion-production-173f.up.railway.app';  // Production
-// export const API_BASE_URL = 'http://localhost:3031';  // Development 
+// export const API_BASE_URL = 'https://evangelion-production-173f.up.railway.app';  // Production
+export const API_BASE_URL = 'http://localhost:3031';  // Development 
 
 // User Roles (matching backend)
 export const ROLES = {
@@ -171,8 +171,8 @@ export const API_ENDPOINTS = {
     SUPER_ADMIN_PENDING: "/api/registrars/super-admin/pending",
     SUPER_ME_ALL: "/api/registrars/super-me/all",
     SUPER_ME_PENDING: "/api/registrars/super-me/pending",
-    SUPER_ADMIN_APPROVE: "/api/registrars/super-admin/approve",
-    SUPER_ADMIN_REJECT: "/api/registrars/super-admin/reject",
+    SUPER_ADMIN_APPROVE: "/api/users/approve-registrar",
+    SUPER_ADMIN_REJECT: "/api/users/reject-registrar",
   },
   ANALYTICS: {
     DASHBOARD: "/api/admin/guests/analytics/basic",

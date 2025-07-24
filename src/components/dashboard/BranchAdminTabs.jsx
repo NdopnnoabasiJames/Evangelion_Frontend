@@ -17,8 +17,9 @@ import { API_ENDPOINTS, API_BASE_URL } from '../../utils/constants';
 const BranchAdminTabs = ({ dashboardData }) => {
   const { user } = useAuth();
   
-  // Determine if user has read-only access (Branch ME)
-  const isReadOnly = user?.role === 'branch_me' || user?.currentRole === 'branch_me';
+  // Determine if user has read-only access for registrar approval (both branch_admin and branch_me are read-only now)
+  const isReadOnly = user?.role === 'branch_me' || user?.currentRole === 'branch_me' || 
+                     user?.role === 'branch_admin' || user?.currentRole === 'branch_admin';
   
   const [activeTab, setActiveTab] = useState('overview');
   const [pendingZonalAdmins, setPendingZonalAdmins] = useState([]);

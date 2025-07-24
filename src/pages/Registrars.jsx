@@ -36,9 +36,18 @@ const Registrars = () => {
   }, [registrarsData, registrarsLoading, registrarsError]);
 
   // Role-based permissions
-  const canApproveRegistrars = [ROLES.SUPER_ADMIN].includes(user?.role); // Only super admin can approve
+  const canApproveRegistrars = [ROLES.SUPER_ADMIN, ROLES.SUPER_ME].includes(user?.role); // Only super admin and super M&E can approve
+  const canViewPendingRegistrars = [ROLES.SUPER_ADMIN, ROLES.SUPER_ME, ROLES.BRANCH_ADMIN, ROLES.BRANCH_ME].includes(user?.role); // Can view pending requests
   const canManageRegistrars = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.ZONAL_ADMIN, ROLES.BRANCH_ADMIN].includes(user?.role);
   const canAssignZones = [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN].includes(user?.role);
+  
+  // DEBUG: Log the permissions
+  console.log('DEBUG PERMISSIONS:', {
+    userRole: user?.role,
+    canApproveRegistrars,
+    canViewPendingRegistrars,
+    ROLES
+  });
   if (loading) {
     return (
       <Layout>
@@ -113,6 +122,7 @@ const Registrars = () => {
           configuration="registrarManagement"
           rolePermissions={{
             canApproveRegistrars,
+            canViewPendingRegistrars,
             canManageRegistrars,
             canAssignZones
           }}
@@ -127,7 +137,7 @@ const Registrars = () => {
             />
           </TabPane>
 
-          {canApproveRegistrars && (
+          {canViewPendingRegistrars && (
             <TabPane tabId="pending" title="Pending Approval">
               <PendingRegistrars 
                 registrars={registrars.filter(r => r.status === STATUS.PENDING)}
@@ -234,9 +244,8 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
 
   const handleApprove = async (registrarId) => {
     try {
-      await approveRegistrar(API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_APPROVE, {
-        method: 'POST',
-        body: { registrarId }
+      await approveRegistrar(`${API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_APPROVE}/${registrarId}`, {
+        method: 'POST'
       });
       onRefresh();
     } catch (error) {
@@ -246,7 +255,7 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
 
   const handleReject = async (registrarId) => {
     try {
-      await rejectRegistrar(API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_REJECT, {
+      await rejectRegistrar(`${API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_REJECT}/${registrarId}`, {
         method: 'POST',
         body: { registrarId }
       });
@@ -278,7 +287,12 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
   }
 
   // Separate applications by type
-  const newRegistrarApps = registrars.filter(r => r.requestType === 'new_registrar' || !r.requestType);
+  const newRegistrarApps = registrars.filter(r => 
+    r.requestType === 'new_registrar' || 
+    r.requestType === 'new_pcu' || 
+    r.requestType === 'new_intern' || 
+    !r.requestType
+  );
   const roleSwitchRequests = registrars.filter(r => r.requestType === 'role_switch');
 
   return (
@@ -358,12 +372,12 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
           <div className="d-flex align-items-center mb-3">
             <i className="bi bi-person-plus me-2" style={{ color: 'var(--primary-purple)' }}></i>
             <h5 className="mb-0" style={{ color: 'var(--primary-purple)' }}>
-              New Registrar Applications ({newRegistrarApps.length})
+              New Applications ({newRegistrarApps.length})
             </h5>
           </div>
           <div className="alert alert-primary">
             <i className="bi bi-info-circle me-2"></i>
-            These are new registrar account applications.
+            These are new registrar, PCU, and INTERN account applications.
           </div>
           <div className="row g-4">
             {newRegistrarApps.map((registrar) => (
@@ -377,7 +391,11 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
                         </h5>
                         <small className="text-muted">{registrar.email}</small>
                       </div>
-                      <span className="badge bg-primary">New Registrar</span>
+                      <span className="badge bg-primary">
+                        {registrar.role === 'pcu' ? 'New PCU' : 
+                         registrar.role === 'intern' ? 'New INTERN' : 
+                         'New Registrar'}
+                      </span>
                     </div>
                     
                     <div className="mb-2">
@@ -390,7 +408,7 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
                       <small>{registrar.branch?.name || 'No Branch'}</small>
                     </div>
                     
-                    {canApprove && (
+                    {console.log('DEBUG - canApprove value:', canApprove, 'for user role:', window.userRole) || canApprove && (
                       <ApprovalActions
                         entityId={registrar._id}
                         entityType="registrar"
@@ -412,14 +430,14 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
 
       {/* Manage Existing Role Switchers */}
       <div className="mt-5">
-        <ExistingRoleSwitchers onRevoke={handleRevokeRoleSwitching} />
+        <ExistingRoleSwitchers onRevoke={handleRevokeRoleSwitching} canApprove={canApprove} />
       </div>
     </div>
   );
 };
 
 // Component to manage existing role switchers
-const ExistingRoleSwitchers = ({ onRevoke }) => {
+const ExistingRoleSwitchers = ({ onRevoke, canApprove }) => {
   const [roleSwitchers, setRoleSwitchers] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -505,13 +523,15 @@ const ExistingRoleSwitchers = ({ onRevoke }) => {
                   <small>Approved: {new Date(user.roleSwitchApprovedAt).toLocaleDateString()}</small>
                 </div>
                 
-                <button
-                  className="btn btn-outline-danger btn-sm w-100"
-                  onClick={() => handleRevoke(user._id)}
-                >
-                  <i className="bi bi-x-circle me-1"></i>
-                  Revoke Role Switching
-                </button>
+                {canApprove && (
+                  <button
+                    className="btn btn-outline-danger btn-sm w-100"
+                    onClick={() => handleRevoke(user._id)}
+                  >
+                    <i className="bi bi-x-circle me-1"></i>
+                    Revoke Role Switching
+                  </button>
+                )}
               </div>
             </div>
           </div>
