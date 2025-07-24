@@ -252,8 +252,10 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
 
   const handleApprove = async (registrarId) => {
     try {
-      await approveRegistrar(`${API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_APPROVE}/${registrarId}`, {
-        method: 'POST'
+      await approveRegistrar(API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_APPROVE, {
+        method: 'POST',
+        body: JSON.stringify({ registrarId }),
+        headers: { 'Content-Type': 'application/json' }
       });
       onRefresh();
     } catch (error) {
@@ -263,9 +265,13 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
 
   const handleReject = async (registrarId) => {
     try {
-      await rejectRegistrar(`${API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_REJECT}/${registrarId}`, {
+      const reason = prompt('Please provide a reason for rejection:');
+      if (!reason) return;
+      
+      await rejectRegistrar(API_ENDPOINTS.REGISTRARS.SUPER_ADMIN_REJECT, {
         method: 'POST',
-        body: { registrarId }
+        body: JSON.stringify({ registrarId, reason }),
+        headers: { 'Content-Type': 'application/json' }
       });
       onRefresh();
     } catch (error) {
