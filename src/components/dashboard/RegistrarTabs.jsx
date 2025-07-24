@@ -8,7 +8,9 @@ import RoleSwitchingSection from './RoleSwitchingSection';
 const RegistrarTabs = ({ dashboardData }) => {
   const { user } = useAuth();
   const isPCU = user?.role === ROLES.PCU;
+  const isIntern = user?.role === ROLES.INTERN;
   const isRegistrar = user?.role === ROLES.REGISTRAR;
+  const canMarkFirstTimers = isPCU || isIntern; // Both PCU and INTERN can mark first timers
   
   const [activeTab, setActiveTab] = useState('overview');
   const [allEvents, setAllEvents] = useState([]);
@@ -479,7 +481,7 @@ const RegistrarTabs = ({ dashboardData }) => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h5 className="mb-0">My Approved Events</h5>
         <small className="text-muted">
-          Events where you can {isPCU ? 'mark guests as first timers' : 'check in guests'}
+          Events where you can {canMarkFirstTimers ? 'mark guests as first timers' : 'check in guests'}
         </small>
       </div>
       
@@ -508,7 +510,7 @@ const RegistrarTabs = ({ dashboardData }) => {
             >
               <i className="bi bi-arrow-left"></i>
             </button>
-            {isPCU ? 'Guest First Timer Marking' : 'Guest Check-In'}: {selectedEvent?.name || 'Event'}
+            {canMarkFirstTimers ? 'Guest First Timer Marking' : 'Guest Check-In'}: {selectedEvent?.name || 'Event'}
           </h5>
           <small className="text-muted">
             <i className="bi bi-geo-alt me-1"></i>
@@ -550,10 +552,10 @@ const RegistrarTabs = ({ dashboardData }) => {
                     <th scope="col">Phone</th>
                     <th scope="col">Email</th>
                     <th scope="col">Registered By</th>
-                    {isPCU && <th scope="col">Checked In By</th>}
+                    {canMarkFirstTimers && <th scope="col">Checked In By</th>}
                     <th scope="col">Comments</th>
                     <th scope="col">Status</th>
-                    {isPCU && <th scope="col">First Timer</th>}
+                    {canMarkFirstTimers && <th scope="col">First Timer</th>}
                     <th scope="col">Check-In Time</th>
                     <th scope="col">Action</th>
                   </tr>
@@ -576,7 +578,7 @@ const RegistrarTabs = ({ dashboardData }) => {
                           <small className="text-muted">Unknown</small>
                         )}
                       </td>
-                      {isPCU && (
+                      {canMarkFirstTimers && (
                         <td>
                           {guest.checkedInBy ? (
                             <div>
@@ -594,7 +596,7 @@ const RegistrarTabs = ({ dashboardData }) => {
                           {guest.checkedIn ? 'Checked In' : 'Registered'}
                         </span>
                       </td>
-                      {isPCU && (
+                      {canMarkFirstTimers && (
                         <td>
                           <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-secondary'}`}>
                             {guest.firstTimer ? 'First Timer' : 'Regular'}
@@ -617,8 +619,8 @@ const RegistrarTabs = ({ dashboardData }) => {
                         )}
                       </td>
                       <td>
-                        {isPCU ? (
-                          // PCU sees First Timer button for checked-in guests
+                        {canMarkFirstTimers ? (
+                          // PCU and INTERN see First Timer button for checked-in guests
                           guest.checkedIn ? (
                             <button
                               className={`btn btn-sm ${guest.firstTimer ? 'btn-success' : 'btn-info'}`}

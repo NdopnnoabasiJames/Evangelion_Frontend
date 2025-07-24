@@ -14,6 +14,7 @@ export const ROLES = {
   WORKER: "worker",
   REGISTRAR: "registrar",
   PCU: "pcu",
+  INTERN: "intern",
   GUEST: "guest",
 };
 
@@ -74,6 +75,8 @@ export const ROLE_NAVIGATION_PERMISSIONS = {
   [ROLES.ZONAL_ADMIN]: ["dashboard", "events", "guests", "registrars"],
   [ROLES.WORKER]: ["dashboard", "events", "myGuests"],
   [ROLES.REGISTRAR]: ["dashboard", "events", "checkin"],
+  [ROLES.PCU]: ["dashboard", "events", "checkin"],
+  [ROLES.INTERN]: ["dashboard", "events", "checkin"],
 };
 
 // Helper function to get navigation items for a specific role

@@ -41,7 +41,9 @@ export const usePermissions = () => {
 
     canRegisterGuests: () => hasRole(ROLES.WORKER),
 
-    canCheckInGuests: () => hasRole(ROLES.REGISTRAR),
+    canCheckInGuests: () => hasAnyRole([ROLES.REGISTRAR, ROLES.PCU, ROLES.INTERN]),
+
+    canMarkFirstTimers: () => hasAnyRole([ROLES.PCU, ROLES.INTERN]),
 
     canViewAnalytics: () => hasAnyRole([
       ROLES.SUPER_ADMIN, 
