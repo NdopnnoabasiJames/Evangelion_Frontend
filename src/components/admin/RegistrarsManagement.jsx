@@ -281,7 +281,7 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
       <div className="card-header">
         <h5 className="mb-0">
           <i className="bi bi-people-fill me-2"></i>
-          Registrars Management
+          Registrars/PCUs/Interns Management
         </h5>
       </div>
       <div className="card-body">
@@ -293,7 +293,7 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
               onClick={() => setActiveTab('all')}
             >
               <i className="bi bi-list-ul me-2"></i>
-              All Registrars
+              All Registrars/PCUs/Interns
               <span className="badge bg-primary ms-2">{registrars.length}</span>
             </button>
           </li>
@@ -413,6 +413,7 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
+                  <th>Role</th>
                   <th>State</th>
                   <th>Branch</th>
                   <th>Registration Date</th>
@@ -431,6 +432,17 @@ const RegistrarsManagement = ({ isReadOnly = false }) => {
                       </div>
                     </td>
                     <td>{registrar.email}</td>
+                    <td>
+                      <span className={`badge ${
+                        registrar.role === 'pcu' ? 'bg-info' : 
+                        registrar.role === 'intern' ? 'bg-secondary' : 
+                        'bg-primary'
+                      }`}>
+                        {registrar.role === 'pcu' ? 'PCU' : 
+                         registrar.role === 'intern' ? 'INTERN' : 
+                         'Registrar'}
+                      </span>
+                    </td>
                     <td>
                       <span className="badge bg-info">
                         {registrar.state?.name || 'N/A'}

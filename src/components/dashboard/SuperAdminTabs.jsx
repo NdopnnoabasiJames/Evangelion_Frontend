@@ -200,7 +200,7 @@ const SuperAdminTabs = ({ dashboardData }) => {
             type="button"
           >
             <i className="bi bi-person-badge me-2"></i>
-            Registrars
+            Registrars/PCU/Interns
           </button>
         </li>
         <li className="nav-item" role="presentation">

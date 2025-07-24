@@ -55,9 +55,9 @@ const Registrars = () => {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h1 className="h3 mb-0" style={{ color: 'var(--primary-purple)' }}>
-                Registrars Management
+                Registrars/PCU/Interns Management
               </h1>
-              <p className="text-muted mb-0">Manage registrar applications and zone assignments</p>
+              <p className="text-muted mb-0">Manage registrar, PCU, and INTERN applications and zone assignments</p>
             </div>
           </div>
           <div className="row g-4">
@@ -127,7 +127,7 @@ const Registrars = () => {
             canAssignZones
           }}
         >
-          <TabPane tabId="list" title="All Registrars">
+          <TabPane tabId="list" title="All Registrars/PCU/Interns">
             <RegistrarsList 
               registrars={registrars.filter(r => r.status === STATUS.APPROVED)}
               loading={loading}
@@ -138,7 +138,7 @@ const Registrars = () => {
           </TabPane>
 
           {canViewPendingRegistrars && (
-            <TabPane tabId="pending" title="Pending Approval">
+            <TabPane tabId="pending" title="Pending Approvals">
               <PendingRegistrars 
                 registrars={registrars.filter(r => r.status === STATUS.PENDING)}
                 onRefresh={refetch}
@@ -185,8 +185,8 @@ const RegistrarsList = ({ registrars, loading, error, canManage, onRefresh }) =>
     return (
       <div className="text-center py-5">
         <i className="bi bi-people" style={{ fontSize: '4rem', color: 'var(--primary-purple)', opacity: 0.5 }}></i>
-        <h4 className="mt-3" style={{ color: 'var(--primary-purple)' }}>No Registrars Found</h4>
-        <p className="text-muted">There are no approved registrars at the moment.</p>
+        <h4 className="mt-3" style={{ color: 'var(--primary-purple)' }}>No Users Found</h4>
+        <p className="text-muted">There are no approved registrars, PCU, or INTERNs at the moment.</p>
       </div>
     );
   }
@@ -203,7 +203,15 @@ const RegistrarsList = ({ registrars, loading, error, canManage, onRefresh }) =>
                     {registrar.fullName}
                   </h5>
                   <small className="text-muted">{registrar.email}</small>
-                </div>                <StatusBadge status={registrar.status} type="user" />
+                </div>
+                <div className="d-flex flex-column align-items-end gap-1">
+                  <span className="badge bg-info">
+                    {registrar.role === 'pcu' ? 'PCU' : 
+                     registrar.role === 'intern' ? 'INTERN' : 
+                     'Registrar'}
+                  </span>
+                  <StatusBadge status={registrar.status} type="user" />
+                </div>
               </div>
               
               <div className="mb-2">
@@ -281,7 +289,7 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
       <div className="text-center py-5">
         <i className="bi bi-clock" style={{ fontSize: '4rem', color: 'var(--accent-yellow)', opacity: 0.5 }}></i>
         <h4 className="mt-3" style={{ color: 'var(--primary-purple)' }}>No Pending Applications</h4>
-        <p className="text-muted">All registrar applications and role-switch requests have been processed.</p>
+        <p className="text-muted">All registrar, PCU, INTERN applications and role-switch requests have been processed.</p>
       </div>
     );
   }
@@ -372,12 +380,12 @@ const PendingRegistrars = ({ registrars, onRefresh, canApprove }) => {
           <div className="d-flex align-items-center mb-3">
             <i className="bi bi-person-plus me-2" style={{ color: 'var(--primary-purple)' }}></i>
             <h5 className="mb-0" style={{ color: 'var(--primary-purple)' }}>
-              New Applications ({newRegistrarApps.length})
+              New Registrar/PCU/INTERN Applications ({newRegistrarApps.length})
             </h5>
           </div>
           <div className="alert alert-primary">
             <i className="bi bi-info-circle me-2"></i>
-            These are new registrar, PCU, and INTERN account applications.
+            These are new registrar, PCU, and INTERN account applications awaiting approval.
           </div>
           <div className="row g-4">
             {newRegistrarApps.map((registrar) => (
