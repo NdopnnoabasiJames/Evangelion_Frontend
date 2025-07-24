@@ -104,7 +104,14 @@ const RegistrarTabs = ({ dashboardData }) => {
     setError(null);
     try {
       const response = await api.get(`${API_ENDPOINTS.REGISTRARS.BASE}/events/${eventId}/guests`);
-      setEventGuests(Array.isArray(response.data) ? response.data : response.data.data || []);
+      const allGuests = Array.isArray(response.data) ? response.data : response.data.data || [];
+      
+      // For INTERN users, only show guests that have been marked as first timers
+      const filteredGuests = isIntern 
+        ? allGuests.filter(guest => guest.firstTimer === true)
+        : allGuests;
+      
+      setEventGuests(filteredGuests);
     } catch (err) {
       console.error('Error loading event guests:', err);
       setError('Failed to load event guests');
@@ -161,6 +168,31 @@ const RegistrarTabs = ({ dashboardData }) => {
         window.showNotification(`Failed to mark as first timer: ${errorMessage}`, 'error');
       } else {
         alert(`Failed to mark as first timer: ${errorMessage}`);
+      }
+    }
+  };
+
+  const handleCommenceAssimilation = async (guestId) => {
+    try {
+      const response = await api.patch(`${API_ENDPOINTS.GUESTS.BASE}/${guestId}/commence-assimilation`);
+      
+      // Refresh the guest list
+      loadEventGuests(selectedEvent._id);
+      // Refresh stats
+      loadOverviewStats();
+      
+      if (window.showNotification) {
+        window.showNotification('Guest marked for commence assimilation successfully!', 'success');
+      } else {
+        alert('Guest marked for commence assimilation successfully!');
+      }
+    } catch (err) {
+      console.error('Error marking guest for commence assimilation:', err);
+      const errorMessage = err.response?.data?.message || 'Error marking guest for commence assimilation';
+      if (window.showNotification) {
+        window.showNotification(`Failed to commence assimilation: ${errorMessage}`, 'error');
+      } else {
+        alert(`Failed to commence assimilation: ${errorMessage}`);
       }
     }
   };
@@ -481,7 +513,7 @@ const RegistrarTabs = ({ dashboardData }) => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h5 className="mb-0">My Approved Events</h5>
         <small className="text-muted">
-          Events where you can {canMarkFirstTimers ? 'mark guests as first timers' : 'check in guests'}
+          Events where you can {isIntern ? 'commence assimilation for first-timer guests' : canMarkFirstTimers ? 'mark guests as first timers' : 'check in guests'}
         </small>
       </div>
       
@@ -555,7 +587,10 @@ const RegistrarTabs = ({ dashboardData }) => {
                     {canMarkFirstTimers && <th scope="col">Checked In By</th>}
                     <th scope="col">Comments</th>
                     <th scope="col">Status</th>
-                    {canMarkFirstTimers && <th scope="col">First Timer</th>}
+                    {canMarkFirstTimers && !isIntern && <th scope="col">First Timer</th>}
+                    {isIntern && <th scope="col">First Timer Status</th>}
+                    {isIntern && <th scope="col">First Timer Date</th>}
+                    {isIntern && <th scope="col">Assimilation Status</th>}
                     <th scope="col">Check-In Time</th>
                     <th scope="col">Action</th>
                   </tr>
@@ -596,12 +631,41 @@ const RegistrarTabs = ({ dashboardData }) => {
                           {guest.checkedIn ? 'Checked In' : 'Registered'}
                         </span>
                       </td>
-                      {canMarkFirstTimers && (
+                      {canMarkFirstTimers && !isIntern && (
                         <td>
                           <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-secondary'}`}>
                             {guest.firstTimer ? 'First Timer' : 'Regular'}
                           </span>
                         </td>
+                      )}
+                      {isIntern && (
+                        <>
+                          <td>
+                            <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-secondary'}`}>
+                              {guest.firstTimer ? 'First Timer' : 'Regular'}
+                            </span>
+                          </td>
+                          <td>
+                            {guest.firstTimerMarkedAt ? (
+                              <div>
+                                <div>{new Date(guest.firstTimerMarkedAt).toLocaleDateString()}</div>
+                                <small className="text-muted">
+                                  {new Date(guest.firstTimerMarkedAt).toLocaleTimeString([], { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                  })}
+                                </small>
+                              </div>
+                            ) : (
+                              <small className="text-muted">Not marked</small>
+                            )}
+                          </td>
+                          <td>
+                            <span className={`badge ${(guest.isNewConvert || guest.commenceAssimilation) ? 'bg-success' : 'bg-warning'}`}>
+                              {(guest.isNewConvert || guest.commenceAssimilation) ? 'Assimilated' : 'Pending'}
+                            </span>
+                          </td>
+                        </>
                       )}
                       <td>
                         {guest.checkedInTime ? (
@@ -620,19 +684,35 @@ const RegistrarTabs = ({ dashboardData }) => {
                       </td>
                       <td>
                         {canMarkFirstTimers ? (
-                          // PCU and INTERN see First Timer button for checked-in guests
+                          // PCU and INTERN see different buttons for checked-in guests
                           guest.checkedIn ? (
-                            <button
-                              className={`btn btn-sm ${guest.firstTimer ? 'btn-success' : 'btn-info'}`}
-                              onClick={() => handleMarkFirstTimer(guest._id)}
-                              disabled={guest.firstTimer}
-                            >
-                              {guest.firstTimer ? (
-                                <><i className="bi bi-star-fill me-1"></i>First Timer</>
-                              ) : (
-                                <><i className="bi bi-star me-1"></i>Mark First Timer</>
-                              )}
-                            </button>
+                            isIntern ? (
+                              // INTERN sees Commence Assimilation button for first-timer guests
+                              <button
+                                className={`btn btn-sm ${(guest.isNewConvert || guest.commenceAssimilation) ? 'btn-success' : 'btn-warning'}`}
+                                onClick={() => handleCommenceAssimilation(guest._id)}
+                                disabled={guest.isNewConvert || guest.commenceAssimilation}
+                              >
+                                {(guest.isNewConvert || guest.commenceAssimilation) ? (
+                                  <><i className="bi bi-check-circle-fill me-1"></i>Assimilated</>
+                                ) : (
+                                  <><i className="bi bi-rocket me-1"></i>Commence Assimilation</>
+                                )}
+                              </button>
+                            ) : (
+                              // PCU sees First Timer button
+                              <button
+                                className={`btn btn-sm ${guest.firstTimer ? 'btn-success' : 'btn-info'}`}
+                                onClick={() => handleMarkFirstTimer(guest._id)}
+                                disabled={guest.firstTimer}
+                              >
+                                {guest.firstTimer ? (
+                                  <><i className="bi bi-star-fill me-1"></i>First Timer</>
+                                ) : (
+                                  <><i className="bi bi-star me-1"></i>Mark First Timer</>
+                                )}
+                              </button>
+                            )
                           ) : (
                             <small className="text-muted">Not checked in</small>
                           )
