@@ -588,8 +588,6 @@ const RegistrarTabs = ({ dashboardData }) => {
                     <th scope="col">Comments</th>
                     <th scope="col">Status</th>
                     {canMarkFirstTimers && !isIntern && <th scope="col">First Timer</th>}
-                    {isIntern && <th scope="col">First Timer Status</th>}
-                    {isIntern && <th scope="col">First Timer Date</th>}
                     {isIntern && <th scope="col">Assimilation Status</th>}
                     <th scope="col">Check-In Time</th>
                     <th scope="col">Action</th>
@@ -639,33 +637,11 @@ const RegistrarTabs = ({ dashboardData }) => {
                         </td>
                       )}
                       {isIntern && (
-                        <>
-                          <td>
-                            <span className={`badge ${guest.firstTimer ? 'bg-info' : 'bg-secondary'}`}>
-                              {guest.firstTimer ? 'First Timer' : 'Regular'}
-                            </span>
-                          </td>
-                          <td>
-                            {guest.firstTimerMarkedAt ? (
-                              <div>
-                                <div>{new Date(guest.firstTimerMarkedAt).toLocaleDateString()}</div>
-                                <small className="text-muted">
-                                  {new Date(guest.firstTimerMarkedAt).toLocaleTimeString([], { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                  })}
-                                </small>
-                              </div>
-                            ) : (
-                              <small className="text-muted">Not marked</small>
-                            )}
-                          </td>
-                          <td>
-                            <span className={`badge ${(guest.isNewConvert || guest.commenceAssimilation) ? 'bg-success' : 'bg-warning'}`}>
-                              {(guest.isNewConvert || guest.commenceAssimilation) ? 'Assimilated' : 'Pending'}
-                            </span>
-                          </td>
-                        </>
+                        <td>
+                          <span className={`badge ${guest.isNewConvert ? 'bg-success' : 'bg-warning'}`}>
+                            {guest.isNewConvert ? 'Assimilated' : 'Pending'}
+                          </span>
+                        </td>
                       )}
                       <td>
                         {guest.checkedInTime ? (
@@ -689,11 +665,11 @@ const RegistrarTabs = ({ dashboardData }) => {
                             isIntern ? (
                               // INTERN sees Commence Assimilation button for first-timer guests
                               <button
-                                className={`btn btn-sm ${(guest.isNewConvert || guest.commenceAssimilation) ? 'btn-success' : 'btn-warning'}`}
+                                className={`btn btn-sm ${guest.isNewConvert ? 'btn-success' : 'btn-warning'}`}
                                 onClick={() => handleCommenceAssimilation(guest._id)}
-                                disabled={guest.isNewConvert || guest.commenceAssimilation}
+                                disabled={guest.isNewConvert}
                               >
-                                {(guest.isNewConvert || guest.commenceAssimilation) ? (
+                                {guest.isNewConvert ? (
                                   <><i className="bi bi-check-circle-fill me-1"></i>Assimilated</>
                                 ) : (
                                   <><i className="bi bi-rocket me-1"></i>Commence Assimilation</>
