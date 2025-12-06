@@ -1,0 +1,352 @@
+// Determine the API base URL based on environment
+const getApiBaseUrl = () => {
+  // First check for environment variable
+  if (import.meta.env.VITE_API_BASE_URL) {
+    let apiUrl = import.meta.env.VITE_API_BASE_URL;
+    
+    // Ensure the URL has a protocol
+    if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+      apiUrl = `https://${apiUrl}`;
+    }
+    
+    // Remove trailing slash if present
+    apiUrl = apiUrl.replace(/\/$/, '');
+    
+    console.log('Using VITE_API_BASE_URL:', apiUrl);
+    return apiUrl;
+  }
+  
+  // Check if we're in development
+  if (import.meta.env.MODE === 'development' || window.location.hostname === 'localhost') {
+    console.log('Using development API URL');
+    return 'http://localhost:3031';
+  }
+  
+  // Production fallback
+  console.log('Using production fallback API URL');
+  return 'https://evangelion-production-189d.up.railway.app';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
+console.log('Final API_BASE_URL:', API_BASE_URL); 
+
+// User Roles (matching backend)
+export const ROLES = {
+  SUPER_ADMIN: "super_admin",
+  SUPER_ME: "super_me",
+  STATE_ADMIN: "state_admin",
+  BRANCH_ADMIN: "branch_admin",
+  BRANCH_ME: "branch_me",
+  ZONAL_ADMIN: "zonal_admin",
+  WORKER: "worker",
+  REGISTRAR: "registrar",
+  PCU: "pcu",
+  INTERN: "intern",
+  GUEST: "guest",
+};
+
+// Base navigation items
+export const BASE_NAVIGATION_ITEMS = {
+  dashboard: { path: "/dashboard", label: "Dashboard", icon: "dashboard" },
+  events: { path: "/events", label: "Events", icon: "event" },
+  guests: { path: "/guests", label: "Guests", icon: "people" },
+  myGuests: { path: "/guests", label: "My Guests", icon: "people" },
+  workers: { path: "/workers", label: "Workers", icon: "work" },
+  registrars: { path: "/registrars", label: "Registrars", icon: "assignment" },
+  analytics: { path: "/analytics", label: "Analytics", icon: "analytics" },
+  checkin: { path: "/checkin", label: "Check-in", icon: "assignment" },
+};
+
+// Role-based navigation permissions
+export const ROLE_NAVIGATION_PERMISSIONS = {
+  [ROLES.SUPER_ADMIN]: [
+    "dashboard",
+    "events",
+    "guests",
+    "workers",
+    "registrars",
+    "analytics",
+  ],
+  [ROLES.SUPER_ME]: [
+    "dashboard",
+    "events",
+    "guests",
+    "workers",
+    "registrars",
+    "analytics",
+  ],
+  [ROLES.STATE_ADMIN]: [
+    "dashboard",
+    "events",
+    "guests",
+    "workers",
+    "registrars",
+    "analytics",
+  ],
+  [ROLES.BRANCH_ADMIN]: [
+    "dashboard",
+    "events",
+    "guests",
+    "workers",
+    "registrars",
+    "analytics",
+  ],
+  [ROLES.BRANCH_ME]: [
+    "dashboard",
+    "events",
+    "guests",
+    "workers",
+    "registrars",
+    "analytics",
+  ],
+  [ROLES.ZONAL_ADMIN]: ["dashboard", "events", "guests", "registrars"],
+  [ROLES.WORKER]: ["dashboard", "events", "myGuests"],
+  [ROLES.REGISTRAR]: ["dashboard", "events", "checkin"],
+  [ROLES.PCU]: ["dashboard", "events", "checkin"],
+  [ROLES.INTERN]: ["dashboard", "events", "checkin"],
+};
+
+// Helper function to get navigation items for a specific role
+export const getNavigationItems = (role) => {
+  const permissions = ROLE_NAVIGATION_PERMISSIONS[role] || [];
+  return permissions
+    .map((permission) => BASE_NAVIGATION_ITEMS[permission])
+    .filter(Boolean);
+};
+
+// Legacy export for backward compatibility (will be deprecated)
+export const NAVIGATION_ITEMS = Object.keys(ROLES).reduce((acc, role) => {
+  acc[ROLES[role]] = getNavigationItems(ROLES[role]);
+  return acc;
+}, {});
+
+// API Endpoints
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: "/api/auth/login",
+    REGISTER: "/api/auth/register",
+    PROFILE: "/api/auth/profile",
+  },
+  EVENTS: {
+    BASE: "/api/events",
+    LIST: "/api/events",
+    HIERARCHICAL: "/api/admin-hierarchy/events",
+    ACCESSIBLE: "/api/events/accessible",
+    ACTIVE: "/api/events/active",
+    UPCOMING: "/api/events/upcoming",
+    NEEDING_BRANCH_SELECTION:
+      "/api/admin-hierarchy/events/needing-branch-selection",
+    NEEDING_ZONE_SELECTION:
+      "/api/admin-hierarchy/events/needing-zone-selection",
+    SELECT_BRANCHES: "/api/admin-hierarchy/events/:eventId/select-branches",
+    SELECT_ZONES: "/api/admin-hierarchy/events/:eventId/select-zones",
+    ASSIGN_PICKUP_STATIONS: "/api/events/assign-pickup-stations",
+  },
+  GUESTS: {
+    BASE: "/api/guests",
+    ADMIN: "/api/admin/guests",
+    ANALYTICS: "/api/admin/guests/analytics",
+    SEARCH: "/api/admin/guests/search",
+    QUICK_SEARCH: "/api/admin/guests/quick-search",
+    STATISTICS: "/api/admin/guests/statistics",
+    EXPORT: "/api/admin/guests/export",
+  },
+  WORKERS: {
+    BASE: "/api/workers",
+    REGISTER: "/api/workers/register",
+    PENDING: "/api/workers/pending",
+    APPROVED: "/api/workers/approved",
+    STATS: "/api/workers/stats",
+    DISABLE: "/api/workers/:workerId/disable",
+    REGISTER_GUEST: "/api/workers/events",
+    MY_GUESTS: "/api/workers/guests",
+    ALL_EVENTS: "/api/workers/events/all",
+    BRANCH_EVENTS: "/api/workers/events/branch",
+    MY_EVENTS: "/api/workers/events/my",
+    PENDING_EVENTS: "/api/workers/events/my?status=pending",
+    VOLUNTEER: "/api/workers/events",
+    EVENT_PICKUP_STATIONS: "/api/workers/events/:eventId/pickup-stations",
+    PENDING_VOLUNTEERS: "/api/workers/volunteer-requests/pending",
+    APPROVE_VOLUNTEER: "/api/workers/volunteer-requests",
+  },
+  REGISTRARS: {
+    BASE: "/api/registrars",
+    REGISTER: "/api/registrars/register",
+    PENDING: "/api/registrars/pending",
+    APPROVED: "/api/registrars/approved",
+    APPROVE: "/api/users/approve-registrar",
+    REJECT: "/api/users/reject-registrar",
+    SUPER_ADMIN_APPROVE: "/api/registrars/super-admin/approve",
+    SUPER_ADMIN_REJECT: "/api/registrars/super-admin/reject",
+    CHECK_IN: "/api/check-in",
+    SEARCH_GUESTS: "/api/registrars/guests/search",
+    CHECK_IN_GUEST: "/api/registrars/guests/check-in",
+    DASHBOARD: "/api/registrars/dashboard",
+    STATISTICS: "/api/registrars/events",
+    ASSIGNMENTS_SUMMARY: "/api/registrars/assignments-summary",
+    // New volunteer-based endpoints
+    STATS: "/api/registrars/stats",
+    ALL_EVENTS: "/api/registrars/events/all",
+    MY_EVENTS: "/api/registrars/events/my",
+    VOLUNTEER: "/api/registrars/events",
+    CHECK_IN_GUESTS: "/api/registrars/events",
+    VOLUNTEER_STATS: "/api/registrars/volunteer/stats",
+    VOLUNTEER_EVENTS: "/api/registrars/volunteer/events",
+    VOLUNTEER_MY_EVENTS: "/api/registrars/volunteer/events/my",
+    VOLUNTEER_FOR_EVENT: "/api/registrars/volunteer/events",
+    VOLUNTEER_EVENT_GUESTS: "/api/registrars/volunteer/events",
+    VOLUNTEER_CHECKIN: "/api/registrars/volunteer/events",
+    // Branch Pastor approval endpoints
+    PENDING_VOLUNTEER_REQUESTS: "/api/registrars/admin/volunteer-requests/pending",
+    APPROVE_VOLUNTEER_REQUEST: "/api/registrars/admin/volunteer-requests",
+    REJECT_VOLUNTEER_REQUEST: "/api/registrars/admin/volunteer-requests",
+    // Super Admin endpoints
+    SUPER_ADMIN_ALL: "/api/registrars/super-admin/all",
+    SUPER_ADMIN_PENDING: "/api/registrars/super-admin/pending",
+    SUPER_ME_ALL: "/api/registrars/super-me/all",
+    SUPER_ME_PENDING: "/api/registrars/super-me/pending",
+    SUPER_ADMIN_APPROVE: "/api/registrars/super-admin/approve",
+    SUPER_ADMIN_REJECT: "/api/registrars/super-admin/reject",
+    // Daily check-in endpoints for multiday events
+    DAILY_CHECKIN: "/api/registrars/events/:eventId/guests/:guestId/daily-checkin",
+    BULK_DAILY_CHECKIN: "/api/registrars/events/:eventId/daily-checkin/bulk",
+    DAILY_ATTENDANCE: "/api/registrars/events/:eventId/daily-attendance/:date",
+    MULTIDAY_ATTENDANCE_REPORT: "/api/registrars/events/:eventId/multiday-attendance-report",
+    GUEST_CHECKIN_STATUS: "/api/registrars/events/:eventId/guests/:guestId/checkin-status/:date",
+    GUEST_CHECKIN_HISTORY: "/api/registrars/events/:eventId/guests/:guestId/checkin-history",
+  },
+  ANALYTICS: {
+    DASHBOARD: "/api/admin/guests/analytics/basic",
+    TRENDS: "/api/admin/guests/analytics/trends",
+    WORKER_PERFORMANCE: "/api/admin/guests/analytics/worker-performance",
+    EVENT_SUMMARY: "/api/admin/guests/analytics/events",
+    EXPORT: "/api/admin/guests/export",
+  },
+  ADMIN: {
+    USERS: "/api/admin/users",
+    HIERARCHY: "/api/admin-hierarchy",
+    STATES: "/api/admin-hierarchy/accessible-states",
+    BRANCHES: "/api/admin-hierarchy/selection/branches",
+    ZONES: "/api/admin-hierarchy/selection/zones",
+    STATISTICS: "/api/admin/statistics",
+    AVAILABLE_OPTIONS: "/api/admin-hierarchy/events",
+    CREATE_SUPER_ADMIN_EVENT: "/api/admin-hierarchy/events/super-admin",
+    CREATE_STATE_ADMIN_EVENT: "/api/admin-hierarchy/events/state-admin",
+    CREATE_BRANCH_ADMIN_EVENT: "/api/admin-hierarchy/events/branch-admin",
+    CREATE_ZONAL_ADMIN_EVENT: "/api/admin-hierarchy/events/zonal-admin", // Branch Pastor specific endpoints
+    PENDING_ZONE_ADMINS: "/api/admin-hierarchy/branch/pending-zone-admins",
+    APPROVED_ZONE_ADMINS: "/api/admin-hierarchy/branch/approved-zone-admins",
+    APPROVE_ZONE_ADMIN: "/api/admin-hierarchy/branch/approve-zone-admin",
+    REJECT_ZONE_ADMIN: "/api/admin-hierarchy/branch/reject-zone-admin",
+    // State Admin specific endpoints
+    PENDING_BRANCH_ADMINS: "/api/admin-hierarchy/state/pending-branch-admins",
+    APPROVED_BRANCH_ADMINS: "/api/admin-hierarchy/state/approved-branch-admins",
+    APPROVE_BRANCH_ADMIN: "/api/admin-hierarchy/state/approve-branch-admin",
+    REJECT_BRANCH_ADMIN: "/api/admin-hierarchy/state/reject-branch-admin",
+    BRANCH_ZONES: "/api/admin-hierarchy/branch/zones",
+    BRANCH_DASHBOARD_STATS: "/api/admin-hierarchy/branch/dashboard-stats",
+    WORKERS: "/api/admin-hierarchy/workers",
+    GUESTS: "/api/admin-hierarchy/guests",
+    // Performance Rankings
+    RANKINGS_WORKERS: "/api/admin-hierarchy/rankings/workers",
+    RANKINGS_BRANCHES: "/api/admin-hierarchy/rankings/branches",
+    RANKINGS_STATES: "/api/admin-hierarchy/rankings/states",
+  },
+  STATES: {
+    BASE: "/api/states",
+    LIST: "/api/states",
+    CREATE: "/api/states",
+    UPDATE: "/api/states",
+    DETAILS: "/api/states",
+  },
+  BRANCHES: {
+    BASE: "/api/branches",
+    LIST: "/api/branches",
+    CREATE: "/api/branches",
+    UPDATE: "/api/branches",
+    DELETE: "/api/branches",
+    BY_STATE: "/api/branches/by-state",
+    // Super Admin specific endpoints
+    ALL_WITH_ADMINS: "/api/branches/super-admin/all-with-admins",
+    // State Admin specific endpoints
+    STATE_ADMIN_CREATE: "/api/branches/state-admin/create",
+    STATE_ADMIN_LIST: "/api/branches/state-admin/my-branches",
+    STATE_ADMIN_UPDATE: "/api/branches/state-admin",
+    STATE_ADMIN_DELETE: "/api/branches/state-admin",
+  },
+  ZONES: {
+    BASE: "/api/zones",
+    LIST: "/api/zones",
+    CREATE: "/api/zones",
+    UPDATE: "/api/zones",
+    DELETE: "/api/zones",
+    BY_BRANCH: "/api/zones/by-branch",
+    STATISTICS: "/api/zones/statistics",
+    ALL_WITH_ADMINS: "/api/zones/super-admin/all-with-admins", // Branch Pastor specific endpoints
+    BRANCH_ADMIN_CREATE: "/api/zones/branch-admin/create",
+    BRANCH_ADMIN_LIST: "/api/zones/branch-admin/list",
+    BRANCH_ADMIN_UPDATE: "/api/zones/branch-admin",
+    BRANCH_ADMIN_DELETE: "/api/zones/branch-admin",
+    // State Admin specific endpoints
+    STATE_ADMIN_LIST: "/api/zones/state-admin/my-zones",
+  },
+
+  PICKUP_STATIONS: {
+    BASE: "/api/pickup-stations",
+    ASSIGN: "/api/pickup-stations/assign",
+    ZONE_STATIONS: "/api/pickup-stations/zone",
+    BY_BRANCH: "/api/pickup-stations/by-branch",
+    // State Admin specific endpoints
+    STATE_ADMIN_LIST: "/api/pickup-stations/state-admin/my-stations",
+  },
+  USERS: {
+    BASE: "/api/users",
+    REQUEST_REGISTRAR_ACCESS: "/api/users/request-registrar-access",
+    SWITCH_ROLE: "/api/users/switch-role",
+    REVOKE_ROLE_SWITCHING: "/api/users/revoke-role-switching",
+  },
+};
+
+// Status constants
+export const STATUS = {
+  PENDING: "pending",
+  APPROVED: "approved",
+  REJECTED: "rejected",
+  ACTIVE: "active",
+  INACTIVE: "inactive",
+};
+
+// Event statuses - match the backend EventStatus enum
+export const EVENT_STATUS = {
+  DRAFT: "draft",
+  PUBLISHED: "published", // This is considered "active" in the system
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
+};
+
+// Helper functions for role-based permissions
+export const isReadOnlyRole = (role) => {
+  return [ROLES.SUPER_ME, ROLES.BRANCH_ME].includes(role);
+};
+
+export const canViewButNotEdit = (role) => {
+  return [ROLES.SUPER_ME, ROLES.BRANCH_ME].includes(role);
+};
+
+export const canManageEntity = (role, entity) => {
+  if (isReadOnlyRole(role)) return false;
+  
+  // Define what roles can manage what entities
+  const managementPermissions = {
+    events: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.ZONAL_ADMIN],
+    guests: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.ZONAL_ADMIN],
+    workers: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN],
+    registrars: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN, ROLES.ZONAL_ADMIN],
+    admins: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN, ROLES.BRANCH_ADMIN],
+    states: [ROLES.SUPER_ADMIN],
+    branches: [ROLES.SUPER_ADMIN, ROLES.STATE_ADMIN],
+    zones: [ROLES.SUPER_ADMIN, ROLES.BRANCH_ADMIN],
+  };
+  
+  return managementPermissions[entity]?.includes(role) || false;
+};
